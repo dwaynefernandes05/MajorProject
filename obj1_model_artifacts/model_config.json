@@ -1,0 +1,70 @@
+{
+  "sbert_model": "all-mpnet-base-v2",
+  "hybrid_weights": {
+    "structured": 0.5,
+    "semantic": 0.3,
+    "standards": 0.2
+  },
+  "K": 5,
+  "exact_fields": [
+    "voltage_rating",
+    "conductor_material",
+    "insulation_type",
+    "sheath_type",
+    "temperature_rating",
+    "fire_resistance",
+    "armouring"
+  ],
+  "numeric_fields": {
+    "core_count": "exact",
+    "size_sqmm": "ladder_adjacent"
+  },
+  "standards_match": "bidirectional_substring",
+  "mandatory_weight": 2.0,
+  "rfp_text_col": "spec_text_raw",
+  "product_text_col": "product_name",
+  "baseline_metrics": {
+    "1. Random Baseline": {
+      "Top-1 Acc": 0.0046,
+      "Top-5 Acc": 0.0284,
+      "MRR": 0.0298,
+      "NDCG@5": 0.016
+    },
+    "2. TF-IDF + Cosine": {
+      "Top-1 Acc": 0.1154,
+      "Top-5 Acc": 0.3229,
+      "MRR": 0.2313,
+      "NDCG@5": 0.2208
+    },
+    "3. BM25 (Okapi)": {
+      "Top-1 Acc": 0.0559,
+      "Top-5 Acc": 0.2346,
+      "MRR": 0.1651,
+      "NDCG@5": 0.1483
+    },
+    "4. SBERT MiniLM-L6": {
+      "Top-1 Acc": 0.1326,
+      "Top-5 Acc": 0.3246,
+      "MRR": 0.2314,
+      "NDCG@5": 0.2315
+    },
+    "5. SBERT MPNet (sem-only)": {
+      "Top-1 Acc": 0.1653,
+      "Top-5 Acc": 0.3354,
+      "MRR": 0.2609,
+      "NDCG@5": 0.2484
+    },
+    "6. Exact Structured Match": {
+      "Top-1 Acc": 0.057,
+      "Top-5 Acc": 0.1753,
+      "MRR": 0.1294,
+      "NDCG@5": 0.1167
+    },
+    "7. \ud83c\udfc6 Hybrid (Ours)": {
+      "Top-1 Acc": 0.178,
+      "Top-5 Acc": 0.4434,
+      "MRR": 0.3088,
+      "NDCG@5": 0.3125
+    }
+  }
+}
