@@ -1,0 +1,201 @@
+sku_id,product_name,manufacturer,category,voltage_rating,conductor_material,core_count,size_sqmm,insulation_type,sheath_type,temperature_rating,fire_resistance,armouring,standards_complied,price_per_unit,lead_time_days
+SKU_101,11kV XLPE Al Cable,Polycab,Power Cable,11kV,Aluminium,3,240,XLPE,PVC,90C,FRLS,Yes,IS 7098,1250,14
+SKU_102,33kV XLPE Cu Cable,KEI,Power Cable,33kV,Copper,3,185,XLPE,PVC,90C,FRLS,Yes,IS 7098,2850,21
+SKU_103,12C Control Cable,Finolex,Control Cable,1.1kV,Copper,12,2.5,PVC,PVC,70C,Non-FR,No,IS 1554,180,10
+SKU_104,FRLS Instrumentation Cable,Polycab,Instrumentation Cable,1.1kV,Copper,4,1.5,XLPE,PVC,70C,FRLS,No,IEC 60502,210,12
+SKU_105,66kV HT XLPE Cable,KEI,Power Cable,66kV,Aluminium,3,300,XLPE,HDPE,90C,Non-FR,Yes,IEC 60840,4200,30
+SKU_106,Flexible Copper Cable,Havells,Flexible Cable,440V,Copper,4,6,PVC,PVC,70C,Non-FR,No,IS 694,95,7
+SKU_107,Fire Survival Power Cable,Polycab,Power Cable,1.1kV,Copper,2,10,XLPE,LSZH,90C,FR,Yes,IEC 60331,450,18
+SKU_108,Aluminium Control Cable,RR Kabel,Control Cable,1.1kV,Aluminium,8,4,PVC,PVC,70C,Non-FR,No,IS 1554,160,11
+SKU_109,22kV XLPE Power Cable,KEI,Power Cable,22kV,Aluminium,3,185,XLPE,PVC,90C,FRLS,Yes,IS 7098,2100,20
+SKU_110,Instrumentation Multi Core Cable,Finolex,Instrumentation Cable,500V,Copper,6,1.5,PVC,PVC,70C,Non-FR,No,IEC 60502,175,9
+SKU_111,132kV Single Core XLPE,Polycab,Power Cable,132kV,Copper,1,630,XLPE,HDPE,90C,Non-FR,Yes,IEC 60840,9500,45
+SKU_112,Flexible PVC Cable,Havells,Flexible Cable,440V,Copper,3,2.5,PVC,PVC,70C,Non-FR,No,IS 694,65,6
+SKU_113,Fire Survival LSZH Cable,KEI,Power Cable,1.1kV,Aluminium,4,16,XLPE,LSZH,90C,FR,Yes,IEC 60331,520,16
+SKU_114,FRLS Control Cable,RR Kabel,Control Cable,1.1kV,Copper,10,1.5,PVC,PVC,70C,FRLS,No,IS 1554,190,13
+SKU_115,11kV XLPE Al Cable (120sqmm),Polycab,Power Cable,11kV,Aluminium,3,120,XLPE,PVC,90C,Non-FR,Yes,IS 7098,980,14
+SKU_116,10C Aluminium Control Cable,Universal Cables,Control Cable,600V,Aluminium,10,4,PVC,HDPE,70C,Non-FR,Yes,IS 1554,255,7
+SKU_117,FRLS 4C Instrumentation Cable,Apar Industries,Instrumentation Cable,1.1kV,Aluminium,4,1.5,PVC,PVC,70C,FRLS,No,IEC 60502,172,12
+SKU_118,7C Aluminium Control Cable,KEI,Control Cable,600V,Aluminium,7,1.5,PVC,PVC,70C,FR,No,IS 1554,314,9
+SKU_119,4C Flexible Copper Cable,Gloster,Flexible Cable,1.1kV,Copper,4,4,PVC,PVC,70C,FR,No,IS 694,136,7
+SKU_120,FRLS 16C Instrumentation Cable,Gloster,Instrumentation Cable,600V,Aluminium,16,2.5,PVC,HDPE,70C,FRLS,Yes,IEC 60502,236,17
+SKU_121,7C Aluminium Control Cable (6sqmm 1.1kV),KEI,Control Cable,1.1kV,Aluminium,7,6,PVC,LSZH,70C,FR,Yes,IS 1554,307,8
+SKU_122,19C Aluminium Control Cable,RR Kabel,Control Cable,600V,Aluminium,19,4,PVC,PVC,70C,Non-FR,Yes,IS 1554,235,13
+SKU_123,FRLS 2C Instrumentation Cable,Havells,Instrumentation Cable,500V,Copper,2,1.5,PVC,HDPE,70C,FRLS,Yes,IEC 60502,633,10
+SKU_124,FRLS 22kV XLPE Cable,Polycab,Power Cable,22kV,Aluminium,3,120,XLPE,HDPE,90C,FRLS,No,IS 7098,2502,19
+SKU_125,FRLS 66kV XLPE Cable,Apar Industries,Power Cable,66kV,Copper,1,630,XLPE,PVC,90C,FRLS,Yes,IS 7098,17436,39
+SKU_126,FRLS 16C Control Cable,KEI,Control Cable,500V,Aluminium,16,2.5,PVC,PVC,70C,FRLS,No,IS 1554,256,15
+SKU_127,3C Flexible Aluminium Cable,Havells,Flexible Cable,440V,Aluminium,3,2.5,PVC,LSZH,70C,FR,No,IS 694,102,11
+SKU_128,37C Aluminium Control Cable,Gloster,Control Cable,600V,Aluminium,37,6,PVC,PVC,70C,FR,Yes,IS 1554,418,7
+SKU_129,5C Flexible Copper Cable,Finolex,Flexible Cable,600V,Copper,5,2.5,PVC,PVC,70C,FRLS,No,IS 694,112,9
+SKU_130,FRLS 16C Control Cable (6sqmm 500V),KEI,Control Cable,500V,Copper,16,6,PVC,HDPE,70C,FRLS,Yes,IS 1554,210,9
+SKU_131,4C Flexible Copper Cable (4sqmm 600V),KEI,Flexible Cable,600V,Copper,4,4,PVC,PVC,70C,FRLS,No,IS 694,256,9
+SKU_132,2C Instrumentation Cable,RR Kabel,Instrumentation Cable,600V,Copper,2,1.5,XLPE,HDPE,90C,Non-FR,No,IEC 60502,173,17
+SKU_133,FRLS 7C Control Cable,KEI,Control Cable,500V,Aluminium,7,1.5,PVC,PVC,70C,FRLS,No,IS 1554,304,10
+SKU_134,FRLS 33kV EPR Cable,Apar Industries,Power Cable,33kV,Aluminium,3,240,EPR,PVC,90C,FRLS,Yes,IEC 60840,4315,24
+SKU_135,Fire Survival 33kV Cable,Universal Cables,Power Cable,33kV,Copper,3,150,EPR,HDPE,90C,FR,Yes,IS 7098,8459,25
+SKU_136,Fire Survival 22kV Cable,Gloster,Power Cable,22kV,Aluminium,3,185,EPR,PVC,90C,FR,No,IS 7098,2724,18
+SKU_137,Fire Survival 1.1kV Cable,Apar Industries,Power Cable,1.1kV,Copper,4,95,EPR,HDPE,90C,FR,Yes,IS 7098,907,20
+SKU_138,3C Flexible Aluminium Cable (4sqmm 440V),Apar Industries,Flexible Cable,440V,Aluminium,3,4,PVC,HDPE,70C,FR,No,IS 694,145,5
+SKU_139,5C Flexible Copper Cable (4sqmm 600V),Finolex,Flexible Cable,600V,Copper,5,4,PVC,HDPE,70C,FR,No,IS 694,307,11
+SKU_140,7C Aluminium Control Cable (4sqmm 600V),KEI,Control Cable,600V,Aluminium,7,4,PVC,PVC,70C,FR,Yes,IS 1554,286,12
+SKU_141,12C Aluminium Control Cable,Polycab,Control Cable,500V,Aluminium,12,1.5,PVC,LSZH,70C,Non-FR,No,IS 1554,317,7
+SKU_142,FRLS 6C Instrumentation Cable,Apar Industries,Instrumentation Cable,500V,Aluminium,6,1.5,PVC,HDPE,70C,FRLS,Yes,IEC 60502,141,10
+SKU_143,FRLS 8C Instrumentation Cable,RR Kabel,Instrumentation Cable,600V,Copper,8,1.5,PVC,HDPE,70C,FRLS,Yes,IEC 60502,428,8
+SKU_144,FRLS 11kV XLPE Cable,Gloster,Power Cable,11kV,Copper,3,240,XLPE,LSZH,90C,FRLS,No,IS 7098,2150,24
+SKU_145,FRLS 19C Control Cable,Havells,Control Cable,600V,Aluminium,19,2.5,PVC,PVC,70C,FRLS,No,IS 1554,140,12
+SKU_146,220kV EPR Co Cable,Havells,Power Cable,220kV,Copper,1,500,EPR,LSZH,90C,Non-FR,Yes,IEC 60331,14168,48
+SKU_147,FRLS 220kV EPR Cable,Gloster,Power Cable,220kV,Copper,1,500,EPR,LSZH,90C,FRLS,No,IS 7098,12340,42
+SKU_148,FRLS 37C Control Cable,RR Kabel,Control Cable,1.1kV,Aluminium,37,6,PVC,HDPE,70C,FRLS,Yes,IS 1554,315,10
+SKU_149,3C Flexible Copper Cable,RR Kabel,Flexible Cable,1.1kV,Copper,3,10,PVC,PVC,70C,FRLS,No,IS 694,123,7
+SKU_150,4C Flexible Aluminium Cable,RR Kabel,Flexible Cable,600V,Aluminium,4,2.5,PVC,PVC,70C,FRLS,No,IS 694,270,6
+SKU_151,5C Flexible Copper Cable (1.5sqmm 600V),KEI,Flexible Cable,600V,Copper,5,1.5,PVC,HDPE,70C,FR,No,IS 694,213,5
+SKU_152,4C Flexible Copper Cable (1.5sqmm 440V),Gloster,Flexible Cable,440V,Copper,4,1.5,PVC,LSZH,70C,FRLS,No,IS 694,181,12
+SKU_153,1C Instrumentation Cable,Universal Cables,Instrumentation Cable,1.1kV,Aluminium,1,1.5,PVC,HDPE,70C,Non-FR,Yes,IEC 60502,369,10
+SKU_154,FRLS 22kV XLPE Cable (300sqmm 22kV),KEI,Power Cable,22kV,Copper,3,300,XLPE,HDPE,90C,FRLS,No,IEC 60840,2954,25
+SKU_155,4C Flexible Copper Cable (10sqmm 440V),RR Kabel,Flexible Cable,440V,Copper,4,10,PVC,HDPE,70C,FR,No,IS 694,375,10
+SKU_156,24C Aluminium Control Cable,KEI,Control Cable,500V,Aluminium,24,6,PVC,PVC,70C,Non-FR,Yes,IS 1554,166,13
+SKU_157,10C Copper Control Cable,Polycab,Control Cable,1.1kV,Copper,10,6,PVC,PVC,70C,FR,Yes,IS 1554,540,14
+SKU_158,FRLS 33kV XLPE Cable,Havells,Power Cable,33kV,Aluminium,3,240,XLPE,LSZH,90C,FRLS,Yes,IEC 60840,4724,21
+SKU_159,FRLS 6C Instrumentation Cable (2.5sqmm 500V),Polycab,Instrumentation Cable,500V,Aluminium,6,2.5,PVC,HDPE,70C,FRLS,No,IEC 60502,231,12
+SKU_160,1.1kV XLPE Co Cable,Finolex,Power Cable,1.1kV,Copper,2,50,XLPE,LSZH,90C,Non-FR,No,IEC 60331,1049,16
+SKU_161,FRLS 16C Instrumentation Cable (1.5sqmm 600V),Havells,Instrumentation Cable,600V,Aluminium,16,1.5,PVC,HDPE,70C,FRLS,Yes,IEC 60502,144,8
+SKU_162,Fire Survival 66kV Cable,Finolex,Power Cable,66kV,Aluminium,1,800,XLPE,PVC,90C,FR,No,IEC 60840,12893,48
+SKU_163,12C Instrumentation Cable,Gloster,Instrumentation Cable,600V,Copper,12,1.5,PVC,HDPE,70C,FR,No,IEC 60502,814,13
+SKU_164,Fire Survival 33kV Cable (300sqmm 33kV),Finolex,Power Cable,33kV,Copper,3,300,EPR,LSZH,90C,FR,Yes,IEC 60840,7325,19
+SKU_165,Fire Survival 132kV Cable,Apar Industries,Power Cable,132kV,Aluminium,1,800,EPR,LSZH,90C,FR,Yes,IS 7098,15395,42
+SKU_166,3C Flexible Copper Cable (2.5sqmm 1.1kV),Havells,Flexible Cable,1.1kV,Copper,3,2.5,PVC,PVC,70C,FR,No,IS 694,471,10
+SKU_167,FRLS 10C Control Cable,Universal Cables,Control Cable,1.1kV,Copper,10,6,PVC,HDPE,70C,FRLS,No,IS 1554,603,11
+SKU_168,27C Aluminium Control Cable,Finolex,Control Cable,600V,Aluminium,27,2.5,PVC,LSZH,70C,Non-FR,No,IS 1554,149,14
+SKU_169,8C Instrumentation Cable,Finolex,Instrumentation Cable,500V,Aluminium,8,1.5,PVC,HDPE,70C,FR,No,IEC 60502,487,18
+SKU_170,FRLS 2C Instrumentation Cable (2.5sqmm 600V),RR Kabel,Instrumentation Cable,600V,Copper,2,2.5,XLPE,LSZH,90C,FRLS,No,IEC 60502,422,18
+SKU_171,7C Copper Control Cable,KEI,Control Cable,600V,Copper,7,6,PVC,HDPE,70C,FR,Yes,IS 1554,278,11
+SKU_172,2C Instrumentation Cable (2.5sqmm 1.1kV),RR Kabel,Instrumentation Cable,1.1kV,Aluminium,2,2.5,XLPE,LSZH,90C,Non-FR,No,IEC 60502,382,10
+SKU_173,7C Aluminium Control Cable (2.5sqmm 500V),Havells,Control Cable,500V,Aluminium,7,2.5,PVC,PVC,70C,FR,No,IS 1554,356,10
+SKU_174,5C Flexible Copper Cable (10sqmm 1.1kV),Universal Cables,Flexible Cable,1.1kV,Copper,5,10,PVC,HDPE,70C,FR,No,IS 694,307,7
+SKU_175,FRLS 37C Control Cable (6sqmm 1.1kV),Universal Cables,Control Cable,1.1kV,Aluminium,37,6,PVC,LSZH,70C,FRLS,No,IS 1554,347,13
+SKU_176,FRLS 66kV XLPE Cable (400sqmm 66kV),Universal Cables,Power Cable,66kV,Copper,1,400,XLPE,HDPE,90C,FRLS,Yes,IEC 60840,16539,33
+SKU_177,5C Flexible Aluminium Cable,KEI,Flexible Cable,440V,Aluminium,5,10,PVC,LSZH,70C,FRLS,No,IS 694,274,6
+SKU_178,FRLS 24C Control Cable,Gloster,Control Cable,500V,Aluminium,24,1.5,PVC,HDPE,70C,FRLS,Yes,IS 1554,357,14
+SKU_179,16C Instrumentation Cable,Finolex,Instrumentation Cable,500V,Aluminium,16,1.5,PVC,LSZH,70C,Non-FR,No,IEC 60502,387,8
+SKU_180,FRLS 12C Control Cable,Finolex,Control Cable,1.1kV,Aluminium,12,1.5,PVC,PVC,70C,FRLS,No,IS 1554,118,13
+SKU_181,2C Flexible Aluminium Cable,Finolex,Flexible Cable,1.1kV,Aluminium,2,1.5,PVC,HDPE,70C,FRLS,No,IS 694,188,10
+SKU_182,66kV XLPE Al Cable,Gloster,Power Cable,66kV,Aluminium,3,400,XLPE,LSZH,90C,Non-FR,Yes,IEC 60331,9199,38
+SKU_183,3C Flexible Copper Cable (6sqmm 440V),Gloster,Flexible Cable,440V,Copper,3,6,PVC,LSZH,70C,FRLS,No,IS 694,280,6
+SKU_184,6C Instrumentation Cable,Havells,Instrumentation Cable,500V,Aluminium,6,2.5,XLPE,LSZH,90C,Non-FR,Yes,IEC 60502,370,12
+SKU_185,4C Flexible Copper Cable (10sqmm 440V),Apar Industries,Flexible Cable,440V,Copper,4,10,PVC,LSZH,70C,Non-FR,No,IS 694,263,6
+SKU_186,FRLS 16C Instrumentation Cable (2.5sqmm 500V),Apar Industries,Instrumentation Cable,500V,Copper,16,2.5,XLPE,LSZH,90C,FRLS,No,IEC 60502,345,14
+SKU_187,Fire Survival 11kV Cable,Universal Cables,Power Cable,11kV,Aluminium,3,240,EPR,PVC,90C,FR,Yes,IEC 60840,1248,18
+SKU_188,FRLS 2C Instrumentation Cable (2.5sqmm 1.1kV),Havells,Instrumentation Cable,1.1kV,Copper,2,2.5,XLPE,HDPE,90C,FRLS,No,IEC 60502,527,15
+SKU_189,Fire Survival 132kV Cable (300sqmm 132kV),Apar Industries,Power Cable,132kV,Aluminium,1,300,EPR,PVC,90C,FR,Yes,IS 7098,13765,33
+SKU_190,5C Flexible Copper Cable (2.5sqmm 440V),Havells,Flexible Cable,440V,Copper,5,2.5,PVC,LSZH,70C,FR,No,IS 694,199,11
+SKU_191,Fire Survival 22kV Cable (300sqmm 22kV),Gloster,Power Cable,22kV,Copper,3,300,EPR,PVC,90C,FR,Yes,IEC 60331,4010,15
+SKU_192,5C Flexible Copper Cable (10sqmm 1.1kV),Gloster,Flexible Cable,1.1kV,Copper,5,10,PVC,PVC,70C,FR,No,IS 694,159,6
+SKU_193,1C Instrumentation Cable (2.5sqmm 600V),Universal Cables,Instrumentation Cable,600V,Copper,1,2.5,PVC,LSZH,70C,FR,Yes,IEC 60502,514,8
+SKU_194,FRLS 4C Control Cable,Gloster,Control Cable,600V,Aluminium,4,1.5,PVC,PVC,70C,FRLS,Yes,IS 1554,385,13
+SKU_195,5C Flexible Copper Cable (2.5sqmm 600V),Polycab,Flexible Cable,600V,Copper,5,2.5,PVC,LSZH,70C,Non-FR,No,IS 694,204,7
+SKU_196,Fire Survival 33kV Cable (300sqmm 33kV),Finolex,Power Cable,33kV,Aluminium,3,300,XLPE,LSZH,90C,FR,Yes,IEC 60331,4533,28
+SKU_197,10C Aluminium Control Cable (4sqmm 600V),Gloster,Control Cable,600V,Aluminium,10,4,PVC,PVC,70C,Non-FR,No,IS 1554,95,14
+SKU_198,FRLS 4C Control Cable (2.5sqmm 500V),Polycab,Control Cable,500V,Aluminium,4,2.5,PVC,PVC,70C,FRLS,Yes,IS 1554,309,15
+SKU_199,FRLS 8C Instrumentation Cable (1.5sqmm 600V),Universal Cables,Instrumentation Cable,600V,Aluminium,8,1.5,PVC,HDPE,70C,FRLS,No,IEC 60502,225,10
+SKU_200,4C Flexible Copper Cable (4sqmm 1.1kV),KEI,Flexible Cable,1.1kV,Copper,4,4,PVC,HDPE,70C,FRLS,No,IS 694,252,11
+SKU_201,FRLS 4C Control Cable (2.5sqmm 600V),Finolex,Control Cable,600V,Copper,4,2.5,PVC,LSZH,70C,FRLS,No,IS 1554,520,9
+SKU_202,4C Flexible Aluminium Cable (6sqmm 1.1kV),RR Kabel,Flexible Cable,1.1kV,Aluminium,4,6,PVC,PVC,70C,FR,No,IS 694,224,7
+SKU_203,16C Instrumentation Cable (1.5sqmm 1.1kV),Havells,Instrumentation Cable,1.1kV,Aluminium,16,1.5,XLPE,LSZH,90C,Non-FR,No,IEC 60502,138,8
+SKU_204,3C Flexible Copper Cable (1.5sqmm 440V),Apar Industries,Flexible Cable,440V,Copper,3,1.5,PVC,LSZH,70C,FR,No,IS 694,488,7
+SKU_205,8C Instrumentation Cable (2.5sqmm 500V),Finolex,Instrumentation Cable,500V,Aluminium,8,2.5,XLPE,LSZH,90C,Non-FR,No,IEC 60502,222,12
+SKU_206,6C Instrumentation Cable (2.5sqmm 500V),Universal Cables,Instrumentation Cable,500V,Copper,6,2.5,PVC,LSZH,70C,Non-FR,No,IEC 60502,411,12
+SKU_207,33kV XLPE Al Cable,Havells,Power Cable,33kV,Aluminium,3,120,XLPE,PVC,90C,Non-FR,Yes,IEC 60331,3960,22
+SKU_208,22kV XLPE Al Cable,KEI,Power Cable,22kV,Aluminium,3,240,XLPE,LSZH,90C,Non-FR,Yes,IEC 60331,954,16
+SKU_209,22kV XLPE Al Cable (300sqmm 22kV),Universal Cables,Power Cable,22kV,Aluminium,3,300,XLPE,PVC,90C,Non-FR,No,IEC 60331,1512,16
+SKU_210,FRLS 7C Control Cable (1.5sqmm 500V),Polycab,Control Cable,500V,Copper,7,1.5,PVC,HDPE,70C,FRLS,No,IS 1554,387,9
+SKU_211,3C Flexible Copper Cable (4sqmm 440V),Gloster,Flexible Cable,440V,Copper,3,4,PVC,HDPE,70C,FRLS,No,IS 694,108,10
+SKU_212,5C Flexible Aluminium Cable (2.5sqmm 440V),Finolex,Flexible Cable,440V,Aluminium,5,2.5,PVC,PVC,70C,Non-FR,No,IS 694,172,6
+SKU_213,12C Aluminium Control Cable (1.5sqmm 600V),KEI,Control Cable,600V,Aluminium,12,1.5,PVC,HDPE,70C,Non-FR,No,IS 1554,230,12
+SKU_214,4C Copper Control Cable,Universal Cables,Control Cable,500V,Copper,4,4,PVC,LSZH,70C,Non-FR,Yes,IS 1554,490,15
+SKU_215,5C Flexible Aluminium Cable (6sqmm 1.1kV),KEI,Flexible Cable,1.1kV,Aluminium,5,6,PVC,LSZH,70C,Non-FR,No,IS 694,108,12
+SKU_216,27C Aluminium Control Cable (6sqmm 1.1kV),Apar Industries,Control Cable,1.1kV,Aluminium,27,6,PVC,LSZH,70C,FR,Yes,IS 1554,417,10
+SKU_217,FRLS 12C Instrumentation Cable,Havells,Instrumentation Cable,600V,Aluminium,12,2.5,XLPE,HDPE,90C,FRLS,Yes,IEC 60502,335,18
+SKU_218,6C Instrumentation Cable (2.5sqmm 1.1kV),Finolex,Instrumentation Cable,1.1kV,Aluminium,6,2.5,PVC,PVC,70C,FR,Yes,IEC 60502,507,15
+SKU_219,FRLS 220kV XLPE Cable,Universal Cables,Power Cable,220kV,Copper,3,630,XLPE,HDPE,90C,FRLS,Yes,IS 7098,11172,32
+SKU_220,2C Flexible Aluminium Cable (4sqmm 440V),Havells,Flexible Cable,440V,Aluminium,2,4,PVC,HDPE,70C,Non-FR,No,IS 694,114,11
+SKU_221,FRLS 4C Control Cable (4sqmm 600V),Polycab,Control Cable,600V,Copper,4,4,PVC,LSZH,70C,FRLS,No,IS 1554,591,11
+SKU_222,FRLS 1.1kV XLPE Cable,RR Kabel,Power Cable,1.1kV,Aluminium,2,50,XLPE,LSZH,90C,FRLS,Yes,IEC 60840,564,12
+SKU_223,12C Aluminium Control Cable (6sqmm 1.1kV),Gloster,Control Cable,1.1kV,Aluminium,12,6,PVC,LSZH,70C,Non-FR,Yes,IS 1554,142,13
+SKU_224,FRLS 66kV XLPE Cable (240sqmm 66kV),RR Kabel,Power Cable,66kV,Copper,3,240,XLPE,LSZH,90C,FRLS,Yes,IEC 60840,8032,42
+SKU_225,Fire Survival 33kV Cable (240sqmm 33kV),Polycab,Power Cable,33kV,Copper,3,240,XLPE,LSZH,90C,FR,No,IEC 60331,5363,22
+SKU_226,FRLS 27C Control Cable,Havells,Control Cable,600V,Copper,27,2.5,PVC,HDPE,70C,FRLS,Yes,IS 1554,341,7
+SKU_227,2C Flexible Aluminium Cable (4sqmm 440V),Polycab,Flexible Cable,440V,Aluminium,2,4,PVC,LSZH,70C,Non-FR,No,IS 694,191,6
+SKU_228,10C Copper Control Cable (1.5sqmm 1.1kV),Havells,Control Cable,1.1kV,Copper,10,1.5,PVC,PVC,70C,Non-FR,Yes,IS 1554,162,15
+SKU_229,2C Flexible Copper Cable,Polycab,Flexible Cable,440V,Copper,2,10,PVC,HDPE,70C,FR,No,IS 694,419,7
+SKU_230,3C Flexible Copper Cable (1.5sqmm 440V),Universal Cables,Flexible Cable,440V,Copper,3,1.5,PVC,HDPE,70C,FR,No,IS 694,174,5
+SKU_231,22kV EPR Al Cable,Polycab,Power Cable,22kV,Aluminium,3,240,EPR,HDPE,90C,Non-FR,No,IS 7098,1152,18
+SKU_232,33kV XLPE Co Cable,RR Kabel,Power Cable,33kV,Copper,3,300,XLPE,HDPE,90C,Non-FR,No,IEC 60331,4965,27
+SKU_233,3C Flexible Copper Cable (4sqmm 440V),RR Kabel,Flexible Cable,440V,Copper,3,4,PVC,LSZH,70C,FR,No,IS 694,217,6
+SKU_234,16C Instrumentation Cable (1.5sqmm 600V),Gloster,Instrumentation Cable,600V,Copper,16,1.5,XLPE,LSZH,90C,Non-FR,No,IEC 60502,248,14
+SKU_235,2C Flexible Aluminium Cable (4sqmm 1.1kV),Universal Cables,Flexible Cable,1.1kV,Aluminium,2,4,PVC,HDPE,70C,Non-FR,No,IS 694,166,12
+SKU_236,2C Instrumentation Cable (1.5sqmm 1.1kV),Universal Cables,Instrumentation Cable,1.1kV,Copper,2,1.5,PVC,LSZH,70C,Non-FR,Yes,IEC 60502,652,10
+SKU_237,12C Copper Control Cable,Apar Industries,Control Cable,1.1kV,Copper,12,6,PVC,LSZH,70C,FR,Yes,IS 1554,475,9
+SKU_238,3C Flexible Aluminium Cable (2.5sqmm 600V),RR Kabel,Flexible Cable,600V,Aluminium,3,2.5,PVC,LSZH,70C,Non-FR,No,IS 694,90,5
+SKU_239,3C Flexible Aluminium Cable (10sqmm 1.1kV),Apar Industries,Flexible Cable,1.1kV,Aluminium,3,10,PVC,LSZH,70C,FRLS,No,IS 694,80,5
+SKU_240,Fire Survival 132kV Cable (400sqmm 132kV),Universal Cables,Power Cable,132kV,Copper,3,400,XLPE,PVC,90C,FR,Yes,IEC 60840,12615,32
+SKU_241,4C Flexible Copper Cable (2.5sqmm 1.1kV),Havells,Flexible Cable,1.1kV,Copper,4,2.5,PVC,HDPE,70C,Non-FR,No,IS 694,122,8
+SKU_242,11kV XLPE Al Cable (95sqmm 11kV),Universal Cables,Power Cable,11kV,Aluminium,3,95,XLPE,LSZH,90C,Non-FR,Yes,IEC 60331,2298,22
+SKU_243,FRLS 132kV EPR Cable,KEI,Power Cable,132kV,Aluminium,3,500,EPR,PVC,90C,FRLS,No,IS 7098,5382,46
+SKU_244,4C Flexible Aluminium Cable (4sqmm 1.1kV),Polycab,Flexible Cable,1.1kV,Aluminium,4,4,PVC,HDPE,70C,FR,No,IS 694,209,12
+SKU_245,FRLS 8C Control Cable,Gloster,Control Cable,600V,Copper,8,6,PVC,PVC,70C,FRLS,No,IS 1554,541,11
+SKU_246,2C Flexible Copper Cable (4sqmm 1.1kV),Universal Cables,Flexible Cable,1.1kV,Copper,2,4,PVC,LSZH,70C,Non-FR,No,IS 694,93,6
+SKU_247,27C Aluminium Control Cable (2.5sqmm 1.1kV),RR Kabel,Control Cable,1.1kV,Aluminium,27,2.5,PVC,LSZH,70C,FR,Yes,IS 1554,301,8
+SKU_248,FRLS 16C Control Cable (2.5sqmm 1.1kV),Gloster,Control Cable,1.1kV,Copper,16,2.5,PVC,LSZH,70C,FRLS,Yes,IS 1554,299,8
+SKU_249,2C Flexible Copper Cable (2.5sqmm 600V),Gloster,Flexible Cable,600V,Copper,2,2.5,PVC,LSZH,70C,FRLS,No,IS 694,105,12
+SKU_250,8C Instrumentation Cable (1.5sqmm 1.1kV),Universal Cables,Instrumentation Cable,1.1kV,Copper,8,1.5,XLPE,HDPE,90C,FR,Yes,IEC 60502,719,12
+SKU_251,1.1kV EPR Co Cable,RR Kabel,Power Cable,1.1kV,Copper,4,35,EPR,HDPE,90C,Non-FR,No,IS 7098,1198,15
+SKU_252,FRLS 8C Instrumentation Cable (2.5sqmm 600V),Gloster,Instrumentation Cable,600V,Copper,8,2.5,XLPE,LSZH,90C,FRLS,Yes,IEC 60502,505,18
+SKU_253,5C Flexible Copper Cable (10sqmm 600V),Finolex,Flexible Cable,600V,Copper,5,10,PVC,PVC,70C,FRLS,No,IS 694,448,10
+SKU_254,66kV EPR Al Cable,KEI,Power Cable,66kV,Aluminium,3,800,EPR,LSZH,90C,Non-FR,Yes,IS 7098,7968,39
+SKU_255,FRLS 66kV EPR Cable,RR Kabel,Power Cable,66kV,Copper,1,300,EPR,HDPE,90C,FRLS,Yes,IEC 60840,10861,30
+SKU_256,6C Instrumentation Cable (2.5sqmm 600V),Gloster,Instrumentation Cable,600V,Copper,6,2.5,PVC,PVC,70C,Non-FR,Yes,IEC 60502,413,10
+SKU_257,6C Instrumentation Cable (1.5sqmm 500V),Gloster,Instrumentation Cable,500V,Copper,6,1.5,XLPE,HDPE,90C,FR,Yes,IEC 60502,587,8
+SKU_258,FRLS 24C Control Cable (6sqmm 600V),Apar Industries,Control Cable,600V,Copper,24,6,PVC,HDPE,70C,FRLS,No,IS 1554,541,7
+SKU_259,FRLS 2C Instrumentation Cable (1.5sqmm 1.1kV),Apar Industries,Instrumentation Cable,1.1kV,Copper,2,1.5,XLPE,PVC,90C,FRLS,No,IEC 60502,194,9
+SKU_260,19C Aluminium Control Cable (1.5sqmm 1.1kV),Universal Cables,Control Cable,1.1kV,Aluminium,19,1.5,PVC,PVC,70C,Non-FR,Yes,IS 1554,312,15
+SKU_261,FRLS 1.1kV XLPE Cable (50sqmm 1.1kV),Finolex,Power Cable,1.1kV,Copper,2,50,XLPE,PVC,90C,FRLS,Yes,IS 7098,1324,17
+SKU_262,4C Instrumentation Cable,Apar Industries,Instrumentation Cable,500V,Aluminium,4,1.5,PVC,PVC,70C,FR,No,IEC 60502,236,10
+SKU_263,33kV EPR Al Cable,Polycab,Power Cable,33kV,Aluminium,3,300,EPR,PVC,90C,Non-FR,Yes,IEC 60840,4182,27
+SKU_264,2C Instrumentation Cable (2.5sqmm 1.1kV),Apar Industries,Instrumentation Cable,1.1kV,Copper,2,2.5,XLPE,LSZH,90C,FR,No,IEC 60502,499,17
+SKU_265,6C Instrumentation Cable (2.5sqmm 1.1kV),Finolex,Instrumentation Cable,1.1kV,Copper,6,2.5,XLPE,LSZH,90C,FR,No,IEC 60502,700,13
+SKU_266,19C Copper Control Cable,Apar Industries,Control Cable,500V,Copper,19,2.5,PVC,PVC,70C,Non-FR,No,IS 1554,405,12
+SKU_267,37C Copper Control Cable,RR Kabel,Control Cable,600V,Copper,37,4,PVC,LSZH,70C,FR,Yes,IS 1554,190,14
+SKU_268,FRLS 4C Instrumentation Cable (2.5sqmm 1.1kV),KEI,Instrumentation Cable,1.1kV,Aluminium,4,2.5,PVC,LSZH,70C,FRLS,No,IEC 60502,157,11
+SKU_269,FRLS 4C Instrumentation Cable (2.5sqmm 1.1kV),RR Kabel,Instrumentation Cable,1.1kV,Aluminium,4,2.5,PVC,PVC,70C,FRLS,Yes,IEC 60502,127,9
+SKU_270,16C Copper Control Cable,Apar Industries,Control Cable,1.1kV,Copper,16,2.5,PVC,LSZH,70C,Non-FR,Yes,IS 1554,165,15
+SKU_271,FRLS 27C Control Cable (6sqmm 600V),Havells,Control Cable,600V,Aluminium,27,6,PVC,PVC,70C,FRLS,No,IS 1554,266,12
+SKU_272,FRLS 12C Instrumentation Cable (2.5sqmm 500V),Apar Industries,Instrumentation Cable,500V,Copper,12,2.5,XLPE,LSZH,90C,FRLS,No,IEC 60502,370,17
+SKU_273,6C Instrumentation Cable (2.5sqmm 600V),Apar Industries,Instrumentation Cable,600V,Copper,6,2.5,XLPE,LSZH,90C,Non-FR,No,IEC 60502,589,13
+SKU_274,2C Instrumentation Cable (2.5sqmm 600V),Polycab,Instrumentation Cable,600V,Copper,2,2.5,PVC,PVC,70C,FR,Yes,IEC 60502,800,12
+SKU_275,16C Instrumentation Cable (2.5sqmm 1.1kV),Havells,Instrumentation Cable,1.1kV,Copper,16,2.5,XLPE,HDPE,90C,FR,Yes,IEC 60502,513,18
+SKU_276,FRLS 27C Control Cable (4sqmm 500V),Apar Industries,Control Cable,500V,Copper,27,4,PVC,LSZH,70C,FRLS,Yes,IS 1554,270,7
+SKU_277,4C Copper Control Cable (4sqmm 1.1kV),Universal Cables,Control Cable,1.1kV,Copper,4,4,PVC,HDPE,70C,Non-FR,No,IS 1554,396,14
+SKU_278,5C Flexible Aluminium Cable (4sqmm 440V),Gloster,Flexible Cable,440V,Aluminium,5,4,PVC,PVC,70C,FR,No,IS 694,174,12
+SKU_279,FRLS 22kV EPR Cable,Finolex,Power Cable,22kV,Aluminium,3,185,EPR,PVC,90C,FRLS,Yes,IEC 60331,1626,22
+SKU_280,FRLS 24C Control Cable (6sqmm 500V),Apar Industries,Control Cable,500V,Copper,24,6,PVC,PVC,70C,FRLS,No,IS 1554,525,13
+SKU_281,12C Instrumentation Cable (1.5sqmm 600V),Polycab,Instrumentation Cable,600V,Aluminium,12,1.5,PVC,HDPE,70C,Non-FR,Yes,IEC 60502,236,12
+SKU_282,FRLS 33kV XLPE Cable (240sqmm 33kV),Apar Industries,Power Cable,33kV,Aluminium,3,240,XLPE,PVC,90C,FRLS,No,IEC 60840,3965,26
+SKU_283,3C Flexible Aluminium Cable (1.5sqmm 440V),Havells,Flexible Cable,440V,Aluminium,3,1.5,PVC,HDPE,70C,FRLS,No,IS 694,177,6
+SKU_284,4C Instrumentation Cable (1.5sqmm 600V),Finolex,Instrumentation Cable,600V,Aluminium,4,1.5,XLPE,LSZH,90C,FR,No,IEC 60502,403,11
+SKU_285,37C Aluminium Control Cable (4sqmm 1.1kV),Universal Cables,Control Cable,1.1kV,Aluminium,37,4,PVC,PVC,70C,Non-FR,No,IS 1554,87,10
+SKU_286,19C Copper Control Cable (4sqmm 600V),KEI,Control Cable,600V,Copper,19,4,PVC,PVC,70C,Non-FR,Yes,IS 1554,475,10
+SKU_287,132kV EPR Co Cable,Universal Cables,Power Cable,132kV,Copper,3,800,EPR,PVC,90C,Non-FR,Yes,IEC 60331,10997,38
+SKU_288,FRLS 6C Instrumentation Cable (1.5sqmm 500V),Gloster,Instrumentation Cable,500V,Aluminium,6,1.5,XLPE,PVC,90C,FRLS,No,IEC 60502,407,14
+SKU_289,FRLS 27C Control Cable (6sqmm 500V),Gloster,Control Cable,500V,Copper,27,6,PVC,LSZH,70C,FRLS,Yes,IS 1554,418,12
+SKU_290,FRLS 16C Control Cable (6sqmm 1.1kV),Apar Industries,Control Cable,1.1kV,Copper,16,6,PVC,LSZH,70C,FRLS,No,IS 1554,148,14
+SKU_291,FRLS 10C Control Cable (4sqmm 500V),Polycab,Control Cable,500V,Copper,10,4,PVC,PVC,70C,FRLS,No,IS 1554,449,14
+SKU_292,FRLS 37C Control Cable (6sqmm 600V),RR Kabel,Control Cable,600V,Aluminium,37,6,PVC,LSZH,70C,FRLS,No,IS 1554,243,8
+SKU_293,16C Instrumentation Cable (2.5sqmm 500V),RR Kabel,Instrumentation Cable,500V,Copper,16,2.5,XLPE,HDPE,90C,FR,Yes,IEC 60502,629,10
+SKU_294,4C Aluminium Control Cable,KEI,Control Cable,500V,Aluminium,4,2.5,PVC,HDPE,70C,FR,No,IS 1554,272,13
+SKU_295,FRLS 2C Instrumentation Cable (1.5sqmm 600V),Apar Industries,Instrumentation Cable,600V,Aluminium,2,1.5,PVC,HDPE,70C,FRLS,No,IEC 60502,146,17
+SKU_296,4C Flexible Aluminium Cable (6sqmm 600V),Universal Cables,Flexible Cable,600V,Aluminium,4,6,PVC,HDPE,70C,FRLS,No,IS 694,213,8
+SKU_297,Fire Survival 11kV Cable (240sqmm 11kV),Finolex,Power Cable,11kV,Aluminium,3,240,XLPE,LSZH,90C,FR,Yes,IEC 60331,2644,25
+SKU_298,4C Flexible Copper Cable (6sqmm 1.1kV),Finolex,Flexible Cable,1.1kV,Copper,4,6,PVC,HDPE,70C,FR,No,IS 694,199,6
+SKU_299,1C Instrumentation Cable (2.5sqmm 500V),Polycab,Instrumentation Cable,500V,Copper,1,2.5,PVC,PVC,70C,Non-FR,No,IEC 60502,464,9
+SKU_300,2C Flexible Copper Cable (1.5sqmm 1.1kV),KEI,Flexible Cable,1.1kV,Copper,2,1.5,PVC,LSZH,70C,FRLS,No,IS 694,384,6
