@@ -1,0 +1,11 @@
+rfp_id,sku_id,category,explanation_text
+RFP_0001,SKU_269,partially matching,"The pair is a partial match because at least one important signal is present, but one or more signals are not strong enough for a full match. Structured=0.667, Semantic=0.588, Standards=1.000, Final=0.710."
+RFP_0002,SKU_277,partially matching,"The pair is a partial match because at least one important signal is present, but one or more signals are not strong enough for a full match. Structured=0.833, Semantic=0.588, Standards=0.000, Final=0.593."
+RFP_0003,SKU_270,matching,"The pair is a strong match because the structured, semantic, and standards signals all support the same SKU. Structured=0.833, Semantic=0.501, Standards=1.000, Final=0.767."
+RFP_0004,SKU_125,matching,"The pair is a strong match because the structured, semantic, and standards signals all support the same SKU. Structured=0.700, Semantic=0.656, Standards=1.000, Final=0.747."
+RFP_0005,SKU_206,partially matching,"The pair is a partial match because at least one important signal is present, but one or more signals are not strong enough for a full match. Structured=0.667, Semantic=0.555, Standards=1.000, Final=0.700."
+RFP_0006,SKU_111,partially matching,"The pair is a partial match because at least one important signal is present, but one or more signals are not strong enough for a full match. Structured=0.818, Semantic=0.346, Standards=1.000, Final=0.713."
+RFP_0007,SKU_246,partially matching,"The pair is a partial match because at least one important signal is present, but one or more signals are not strong enough for a full match. Structured=0.917, Semantic=0.657, Standards=0.000, Final=0.655."
+RFP_0008,SKU_257,matching,"The pair is a strong match because the structured, semantic, and standards signals all support the same SKU. Structured=0.700, Semantic=0.607, Standards=1.000, Final=0.732."
+RFP_0009,SKU_163,matching,"The pair is a strong match because the structured, semantic, and standards signals all support the same SKU. Structured=0.800, Semantic=0.477, Standards=1.000, Final=0.743."
+RFP_0010,SKU_233,matching,"The pair is a strong match because the structured, semantic, and standards signals all support the same SKU. Structured=0.800, Semantic=0.642, Standards=1.000, Final=0.792."
