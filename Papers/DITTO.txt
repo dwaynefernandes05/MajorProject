@@ -39,41 +39,41 @@ matching decisions. For books, the domain knowledge that the grade level or edit
 -"'-
 Figure 1: Entity Matching: determine the matching entries from two datasets.
 Table A:	Candidate . ..	Matched
-• Finally, we open-source DITTO at https://github.com/megagonlabs/
+â€¢ Finally, we open-source DITTO at https://github.com/megagonlabs/
 L-J.--L--1--.,.., Blocker	Serialize ---.	ditto.
 
-t	,	• •	Inject DK ,L ·
-,	• : ,..- ----,..	,  Tram•
-'	Sample	• •	.	:	;	•
+t	,	â€¢ â€¢	Inject DK ,L Â·
+,	â€¢ : ,..- ----,..	,  Tramâ€¢
+'	Sample	â€¢ â€¢	.	:	;	â€¢
 :	& Label	-'---- - -  z- -- 	Augment 
-I I	..............................•.	1..
+I I	..............................â€¢.	1..
 I	I
 , 	Train Advanced Blocking	:
 
-Figure 2: An EM system architecture with DITTO as the matcher. In addition to the training data, the user of DITTO can specify (1) a method for injecting domain knowledge (DK), (2) a summarization module for keeping the essential information, and (3) a data aug­
+Figure 2: An EM system architecture with DITTO as the matcher. In addition to the training data, the user of DITTO can specify (1) a method for injecting domain knowledge (DK), (2) a summarization module for keeping the essential information, and (3) a data augÂ­
 mentation (DA) operator to strengthen the training set.
 
 
 Contributions In summary, the following are our contributions:
-• We present DITTO, a novel EM solution based on pre-trained language models (LMs) such as BERT. We fine-tune and cast EM as a sequence-pair classification problem to leverage such models with a simple architecture. To our knowledge, DITTO is one of the first EM solutions that leverage pre-trained Transformer-based LMs1 to provide deeper language understanding for EM.
-• We also developed three optimization techniques to further im­ prove DITTo's matching capability through injecting domain knowledge, summarizing long strings, and augmenting train­ ing data with (difficult) examples. The first two techniques help DITTO focus on the right information for making matching deci­ sions. The last technique, data augmentation, is adapted from [30] for EM to help DITTO learn "harder" to understand the data in­ variance properties that may exist but are beyond the provided labeled examples and also, reduce the amount of training data required.
-• We evaluated the effectiveness of DITTO on three benchmark datasets: the Entity Resolution benchmark [25], the Magellan dataset [24], and the WDC product matching dataset [37] of vari­ ous sizes and domains. Our experimental results show that DITTO consistently outperforms the previous SOTA EM solutions in all datasets and by up to 31% in Fl scores. Furthermore, DITTO con­ sistently performs better on dirty data and is more label efficient: it achieves the same or higher previous SOTA accuracy using less than half the labeled data.
-• We applied DITTO to a real-world large-scale matching task on two company datasets, containing 789K and 412K entries re­ spectively. To deploy an end-to-to EM pipeline efficiently, we developed an advanced blocking technique to help reduce the number of pairs to consider for DITTO. DITTO obtains high ac­ curacy, 96.5% Fl on a holdout dataset. The blocking phase also helped speed up the end-to-end EM deployment significantly, by up to 3.8 times, compared to naive blocking techniques.
+â€¢ We present DITTO, a novel EM solution based on pre-trained language models (LMs) such as BERT. We fine-tune and cast EM as a sequence-pair classification problem to leverage such models with a simple architecture. To our knowledge, DITTO is one of the first EM solutions that leverage pre-trained Transformer-based LMs1 to provide deeper language understanding for EM.
+â€¢ We also developed three optimization techniques to further imÂ­ prove DITTo's matching capability through injecting domain knowledge, summarizing long strings, and augmenting trainÂ­ ing data with (difficult) examples. The first two techniques help DITTO focus on the right information for making matching deciÂ­ sions. The last technique, data augmentation, is adapted from [30] for EM to help DITTO learn "harder" to understand the data inÂ­ variance properties that may exist but are beyond the provided labeled examples and also, reduce the amount of training data required.
+â€¢ We evaluated the effectiveness of DITTO on three benchmark datasets: the Entity Resolution benchmark [25], the Magellan dataset [24], and the WDC product matching dataset [37] of variÂ­ ous sizes and domains. Our experimental results show that DITTO consistently outperforms the previous SOTA EM solutions in all datasets and by up to 31% in Fl scores. Furthermore, DITTO conÂ­ sistently performs better on dirty data and is more label efficient: it achieves the same or higher previous SOTA accuracy using less than half the labeled data.
+â€¢ We applied DITTO to a real-world large-scale matching task on two company datasets, containing 789K and 412K entries reÂ­ spectively. To deploy an end-to-to EM pipeline efficiently, we developed an advanced blocking technique to help reduce the number of pairs to consider for DITTO. DITTO obtains high acÂ­ curacy, 96.5% Fl on a holdout dataset. The blocking phase also helped speed up the end-to-end EM deployment significantly, by up to 3.8 times, compared to naive blocking techniques.
 
 1There is a concurrent work [6] which applies a similar idea.
 
-Outline Section 2 overviews DITTO and pre-trained LMs. Section 3 describes how we optimize DITTO with domain knowledge, sum­ marization, and data augmentation. Our experimental results are described in Section 4 and the case study is presented in Section 5. We discuss related work in Section 6 and conclude in Section 7. A full version of the paper is available at [27].
+Outline Section 2 overviews DITTO and pre-trained LMs. Section 3 describes how we optimize DITTO with domain knowledge, sumÂ­ marization, and data augmentation. Our experimental results are described in Section 4 and the case study is presented in Section 5. We discuss related work in Section 6 and conclude in Section 7. A full version of the paper is available at [27].
 
 2 BACKGROUND AND ARCHITECTURE
-We present the main concepts behind EM and provide some back­ ground on pre-trained LMs before we describe how we fine-tune the LMs on EM datasets to train EM models. We also present a simple method for reducing EM to a sequence-pair classification problem so that pre-trained LMs can be used for solving the EM problem.
-Notations DITTo's EM pipeline takes as input two collections D and D' of data entries (e.g., rows of relational tables, XML docu­ ments, ]SON files, text paragraphs) and outputs a set M c;;; D x D' of pairs where each pair (e, e') EM is thought to represent the same real-world entity (e.g., person, company, laptop, etc.). A data entry
+We present the main concepts behind EM and provide some backÂ­ ground on pre-trained LMs before we describe how we fine-tune the LMs on EM datasets to train EM models. We also present a simple method for reducing EM to a sequence-pair classification problem so that pre-trained LMs can be used for solving the EM problem.
+Notations DITTo's EM pipeline takes as input two collections D and D' of data entries (e.g., rows of relational tables, XML docuÂ­ ments, ]SON files, text paragraphs) and outputs a set M c;;; D x D' of pairs where each pair (e, e') EM is thought to represent the same real-world entity (e.g., person, company, laptop, etc.). A data entry
 e is a set of key-value pairs e = {(attr;, val;)h;e;;;e;k where attr; is
 the attribute name and val; is the attribute's value represented as text. Note that our definition of data entries is general enough to capture both structured and semi-structured data such as ]SON files.
   As described earlier, an end-to-end EM system consists of a blocker and a matcher. The goal of the blocking phase is to quickly identify a small subset of DX D' of candidate pairs of high recall (i.e., a high proportion of actual matching pairs are that subset). The goal of a matcher (i.e., DITTO) is to accurately predict, given a pair of entries, whether they refer to the same real-world entity.
 
 2.1 Pre-trained language models
-Unlike prior learning-based EM solutions that rely on word em­ beddings and customized RNN architectures to train the matching model (See Section 6 for a detailed summary), DITTO trains the matching models by fine-tuning pre-trained LMs in a simpler ar­ chitecture.
-  Pre-trained LMs such as BERT [13] and GPT-2 [39] have demon­ strated good performance on a wide range of NLP tasks. They are typically deep neural networks with multiple Transformer lay­ ers [49], typically 12 or 24 layers, pre-trained on large text corpora such as Wikipedia articles in an unsupervised manner. During pre­ training, the model is self-trained to perform auxiliary tasks such as missing token and next-sentence prediction. Studies [9, 48] have shown that the shallow layers capture lexical meaning while the deeper layers capture syntactic and semantic meanings of the input sequence after pre-training.
+Unlike prior learning-based EM solutions that rely on word emÂ­ beddings and customized RNN architectures to train the matching model (See Section 6 for a detailed summary), DITTO trains the matching models by fine-tuning pre-trained LMs in a simpler arÂ­ chitecture.
+  Pre-trained LMs such as BERT [13] and GPT-2 [39] have demonÂ­ strated good performance on a wide range of NLP tasks. They are typically deep neural networks with multiple Transformer layÂ­ ers [49], typically 12 or 24 layers, pre-trained on large text corpora such as Wikipedia articles in an unsupervised manner. During preÂ­ training, the model is self-trained to perform auxiliary tasks such as missing token and next-sentence prediction. Studies [9, 48] have shown that the shallow layers capture lexical meaning while the deeper layers capture syntactic and semantic meanings of the input sequence after pre-training.
 
   A speci strength of pre-trained LMs is that it learns the seman- tics of words better than conventional word embedding techniques such as word2vec, GloVe, or FastText. This is largely because the Transformer architecture calculates token embeddings from all the tokens in the input sequence and thus, the embeddings it generates are highly-contextualized and captures the semantic and contex- tual understanding of the words. Consequently, such embeddings can capture polysemy, i.e., discern that the same word may have diSharp has di meanings in "Sharp resolution" versus "Sharp TV". Pre-trained LMs will embed "Sharp" di Such models can also understand the opposite, i.e., that dif- ferent words may have the same meaning. For example, the words immersion and immers (respectively, (deluxe, dlux) and (2.0, 2)) are likely the same given their respective contexts. Thus, such language understanding capability of pre-trained LMs can improve the EM performance.
 
@@ -148,7 +148,7 @@ s 0 has the same label l as before.
 The operators are divided into 3 categories. The rst category
 consists of span-level operators, such as span_del and span_shu two operators are used in NLP tasks [30, 55] and shown to be e for text classi For span_del, we randomly delete from s a span of tokens of length at most 4 without special tokens
 
-Table 2: Data augmentation operators in DITTO. Theoperators are 3 different levels: span-level, attribute-level, and entry-level. All sam­ plings are done uniformly at random.
+Table 2: Data augmentation operators in DITTO. Theoperators are 3 different levels: span-level, attribute-level, and entry-level. All samÂ­ plings are done uniformly at random.
 
 Operator	Explanation
 
@@ -161,16 +161,16 @@ Delete a randomly chosen attribute and its value Randomly shuffle the orders of 
 
 MixDA (as Figure 3 illustrates),
 (1) Randomly sample ,l from a Beta distribution ,l - Beta(a, a) with a hyper-parameter a E [O, 1] (e.g., 0.8 in our experiments);
-(2) Denote by LM(s) the LM representation of a sequences. Let LM(s") =A· LM(s) + (1-,l) · LM(augment(s,o)).
+(2) Denote by LM(s) the LM representation of a sequences. Let LM(s") =AÂ· LM(s) + (1-,l) Â· LM(augment(s,o)).
 Namely, LM(s") is the convex interpolation between the LM
 
 (e.g., [SEP], [COL], [VAL]). For span_shuffle, we sample a span of length at most 4 and randomly shuffle the order of its tokens.
-  These two operators are motivated by the observation that mak­ ing a match/no-match decision can sometimes be "too easy" when
+  These two operators are motivated by the observation that makÂ­ ing a match/no-match decision can sometimes be "too easy" when
 
 outputs of s and the augmented s' = augment(s, o);
 (3) Train the model by feeding LM(s") to the rest of the network and back-propagate. Back-propagation updates both the LM and linear layer's parameters.
 
-the candidate pair of data entries contain multiple spans of text sup­ porting the decision. For example, suppose our negative examples for matching company data in the existing training data is similar to what is shown below.
+the candidate pair of data entries contain multiple spans of text supÂ­ porting the decision. For example, suppose our negative examples for matching company data in the existing training data is similar to what is shown below.
 [CLS] ... [VAL] Google LLC ... [VAL] (866) 246-6453 [SEP] ... [VAL] Alphabet inc ... [VAL] (650) 253-0000 [SEP]
 The model may learn to predict "no-match" based on the phone number alone, which is insufficient in general. On the other hand,
   
@@ -178,31 +178,31 @@ Input Sequences
   
 Sequence Representations
 
-by corrupting parts of the input sequence (e.g., dropping phone numbers), DA forces the model to learn beyond that, by leveraging the remaining signals, such as the company name, to predict "no­ match".
-  The second category of operators is attribute-level operators: attr_del and attr_shuffle. The operator attr_del randomly deletes an attribute (both name and value) and attr_shuffle randomly shuffles the order of the attributes of both data entries. The motivation for attr_del is similar to span_del and span_shuffle but it gets rid of an attribute entirely. The attr_shuffle operator allows the model to learn the property that the matching decision should be indepen­ dent of the ordering of attributes in the sequence.
+by corrupting parts of the input sequence (e.g., dropping phone numbers), DA forces the model to learn beyond that, by leveraging the remaining signals, such as the company name, to predict "noÂ­ match".
+  The second category of operators is attribute-level operators: attr_del and attr_shuffle. The operator attr_del randomly deletes an attribute (both name and value) and attr_shuffle randomly shuffles the order of the attributes of both data entries. The motivation for attr_del is similar to span_del and span_shuffle but it gets rid of an attribute entirely. The attr_shuffle operator allows the model to learn the property that the matching decision should be indepenÂ­ dent of the ordering of attributes in the sequence.
   The last operator, entry_swap, swaps the order of the pair (e, e') with probability 1/2. This teaches the model to make symmetric
 decisions (i.e., F(e, e') = F(e', e)) and helps double the size of the
 training set if both input tables are from the same data source.
-MixDA: interpolating the augmented data Unlike DA opera­ tors for images which almost always preserve the image labels, the operators for EM can distort the input sequence so much that the label becomes incorrect. For example, the attr_del operator may drop the company name entirely and the remaining attributes may contain no useful signals to distinguish the two entries.
-  To address this issue, DITTO applies MixDA, a recently proposed data augmentation technique for NLP tasks [30] illustrated in Fig­ ure 3. Instead of using the augmented example directly, MixDA computes a convex interpolation of the original example with the augmented examples. Hence, the interpolated example is some­ where in between, i.e., it is a "partial" augmentation of the original example and this interpolated example is expected to be less dis­ torted than the augmented one.
-  The idea of interpolating two examples is originally proposed for computer vision tasks [61]. For EM or text data, since we cannot directly interpolate sequences, MixDA interpolates their represen­ tations by the language model instead. In practice, augmentation
+MixDA: interpolating the augmented data Unlike DA operaÂ­ tors for images which almost always preserve the image labels, the operators for EM can distort the input sequence so much that the label becomes incorrect. For example, the attr_del operator may drop the company name entirely and the remaining attributes may contain no useful signals to distinguish the two entries.
+  To address this issue, DITTO applies MixDA, a recently proposed data augmentation technique for NLP tasks [30] illustrated in FigÂ­ ure 3. Instead of using the augmented example directly, MixDA computes a convex interpolation of the original example with the augmented examples. Hence, the interpolated example is someÂ­ where in between, i.e., it is a "partial" augmentation of the original example and this interpolated example is expected to be less disÂ­ torted than the augmented one.
+  The idea of interpolating two examples is originally proposed for computer vision tasks [61]. For EM or text data, since we cannot directly interpolate sequences, MixDA interpolates their represenÂ­ tations by the language model instead. In practice, augmentation
 
 Figure 3: Data augmentation with MixDA.
 
 4 EXPERIMENTS
-We present the experiment results on benchmark datasets for EM: the ER Benchmark datasets [25], the Magellan datasets [24] and the WDC product data corpus [37]. DITTO achieves new SOTA results on all these datasets and outperforms the previous best results by up to 31% in Fl score. The results show that DITTO is more robust to dirty data and performs well when the training set is small. DITTO is also more label-efficient as it achieves the previous SOTA results using only 1/2 or less of the training data across multiple subsets of the WDC corpus. Our ablation analysis shows that (1) using pre­ trained LMs contributes to over 50% ofDITTo's performance gain and (2) all 3 optimizations, domain knowledge (DK), summarization (SU) and data augmentation (DA), are effective. For example, SU improves the performance on a text-heavy dataset by 52%, DK leads to 1.2% average improvement on the ER-Magellan datasets and DA improves on the WDC datasets by 2.53% on average. In addition, we show in Appendix Bin the full version [27] that although DITTO leverages deeper neural nets, its training and prediction time is comparable to the SOTA EM systems.
+We present the experiment results on benchmark datasets for EM: the ER Benchmark datasets [25], the Magellan datasets [24] and the WDC product data corpus [37]. DITTO achieves new SOTA results on all these datasets and outperforms the previous best results by up to 31% in Fl score. The results show that DITTO is more robust to dirty data and performs well when the training set is small. DITTO is also more label-efficient as it achieves the previous SOTA results using only 1/2 or less of the training data across multiple subsets of the WDC corpus. Our ablation analysis shows that (1) using preÂ­ trained LMs contributes to over 50% ofDITTo's performance gain and (2) all 3 optimizations, domain knowledge (DK), summarization (SU) and data augmentation (DA), are effective. For example, SU improves the performance on a text-heavy dataset by 52%, DK leads to 1.2% average improvement on the ER-Magellan datasets and DA improves on the WDC datasets by 2.53% on average. In addition, we show in Appendix Bin the full version [27] that although DITTO leverages deeper neural nets, its training and prediction time is comparable to the SOTA EM systems.
 4.1 Benchmark datasets
 We experimented with all the 13 publicly available datasets used for evaluating DeepMatcher [32]. These datasets are from the ER Benchmark datasets [25] and the Magellan data repository [12]. We summarize the datasets in Table 3 and refer to them as ER-Magellan. These datasets are for training and evaluating matching models for various domains including products, publications, and businesses. Each dataset consists of candidate pairs from two structured tables of entity records of the same schema. The pairs are sampled from the results of blocking and manually labeled. The positive rate (i.e., the ratio of matched pairs) ranges from 9.4% (Walmart-Amazon) to 25% (Company). The number of attributes ranges from 1 to 8.
 
-Table 3: The 13 datasets divided into 4 categories of domains. The datasets marked with † are text-heavy (Textual). Each dataset with
+Table 3: The 13 datasets divided into 4 categories of domains. The datasets marked with â€  are text-heavy (Textual). Each dataset with
 ? has an additional dirty version to test the models' robustness
 against noisy data.
 
 Datasets	Domains
 
 
-Amazon-Google, Walmart-Amazon?	software / electronics Abt-Buy†, Beer		product
-DBLP-ACM*, DBLP-Scholar*, iTunes-Amazon*	citation / music Company†, Fodors-Zagats	company / restaurant
+Amazon-Google, Walmart-Amazon?	software / electronics Abt-Buyâ€ , Beer		product
+DBLP-ACM*, DBLP-Scholar*, iTunes-Amazon*	citation / music Companyâ€ , Fodors-Zagats	company / restaurant
 
 
 
@@ -213,25 +213,67 @@ DBLP-ACM*, DBLP-Scholar*, iTunes-Amazon*	citation / music Company†, Fodors-Zagat
 
 Table 4: Dierent subsets of the WDC product data corpus. Each subset (except Test) is split into a training set and a validation set with a ratio of 4:1 according to the dataset provider [37]. The last col- umn shows the positive rate (%POS) of each category in the xLarge set. The positive rate on the test set is 27.27% for all the categories.
 
-CategoriesTestSmallMediumLargexLarge%POSComputers1,1002,8348,09433,35968,46114.15%Cameras1,1001,8865,25520,03642,27716.98%Watches1,1002,2556,41327,02761,56915.05%Shoes1,1002,0635,80522,98942,4299.76%All4,4009,03825,567103,411214,73614.10%
+Categories
+Test
+Small
+Medium
+Large
+xLarge
+%POS
+Computers
+1,100
+2,834
+8,094
+33,359
+68,461
+14.15%
+Cameras
+1,100
+1,886
+5,255
+20,036
+42,277
+16.98%
+Watches
+1,100
+2,255
+6,413
+27,027
+61,569
+15.05%
+Shoes
+1,100
+2,063
+5,805
+22,989
+42,429
+9.76%
+All
+4,400
+9,038
+25,567
+103,411
+214,736
+14.10%
+
   Each entry in this dataset has 4 attributes: title, description, brand, and specTable. Following the setting in [37] for DeepMatcher, we allow D to use any subsets of attributes to determine the best combination. We found in our experiments that D achieves the best performance when it uses only the title attribute. We provide further justi of this choice in Appendix F of the full version.
 4.2 
 Implementation and experimental setup
 We implemented D in PyTorch [34] and the Transformers library [56]. We currently support 4 pre-trained models: Distil- BERT [43], BERT [13], RoBERTa [28], and XLNet [59]. We use the
 base uncased variant of each model in all our experiments. We fur- ther apply the half-precision  the training and prediction speed. In all the experiments, we x the max sequence length to be 256 and the learning rate to be 3e-5 with a linearly decreasing learning rate schedule. The batch size is 32 if MixDA is used and 64 otherwise. The training process runs a  on the dataset size) and returns the checkpoint with the highest F1 score on the validation set. We conducted all experiments on a p3.8xlarge AWS EC2 machine with 4 V100 GPUs (1 GPU per run).
 Compared methods. We compare D with the SOTA EM solution DeepMatcher. We also consider other baseline methods including Magellan [24], DeepER [14], and follow-up works of DeepMatcher [17, 23]. We also compare with variants of D without the data augmentation (DA) and/or domain knowledge (DK) optimization to evaluate the e of each component. We summarize these methods below. We report the average F1 of 5 repeated runs in all the settings.
-• DeepMatcher: DeepMatcher [32] is the SOTA matching solu- tion. Compared to D, DeepMatcher customizes the RNN ar-
+â€¢ DeepMatcher: DeepMatcher [32] is the SOTA matching solu- tion. Compared to D, DeepMatcher customizes the RNN ar-
 chitecture to aggregate the attribute values, then compares/aligns the aggregated representations of the attributes. DeepMatcher leverages FastText [5] to train the word embeddings. When re- porting DeepMatcher's F1 scores, we use the numbers in [32] for the ER-Magellan datasets and numbers in [37] for the WDC datasets. We also reproduced those results using the open-sourced implementation.
-• DeepMatcher+: Follow-up work [23] slightly outperforms Deep- Matcher in the DBLP-ACM dataset and [17] achieves better F1 in
+â€¢ DeepMatcher+: Follow-up work [23] slightly outperforms Deep- Matcher in the DBLP-ACM dataset and [17] achieves better F1 in
 the Walmart-Amazon and Amazon-Google datasets. According to [32], the Magellan system ([24], based on classical ML mod- els) outperforms DeepMatcher in the Beer and iTunes-Amazon datasets. We also implemented and ran DeepER [14], which is another RNN-based EM solution. We denote by DeepMatcher+ (or simply DM+) the best F1 scores among DeepMatcher and these works aforementioned. We summarize in Appendix C of
 [27] the implementation details and performance of each method.
-• D: This is the full version of our system with all 3 optimiza- tions, domain knowledge (DK), TF-IDF summarization (SU), and data augmentation (DA) turned on. See the details below.
-• D(DA): This version only turns on the DA (with MixDA) and SU but does not have the DK optimization. We apply one of the span-level or attribute-level DA operators listed in Table 2 with
+â€¢ D: This is the full version of our system with all 3 optimiza- tions, domain knowledge (DK), TF-IDF summarization (SU), and data augmentation (DA) turned on. See the details below.
+â€¢ D(DA): This version only turns on the DA (with MixDA) and SU but does not have the DK optimization. We apply one of the span-level or attribute-level DA operators listed in Table 2 with
 the entry_swap operator. We compare the di combinations and report the best one. Following [30], we apply MixDA with the interpolation parameter Ji sampled from a Beta distribution Beta(0.8, 0.8).
-• D(DK): With only the DK and SU optimizations on, this version of D is expected to have lower F1 scores but train
+â€¢ D(DK): With only the DK and SU optimizations on, this version of D is expected to have lower F1 scores but train
 much faster. We apply the span-typing to datasets of each domain according to Table 1 and apply the span-normalization on the number spans.
 
-• Baseline: This base form of D corresponds simply to ne- tuning a pre-trained LM on the EM task. We did not apply any optimizations on the baseline. For each ER-Magellan dataset, we
+â€¢ Baseline: This base form of D corresponds simply to ne- tuning a pre-trained LM on the EM task. We did not apply any optimizations on the baseline. For each ER-Magellan dataset, we
 tune the LM for the baseline and found that RoBERTa generally achieves the best performance. Thus, we use RoBERTa in the other 3 D variants (D, D(DA), and D(DK)) by default across all datasets. The Company dataset is the only exception, where we found that the BERT model performs the best. For the WDC benchmark, since the training sets are large, we use DistilBERT across all settings for faster training.
 There is a concurrent work [6], which also applies pre-trained LM to the entity matching problem. The proposed method is similar to the baseline method above, but due to the di set), the reported results in [6] is not directly comparable. We summarize in Appendix E of [27] the di between D and [6] and explain why the reported results are di
 4.3 Main results
@@ -244,13 +286,178 @@ Next, we analyze the eSU, DK, and DA) by comparing D with its variants without t
 
 Table 5: F1 scores on the ER-Magellan EM datasets. The numbers of DeepMatcher+ (DM+) are the highest available found in [17, 23, 32] or re-produced by us.
 
-DDDatasetsDM+D(DA)(DK)BaselineSizeStructuredAmazon-Google70.775.58 (+4.88)75.0874.6774.1011,460Beer78.894.37 (+15.57)87.2190.4684.59450DBLP-ACM98.4598.99 (+0.54)99.1799.1098.9612,363DBLP-Google94.795.6 (+0.9)95.7395.8095.8428,707Fodors-Zagats100100.00 (+0.0)100.00100.0098.14946iTunes-Amazon91.297.06 (+5.86)97.4097.8092.28539Walmart-Amazon73.686.76 (+13.16)85.5083.7385.8110,242DirtyDBLP-ACM98.199.03 (+0.93)98.9499.0898.9212,363DBLP-Google93.895.75 (+1.95)95.4795.5795.4428,707iTunes-Amazon79.495.65 (+16.25)95.2994.4892.92539Walmart-Amazon53.885.69 (+31.89)85.4980.6782.5610,242TextualAbt-Buy62.889.33 (+26.53)89.7981.6988.859,575Company92.793.85 (+1.15)93.6993.1541.00112,632
+D
+D
+Datasets
+DM+
+D
+(DA)
+(DK)
+Baseline
+Size
+Structured
+
+
+
+
+
+
+Amazon-Google
+70.7
+75.58 (+4.88)
+75.08
+74.67
+74.10
+11,460
+Beer
+78.8
+94.37 (+15.57)
+87.21
+90.46
+84.59
+450
+DBLP-ACM
+98.45
+98.99 (+0.54)
+99.17
+99.10
+98.96
+12,363
+DBLP-Google
+94.7
+95.6 (+0.9)
+95.73
+95.80
+95.84
+28,707
+Fodors-Zagats
+100
+100.00 (+0.0)
+100.00
+100.00
+98.14
+946
+iTunes-Amazon
+91.2
+97.06 (+5.86)
+97.40
+97.80
+92.28
+539
+Walmart-Amazon
+73.6
+86.76 (+13.16)
+85.50
+83.73
+85.81
+10,242
+Dirty
+
+
+
+
+
+
+DBLP-ACM
+98.1
+99.03 (+0.93)
+98.94
+99.08
+98.92
+12,363
+DBLP-Google
+93.8
+95.75 (+1.95)
+95.47
+95.57
+95.44
+28,707
+iTunes-Amazon
+79.4
+95.65 (+16.25)
+95.29
+94.48
+92.92
+539
+Walmart-Amazon
+53.8
+85.69 (+31.89)
+85.49
+80.67
+82.56
+10,242
+Textual
+
+
+
+
+
+
+Abt-Buy
+62.8
+89.33 (+26.53)
+89.79
+81.69
+88.85
+9,575
+Company
+92.7
+93.85 (+1.15)
+93.69
+93.15
+41.00
+112,632
+
 Table 6: F1 scores on the WDC product matching datasets. The numbers for DeepMatcher (DM) are taken from [37].
 
-  Size	xLarge (1/1) Methods		DM  DittoLarge (1/2) DM  DittoMedium (1/8) DM	DittoSmall (1/20) DM  Ditto90.80 95.4589.55 91.7077.82  88.6270.55 80.76Computers	+4.65+2.15+10.80+10.21Cameras	89.21 93.7887.19 91.2376.53  88.0968.59 80.89+4.57+4.04+11.56+12.30Watches	93.45 96.5391.28 95.6979.31  91.1266.32 85.12+3.08+4.41+11.81+18.8092.61 90.1190.39 88.0779.48  82.6673.86 75.89Shoes	-2.50-2.32+3.18+2.0390.16 94.0889.24 93.0579.94  88.6176.34 84.36All	+3.92+3.81+8.67+8.02  The use of a pre-trained LM contributes to a large portion of the performance gain. In the ER-Magellan datasets (excluding Com- pany), the average improvement of the baseline compared to Deep- Matcher+ is 7.75, which accounts for 78.5% of the improvement of the full D (9.87). While DeepMatcher+ and the baseline D (essentially  the baseline performs much better on all the Dirty datasets and the Abt-Buy dataset. This conguage understanding capability is a key advantage of D over existing EM solutions. The Company dataset is a special case be- cause the length of the company articles (3,123 words on average) is much greater than the max sequence length of 256. The SU opti- mization increases the F1 score of this dataset from 41% to over 93%. In the WDC datasets, across the 20 settings, LM contributes to 3.41 F1 improvement on average, which explains 55.3% of improvement of the full D (6.16).
+  Size	xLarge (1/1) Methods		DM  Ditto
+Large (1/2) DM  Ditto
+Medium (1/8) DM	Ditto
+Small (1/20) DM  Ditto
+90.80 95.45
+89.55 91.70
+77.82  88.62
+70.55 80.76
+Computers	+4.65
++2.15
++10.80
++10.21
+Cameras	89.21 93.78
+87.19 91.23
+76.53  88.09
+68.59 80.89
++4.57
++4.04
++11.56
++12.30
+Watches	93.45 96.53
+91.28 95.69
+79.31  91.12
+66.32 85.12
++3.08
++4.41
++11.81
++18.80
+92.61 90.11
+90.39 88.07
+79.48  82.66
+73.86 75.89
+Shoes	-2.50
+-2.32
++3.18
++2.03
+90.16 94.08
+89.24 93.05
+79.94  88.61
+76.34 84.36
+All	+3.92
++3.81
++8.67
++8.02
+  The use of a pre-trained LM contributes to a large portion of the performance gain. In the ER-Magellan datasets (excluding Com- pany), the average improvement of the baseline compared to Deep- Matcher+ is 7.75, which accounts for 78.5% of the improvement of the full D (9.87). While DeepMatcher+ and the baseline D (essentially  the baseline performs much better on all the Dirty datasets and the Abt-Buy dataset. This conguage understanding capability is a key advantage of D over existing EM solutions. The Company dataset is a special case be- cause the length of the company articles (3,123 words on average) is much greater than the max sequence length of 256. The SU opti- mization increases the F1 score of this dataset from 41% to over 93%. In the WDC datasets, across the 20 settings, LM contributes to 3.41 F1 improvement on average, which explains 55.3% of improvement of the full D (6.16).
   The DK optimization is more e on the ER-Magellan datasets. Compared to the baseline, the improvement of D(DK) is 1.08 on average and is up to 5.88 on the Beer dataset while the improve- ment is only 0.22 on average on the WDC datasets. We inspected
 
-:	§BL ::
+:	Â§BL ::
 
 
 ..,	,
@@ -294,7 +501,7 @@ Figure 4: Fl scores on the WDC datasets of different versions of DITTO. DM: Deep
 
 the span-typing output and found that only 66.2% of entry pairs have spans of the same type. This is caused by the current NER module not extracting product-related spans with the correct types. We expect DK to be more effective if we use an NER model trained on the product domain.
   DA is effective on both datasets and more significantly on the WDC datasets. The average Fl score of the full DITTO improves upon DrTTo(DK) (without DA) by 1.39 and 2.53 respectively in the two datasets. In the WDC datasets, we found that the span_del operator always performs the best while the best operators are diverse in the ER-Magellan datasets. We list the best operator for each dataset in Table 7. We note that there is a large space of tuning these operators (e.g., the MixDA interpolation parameter, maximal span length, etc.) and new operators to further improve the performance.
-Table 7: Datasets that each DA operator achieves the best perfor­ mance. The suffix (S)/(D) and (Both) denote the clean/dirty version of the dataset or both of them. All operators are applied with the entry_swap operator.
+Table 7: Datasets that each DA operator achieves the best perforÂ­ mance. The suffix (S)/(D) and (Both) denote the clean/dirty version of the dataset or both of them. All operators are applied with the entry_swap operator.
 
 Operator	Datasets
 
@@ -322,7 +529,7 @@ Fodors-Zagats, iTunes-Amazon(D)
 
 outperforms DeepMatcher (DM) in Fl and trains faster (even when using MixDA) than DeepMatcher across different training set sizes.
 
-• DM  .... Ditto	+ Ditto (DA)	Ditto (DK)	Baseline
+â€¢ DM  .... Ditto	+ Ditto (DA)	Ditto (DK)	Baseline
 
 5 CASE STUDY: EMPLOYER MATCHING
 We present a case of applying DITTO to a real-world EM task. An online recruiting platform would like to join its internal employer records with newly collected public records to enable downstream aggregation tasks. Given two tables A and B (internal and public)
@@ -345,7 +552,7 @@ Fl scores vs. size
   training time (s) vs size 
 
 of employer records, the goal is to find, for each record in table B, a record in table A that represents the same employer. Both tables have 6 attributes: name, addr, city, state, zipcode, and phone. Our goal is to find matches with both high precision and recall.
-Basic blocking. Ourfirst challenge is size of the datasets. Table 8 shows that both tables are of nontrivial sizes even after dedupli­ cation. The first blocking method we designed is to only match companies with the same zipcode. However, since 60% of records in Table A do not have the zipcode attribute and some large em­ ployers have multiple sites, we use a second blocking method that returns for each record in Table B the top-20 most similar records in A ranked by the TF-IDF cosine similarity of name and addr at­ tributes. We use the union of these two methods as our blocker, which produces 10 million candidate pairs.
+Basic blocking. Ourfirst challenge is size of the datasets. Table 8 shows that both tables are of nontrivial sizes even after dedupliÂ­ cation. The first blocking method we designed is to only match companies with the same zipcode. However, since 60% of records in Table A do not have the zipcode attribute and some large emÂ­ ployers have multiple sites, we use a second blocking method that returns for each record in Table B the top-20 most similar records in A ranked by the TF-IDF cosine similarity of name and addr atÂ­ tributes. We use the union of these two methods as our blocker, which produces 10 million candidate pairs.
 Data labeling. We labeled 10,000 pairs sampled from the results of each blocking method (20,000 labels in total). We sampled pairs
 
 91 2k3k	6k	12k
@@ -393,17 +600,17 @@ REFERENCES
 [12] Sanjib Das, AnHai Doan, Paul Suganthan G. C., Chaitanya Gokhale, Pradap Konda, Yash Govind, and Derek Paulsen. [n.d.]. The Magellan Data Repository. https://sites.google.com/site/anhaidgroup/projects/data.
 [13] Jacob Devlin, Ming-Wei Chang, Kenton Lee, and Kristina Toutanova. 2019. BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding. In Proc. NAACL-HLT '19. 4171-4186.
 [14] Muhammad Ebraheem, Saravanan Thirumuruganathan, ShaMourad Ouzzani, and Nan Tang. 2018. Distributed representations of tuples for entity resolution. PVLDB 11, 11 (2018), 1454-1467.
-[15] Ahmed Elmagarmid, Ihab F Ilyas, Mourad Ouzzani, Jorge-Arnulfo Quiané-Ruiz, Nan Tang, and Si Yin. 2014. NADEEF/ER: generic and interactive entity resolution. In Proc. SIGMOD '14. 1071-1074.
+[15] Ahmed Elmagarmid, Ihab F Ilyas, Mourad Ouzzani, Jorge-Arnulfo QuianÃ©-Ruiz, Nan Tang, and Si Yin. 2014. NADEEF/ER: generic and interactive entity resolution. In Proc. SIGMOD '14. 1071-1074.
 [16] Je A clustering- based framework to control block sizes for entity resolution. In Proc. KDD '15. 279-288.
 [17] Cheng Fu, Xianpei Han, Le Sun, Bo Chen, Wei Zhang, Suhui Wu, and Hao Kong. 2019. End-to-end multi-perspective matching for entity resolution. In Proc. IJCAI '19. AAAI Press, 4961-4967.
 [18] Chaitanya Gokhale, Sanjib Das, AnHai Doan, Je F Naughton, Narasimhan Rampalli, Jude Shavlik, and Xiaojin Zhu. 2014. Corleone: Hands-ocrowdsourc- ing for entity matching. In Proc. SIGMOD '14. 601-612.
 [19] Sairam Gurajada, Lucian Popa, Kun Qian, and Prithviraj Sen. 2019. Learning- Based Methods with Human-in-the-Loop for Entity Resolution. In CIKM. 2969- 2970.
-[20] Jonathan Herzig, Pawel Krzysztof Nowak, Thomas Müller, Francesco Piccinno, and Julian Martin Eisenschlos. 2020. TAPAS: Weakly Supervised Table Parsing via Pre-training. arXiv preprint arXiv:2004.02349 (2020).
-[21] Sepp Hochreiter and Jürgen Schmidhuber. 1997. Long short-term memory. Neural computation 9, 8 (1997), 1735-1780.
+[20] Jonathan Herzig, Pawel Krzysztof Nowak, Thomas MÃ¼ller, Francesco Piccinno, and Julian Martin Eisenschlos. 2020. TAPAS: Weakly Supervised Table Parsing via Pre-training. arXiv preprint arXiv:2004.02349 (2020).
+[21] Sepp Hochreiter and JÃ¼rgen Schmidhuber. 1997. Long short-term memory. Neural computation 9, 8 (1997), 1735-1780.
 [22] Adam Marcus Eugene Wu David Karger and Samuel Madden Robert Miller. 2011. Human-powered Sorts and Joins. PVLDB 5, 1 (2011).
 [23] Jungo Kasai, Kun Qian, Sairam Gurajada, Yunyao Li, and Lucian Popa. 2019. Low-resource Deep Entity Resolution with Transfer and Active Learning. In Proc. ACL '19. 5851-5861.
 [24] Pradap Konda, Sanjib Das, Paul Suganthan G. C., AnHai Doan, Adel Ardalan, JeNaughton, Shishir Prasad, Ganesh Krishnan, Rohit Deep, and Vijay Raghavendra. 2016. Magellan: Toward Building Entity Matching Management Systems. PVLDB 9, 12 (2016), 1197-1208.
-[25] Hanna Köpcke, Andreas Thor, and Erhard Rahm. 2010. Evaluation of entity resolution approaches on real-world match problems. PVLDB 3, 1-2 (2010), 484-
+[25] Hanna KÃ¶pcke, Andreas Thor, and Erhard Rahm. 2010. Evaluation of entity resolution approaches on real-world match problems. PVLDB 3, 1-2 (2010), 484-
 493.
 [26] Jinhyuk Lee, Wonjin Yoon, Sungdong Kim, Donghyeon Kim, Sunkyu Kim, Chan Ho So, and Jaewoo Kang. 2020. BioBERT: a pre-trained biomedical language representation model for biomedical text mining. Bioinformatics 36, 4 (2020), 1234-1240.
 [27] Yuliang Li, Jinfeng Li, Yoshihiko Suhara, AnHai Doan, and Wang-Chiew Tan. 2020. Deep Entity Matching with Pre-Trained Language Models. arXiv preprint arXiv:2004.00584 (2020).
@@ -415,7 +622,7 @@ Yinhan Liu, Myle Ott, Naman Goyal, Jingfei Du, Mandar Joshi, Danqi Chen, Omer Le
 [32] Sidharth Mudgal, Han Li, Theodoros Rekatsinas, AnHai Doan, Youngchoon Park, Ganesh Krishnan, Rohit Deep, Esteban Arcaute, and Vijay Raghavendra. 2018. Deep learning for entity matching: A design space exploration. In Proc. SIGMOD '18. 19-34.
 [33] George Papadakis, Dimitrios Skoutas, Emmanouil Thanos, and Themis Palpanas. 2019. Blocking and Filtering Techniques for Entity Resolution: A Survey. arXiv preprint arXiv:1905.06167 (2019).
 [34] Adam Paszke, Sam Gross, Francisco Massa, Adam Lerer, James Bradbury, Gregory Chanan, Trevor Killeen, Zeming Lin, Natalia Gimelshein, Luca Antiga, et al. 2019. PyTorch: An imperative style, high-performance deep learning library. In Proc. NeurIPS '19. 8024-8035.
-[35] Fabian Pedregosa, Gaël Varoquaux, Alexandre Gramfort, Vincent Michel, Bertrand Thirion, Olivier Grisel, Mathieu Blondel, Peter Prettenhofer, Ron Weiss, Vincent Dubourg, et al. 2011. Scikit-learn: Machine learning in Python. the Journal of machine Learning research 12 (2011), 2825-2830.
+[35] Fabian Pedregosa, GaÃ«l Varoquaux, Alexandre Gramfort, Vincent Michel, Bertrand Thirion, Olivier Grisel, Mathieu Blondel, Peter Prettenhofer, Ron Weiss, Vincent Dubourg, et al. 2011. Scikit-learn: Machine learning in Python. the Journal of machine Learning research 12 (2011), 2825-2830.
 [36] Je Pennington, Richard Socher, and Christopher D Manning. 2014. Glove: Global vectors for word representation. In Proc. EMNLP '14. 1532-1543.
 [37] Anna Primpeli, Ralph Peeters, and Christian Bizer. 2019. The WDC training dataset and gold standard for large-scale product matching. In Companion Proc. WWW '19. 381-386.
 [38] Kun Qian, Lucian Popa, and Prithviraj Sen. 2017. Active learning for large-scale entity resolution. In CIKM. 1379-1388.
@@ -427,7 +634,7 @@ Yinhan Liu, Myle Ott, Naman Goyal, Jingfei Du, Mandar Joshi, Danqi Chen, Omer Le
 2
 EMC '19.
 [44] Sunita Sarawagi and Anuradha Bhamidipaty. 2002. Interactive deduplication using active learning. In Proc. KDD '02. 269-278.
-[45] Rohit Singh, Venkata Vamsikrishna Meduri, Ahmed Elmagarmid, Samuel Madden, Paolo Papotti, Jorge-Arnulfo Quiané-Ruiz, Armando Solar-Lezama, and Nan Tang. 2017. Synthesizing entity matching rules by examples. PVLDB 11, 2 (2017), 189-
+[45] Rohit Singh, Venkata Vamsikrishna Meduri, Ahmed Elmagarmid, Samuel Madden, Paolo Papotti, Jorge-Arnulfo QuianÃ©-Ruiz, Armando Solar-Lezama, and Nan Tang. 2017. Synthesizing entity matching rules by examples. PVLDB 11, 2 (2017), 189-
 202.
 [46] Spacy. [n.d.]. https://spacy.io/api/entityrecognizer.
 [47] Yu Sun, Shuohuan Wang, Yukun Li, Shikun Feng, Xuyi Chen, Han Zhang, Xin Tian, Danxiang Zhu, Hao Tian, and Hua Wu. 2019. ERNIE: Enhanced representa- tion through knowledge integration. arXiv preprint arXiv:1904.09223 (2019).
@@ -439,7 +646,7 @@ EMC '19.
 [53] Xiang Wang, Xiangnan He, Yixin Cao, Meng Liu, and Tat-Seng Chua. 2019. KGAT: Knowledge Graph Attention Network for Recommendation. In Proc. KDD '19. 950-958.
 [54] WDC Product Data Corpus. [n.d.]. http://webdatacommons.org/largescaleproductcorpus/v2.
 [55] Jason Wei and Kai Zou. 2019. EDA: Easy Data Augmentation Techniques for Boosting Performance on Text Classi Tasks. In Proc. EMNLP-IJCNLP '19. 6382-6388.
-[56] Thomas Wolf, Lysandre Debut, Victor Sanh, Julien Chaumond, Clement Delangue, Anthony Moi, Pierric Cistac, Tim Rault, Rémi Louf, Morgan Funtowicz, et al. 2019. HuggingFace's Transformers: State-of-the-art Natural Language Processing. arXiv preprint arXiv:1910.03771 (2019).
+[56] Thomas Wolf, Lysandre Debut, Victor Sanh, Julien Chaumond, Clement Delangue, Anthony Moi, Pierric Cistac, Tim Rault, RÃ©mi Louf, Morgan Funtowicz, et al. 2019. HuggingFace's Transformers: State-of-the-art Natural Language Processing. arXiv preprint arXiv:1910.03771 (2019).
 
 [57] Qizhe Xie, Zihang Dai, Eduard Hovy, Minh-Thang Luong, and Quoc V Le. 2019. Unsupervised data augmentation. arXiv preprint arXiv:1904.12848 (2019).
 [58] Bishan Yang and Tom Mitchell. 2017. Leveraging Knowledge Bases in LSTMs for Improving Machine Reading. In Proc. ACL '17. 1436-1446.
