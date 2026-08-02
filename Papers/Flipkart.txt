@@ -41,7 +41,7 @@ tors expressed in natural language. Through an attention-like structure that ass
 
 2 Related work
 An emerging body of work (Ho et al., 2019, 2020, 2021, 2022; Li et al., 2021; Almasian et al., 2024b) seeks to address the gap between text in- dexes and quantity-rich queries. Underlying lex- ical search (sparse retrieval) or execution engines (e.g., Apache Solr, SPARQL implementations) at last stage inference of these systems provide lim- ited structured query interfaces (like SQL) involv- ing quantities and hence are not suited for end-user interaction.
-  Open-domain question answering, where the answer is a distribution over quantities, has been attempted on unstructured text (Roy et al., 2015) and tables with quantities (Ibrahim et al., 2016). Semantic interpretation, e.g., text2sql (Katsogiannis-Meimarakis and Koutrika, 2023), is applicable more for a structured (e.g., RDBMS) rather than unstructured text corpus. In spe- cific verticals such as agronomics, strict schema- adherent data can be extracted from text (Rybin´ski et al., 2023, SciHarvester) for structured query execution. Also, none of these works addresses quantity comparisons.
+  Open-domain question answering, where the answer is a distribution over quantities, has been attempted on unstructured text (Roy et al., 2015) and tables with quantities (Ibrahim et al., 2016). Semantic interpretation, e.g., text2sql (Katsogiannis-Meimarakis and Koutrika, 2023), is applicable more for a structured (e.g., RDBMS) rather than unstructured text corpus. In spe- cific verticals such as agronomics, strict schema- adherent data can be extracted from text (RybinÂ´ski et al., 2023, SciHarvester) for structured query execution. Also, none of these works addresses quantity comparisons.
   Representing numbers meaningfully in lan- guage models (LM) is a parallel development (Geva et al., 2020; Sundararaman et al., 2020; Thawani et al., 2021; Liang et al., 2022). Chen et al. (2023, ComNum) prepared a dataset for comparing numbers, which can be used to fine- tune LMs. Numeracy can be enhanced by lay- ing anchors via unsupervised pre-training (Sharma et al., 2024). Alternatively, mathematical priors can help compute aggregated digit embeddings ex- plicitly incorporating them into transformer mod-
 
 els (Sivakumar and Moosavi, 2025).
@@ -144,16 +144,16 @@ Document
 Figure 1: DeepQuant block diagram. (LM tokenization is elided to reduce clutter.) 1 Quantity span b in doc-
 ument D is processed by CQE (or any other accurate quantity extractor) to extract mantissa, exponent and unit. 2 Quantity-specific embeddings are slipstreamed/superposed on a special token [num] embedding before being injected into the transformer encoder. 3 Prediction networks for mantissa, exponent, unit and comparison operator are attached to the output embedding for [num]. 4 These prediction networks are trained while fine-tuning the PLM. 5 Predicted comparator op is used to define the relevance 6 of span b to analogous quantity span a in the query. 7 Textual and quantity-based relevance scores are combined. 8 The overall score is trained end-to-end using more relevant documents D? and noise-contrastive samples of less relevant documents D? for query Q.
 
-other documents D? presumed less relevant, and use these in a noise-contrastive (Jo´zefowicz et al., 2016) retrieval loss Lretr. During inference, docu- ments will be retrieved in decreasing order of their scores. (Interactive chat systems such as Chat- GPT, after this retrieval step, will typically use the top-scoring documents as part of the generation context, but we focus only on the retriever stage.)
+other documents D? presumed less relevant, and use these in a noise-contrastive (JoÂ´zefowicz et al., 2016) retrieval loss Lretr. During inference, docu- ments will be retrieved in decreasing order of their scores. (Interactive chat systems such as Chat- GPT, after this retrieval step, will typically use the top-scoring documents as part of the generation context, but we focus only on the retriever stage.)
 3.2 Injecting quantity spans into the encoder
 The first step in DeepQuant's encoder pipeline is to extract quantities from queries and documents. We rely on a state-of-the-art quantity extractor, CQE (Almasian et al., 2023), and adapt its out- put to obtain a (mantissa, exponent, unit) triple. E.g., for input laptop storage 256gb, CQE will identify the numeral span 256, unit span gb and extraction triple1 (ms = 2.56, es = 2, us = GB).
   A standard transformer-based encoder might have tokenized2 the above text as lap, top,
 
-1256 is canonicalized to 2.56×102 and gb to GB.
+1256 is canonicalized to 2.56Ã—102 and gb to GB.
 2Subword splice '##' elided to reduce clutter.
 
 stor, age, 25, 6, gb. In DeepQuant, we re- place "256" with special token [num], which is no longer fragmented by the transformer's tokenizer. In other words, the tokenized input will be lap, top, stor, age, [num], GB. Tokens x other than [num] are looked up as usual in a base embedding matrix B and vector B[x, :] injected into the trans- former.
-  However, at the [num] token, we create a new vector to inject into the transformer by adding together a base embedding for the extracted ex- ponent and mantissa. Exponent es is clipped to eˆs ? [-20, 20], and its corresponding exponent embedding is looked up in another embedding ma- trix as E[eˆs, :]. For representing the mantissa we choose a prototype based strategy (Sundararaman et al., 2020), with a Gaussian kernel. The real number ms is thereby mapped to a vector akin to a positional embedding m? s. Thus, the vector injected into the transformer at token [num] will be B[[num], :] + (E[eˆs, :]?m? s) where '?" denotes concatenation.
+  However, at the [num] token, we create a new vector to inject into the transformer by adding together a base embedding for the extracted ex- ponent and mantissa. Exponent es is clipped to eÂˆs ? [-20, 20], and its corresponding exponent embedding is looked up in another embedding ma- trix as E[eÂˆs, :]. For representing the mantissa we choose a prototype based strategy (Sundararaman et al., 2020), with a Gaussian kernel. The real number ms is thereby mapped to a vector akin to a positional embedding m? s. Thus, the vector injected into the transformer at token [num] will be B[[num], :] + (E[eÂˆs, :]?m? s) where '?" denotes concatenation.
 
 3.3 Training loss for quantities
 We extend NumGPT (Jin et al., 2021) to define a training loss for quantities, because, as they showed, token-based pretraining does not find good representations for numbers. We reused their loss components for the mantissa and exponent, and add a third component for the unit. The transformer encoder will output a contextualized vector for the input token [num], which we call y[[num], :]. Note that this is expected to include unit clues, if any, in the input text. E.g., if the input were lap, top, stor, age, [num], gb, the repre- sentation of token "gb" would be suitably assimi- lated into the output vector for token [num]. This output vector y[[num], :] is input to three output networks, which produce logits for the mantissa, exponent and unit. Losses for mantissa and ex- ponent are computed as by Jin et al. (2021); loss for the unit is standard categorical cross-entropy. Collectively, we call these losses Lquant.
@@ -167,8 +167,8 @@ Pr(op |ya) = SoftMax(No(ya)),	(1)
 
 ferentiable function of Pr(op |ya), and we will be able to train No end-to-end with distant super- vision from ?Q, D?, D?? without needing direct supervision of op.
 3.5 Scoring numeral pairs wrt a comparator
-As before, suppose a, b are [num] tokens in Q, D respectively, and let ya, yb be their contextualized representations. Given a proposed operator op, we wish to score the belief in the claim "b op a". E.g., if Q = laptop under $600, then a corre- sponds to 600 USD and op=<, so if b corresponds to 500 USD, belief in "b op a" should be high. At a high level, we compute this belief using a net- work N(op, ya, yb) ? [0, 1]. More specifically, we have three networks Nop(ya, yb) ? [0, 1], each with separate trainable parameters (details in the Appendix). However, the decisions made by these three networks should not be independent. If N<(ya, yb) ˜ N>(ya, yb), we expect N=(ya, yb) to be large. This is encouraged by introducing the loss term:
-Lreg = |1 - N=(ya, yb)|×
+As before, suppose a, b are [num] tokens in Q, D respectively, and let ya, yb be their contextualized representations. Given a proposed operator op, we wish to score the belief in the claim "b op a". E.g., if Q = laptop under $600, then a corre- sponds to 600 USD and op=<, so if b corresponds to 500 USD, belief in "b op a" should be high. At a high level, we compute this belief using a net- work N(op, ya, yb) ? [0, 1]. More specifically, we have three networks Nop(ya, yb) ? [0, 1], each with separate trainable parameters (details in the Appendix). However, the decisions made by these three networks should not be independent. If N<(ya, yb) Â˜ N>(ya, yb), we expect N=(ya, yb) to be large. This is encouraged by introducing the loss term:
+Lreg = |1 - N=(ya, yb)|Ã—
 exp -|N<(ya, yb) - N>(ya, yb)|2 .  (2)
 3.6 Supplementary training for numeral comparisons
 As in math word problems (Sundaram et al., 2022), spreadsheet manipulation (Ma et al., 2024) and semantic interpretation (Zhang et al., 2023), quantities in training corpora may evince strong clusters and low numeric diversity (e.g., prices). However, we need to prepare DeepQuant for far more diversity when deployed, particularly in the query stream (e.g., apartment under $337k or schools accepting gre 327). Since quan- tity spans, values and comparison outcomes are known during fine-tuning, we impose the follow- ing cross-entropy loss Lcomp
@@ -178,13 +178,13 @@ where [a op b ] = 1 when the comparison holds true, and 0 otherwise. It is impor
 
 where No is a simple feed-forward network that
 
-demonstrations (Velic?kovic´
+demonstrations (Velic?kovicÂ´
 
 and Blundell, 2021;
 
 outputs 3-way logits over the label space {<, =
 
-Velic?kovic´
+Velic?kovicÂ´
 
 et al., 2022), and the architecture of
 
@@ -218,8 +218,8 @@ rel(ub|ua
 
 ) = ?
 
-exp (ua · ub)
-b'?D exp (ua · ub' )
+exp (ua Â· ub)
+b'?D exp (ua Â· ub' )
 
 .	(4)
 
@@ -255,7 +255,7 @@ L Pr(op |ya) rel(ub|ua) Nop(ya, yb) (6)
 
 Meanwhile, score( {D? } | {Q? }) is computed as in ColBERT.
   In (10), a is not a global hyperparameter, but a learnt weight parameter that balances the contri- bution of word and quantity similarities for each query, because different queries require different weightings-some rely more on textual/semantic similarity, while others depend more on numerical relevance. We use
-a = s(Na · y(Q)[[CLS]]),	(12)
+a = s(Na Â· y(Q)[[CLS]]),	(12)
 where y(Q)[[CLS]] is the [CLS] vector after en- coding Q, and s is the sigmoid activation.
 
 3.10	Overall fine-tuning loss
@@ -267,8 +267,8 @@ op?{<,=,>..}
 
 works N<, N=, N>, No, Nu, Na, as well as em-
 
-This formulation decomposes the relevance score into two components: † captures the comparator probability conditioned on the context of a, while
-§ captures the comparator-conditioned relevance score of the quantity pair.
+This formulation decomposes the relevance score into two components: Â† captures the comparator probability conditioned on the context of a, while
+Â§ captures the comparator-conditioned relevance score of the quantity pair.
 3.9 Multi-vector relevance score
 We start with and enhance a multi-vector dense re- trieval system such as ColBERT (Santhanam et al., 2022), where Q and D is each represented by a bag of contextual token embeddings, which we de-
 
@@ -282,7 +282,22 @@ RQ3: How do competitors compare when queries are bucketed by quantity magnitudes
 
 Dataset   Corpus  Train  Dev  Test
 
-FinQuant300k200k10k420MedQuant150k150k10k210ECom100k60k5k10kTable 2: Train/test split of datasets.
+FinQuant
+300k
+200k
+10k
+420
+MedQuant
+150k
+150k
+10k
+210
+ECom
+100k
+60k
+5k
+10k
+Table 2: Train/test split of datasets.
 
 4.1 Datasets
 We evaluate our method on the recently- introduced public datasets FinQuant and MedQuant (Almasian et al., 2024a). Fin- Quant is created from a set of news articles in the categories of economics, science, sports and technology, collected between 2018 and 2022. MedQuant contains TREC Medical Records on clinical trials. Additionally, we report results from a proprietary benchmark 'ECom' from a major e-commerce company. These datasets are consistent with our focus on quantity comparison- constrained retrieval, unlike complex question answering benchmarks that test knowledge graph traversal, arithmetic, logic, or aggregation.
@@ -298,7 +313,7 @@ We use BERT (Devlin et al., 2019) in all variations of DeepQuant. Similar to Alm
 
 4.4 Overall comparison
 Table 3 compares DeepQuant with the baselines described above. We observe that DeepQuant ex- ceeds all baselines, both for precision at top-10 ranks as well as high-recall goals (at rank 100). Many baselines do not treat words and numbers differently. QBM25, QSPLADE, QColBERT as- sume independence between quantities and words ignoring semantic information related to quan- tity tokens. For a detailed example, see Ap- pendix E. DeepQuant shows 7% absolute MRR improvement beyond the second-best method on MedQuant and 4% gain on FinQuant. In both datasets, documents contain multiple quantities with the same units, which can confuse retrievers that do not jointly contextualize text and quanti- ties.
-  An LLM experiment with RankZephyr-7B in a zero-shot setting, listwise ranking though better than pointwise still lags behind several other base- lines while taking ˜12 hours on a single GPU- substantially higher than the ˜20 minutes needed by other baselines.  This indicates even larger
+  An LLM experiment with RankZephyr-7B in a zero-shot setting, listwise ranking though better than pointwise still lags behind several other base- lines while taking Â˜12 hours on a single GPU- substantially higher than the Â˜20 minutes needed by other baselines.  This indicates even larger
 
 
 
@@ -316,7 +331,33 @@ Table 3 compares DeepQuant with the baselines described above. We observe that D
 
 
 
-DeepQuant0.320.730.590.880.210.590.440.800.150.350.290.42+6.7%+5.8%+5.4%+1.1%+10.5%+12.7%+15.8%+9.6%+13.3%+16.6%+11.5%+2.4%Table 3: Performance comparison between different methods. Percentage improvements over the second-best base- line are shown in parentheses on a separate line. P@10=precision at 10, M@10=MRR@10, N@10=NDCG@10, R@10=recall at 10. (ECom data set has 10k queries with 5k candidates each-too large for RankZephyr-Itemwise and GPT-4o-mini to complete in 40h and many days respectively.)
+DeepQuant
+0.32
+0.73
+0.59
+0.88
+0.21
+0.59
+0.44
+0.80
+0.15
+0.35
+0.29
+0.42
+
++6.7%
++5.8%
++5.4%
++1.1%
++10.5%
++12.7%
++15.8%
++9.6%
++13.3%
++16.6%
++11.5%
++2.4%
+Table 3: Performance comparison between different methods. Percentage improvements over the second-best base- line are shown in parentheses on a separate line. P@10=precision at 10, M@10=MRR@10, N@10=NDCG@10, R@10=recall at 10. (ECom data set has 10k queries with 5k candidates each-too large for RankZephyr-Itemwise and GPT-4o-mini to complete in 40h and many days respectively.)
 
 models (7B vs 110M) struggle with quantity- constrained queries.
 
@@ -450,17 +491,38 @@ $128GB might be unacceptable. DeepQuant ac- commodates such cases by learning a 
 3https://github.com/openfoodfacts
 
 
-Method2-Comp3-CompMRR@10	NDCG@10MRR@10	NDCG@10ColBERT42.56	38.7536.03	32.24DeepQuant47.71	41.9141.24	36.02Table 8: Performance on synthetic multi-constraint queries (2- and 3-attribute) from the OpenFoodFacts dataset.
+Method
+2-Comp
+3-Comp
+
+MRR@10	NDCG@10
+MRR@10	NDCG@10
+ColBERT
+42.56	38.75
+36.03	32.24
+DeepQuant
+47.71	41.91
+41.24	36.02
+Table 8: Performance on synthetic multi-constraint queries (2- and 3-attribute) from the OpenFoodFacts dataset.
 
 Method	MRR@10
 MSMARCO	FinQuant
 
-ColBERT (trained on MSMARCO)0.3400.337§DeepQuant (zero-shot)0.2100.734DeepQuant (joint training)0.3320.731Table 9: Evaluation on general-purpose (MSMARCO) and quantity-focused (FinQuant) retrieval. §Best baseline performance on FinQuant.
+ColBERT (trained on MSMARCO)
+0.340
+0.337Â§
+DeepQuant (zero-shot)
+0.210
+0.734
+DeepQuant (joint training)
+0.332
+0.731
+Table 9: Evaluation on general-purpose (MSMARCO) and quantity-focused (FinQuant) retrieval. Â§Best baseline performance on FinQuant.
 
 queries, we define a small set of multi-constraint query templates and populate them with relevant entries from the dataset. We construct a synthetic eval dataset of 10k queries and a training dataset of 50k positive pairs as documents which satisfy all the constraints present in the query. Results in Ta- ble 8 are clearly in favor of DeepQuant. We share the script used to generate the data.4
 4.9 Impact on general retrieval
 To assess whether DeepQuant adversely affects performance on general retrieval tasks without quantity expressions or intents, we evaluate it on the MSMARCO passage reranking benchmark, which contains 8.8 million passages of Web doc- uments and approximately 500k real user queries from Bing. Crucially, we do not filter these queries for quantity comparison intent. We consider the following experimental settings:
-ColBERT (trained on MSMARCO): ColBERT (Santhanam et al., 2022) trained from scratch on MSMARCO for 8 epochs with batch size 32 and learning rate 2 × 10-5.
+ColBERT (trained on MSMARCO): ColBERT (Santhanam et al., 2022) trained from scratch on MSMARCO for 8 epochs with batch size 32 and learning rate 2 Ã— 10-5.
 DeepQuant (zero-shot): DeepQuant  initialized
 from the MSMARCO-trained ColBERT check- point, evaluated on MSMARCO without any further training.
 DeepQuant (joint training): DeepQuant initial- ized from ColBERT and jointly trained on both MSMARCO and FinQuant datasets.
@@ -477,25 +539,25 @@ Our work suggests several avenues for further ex- ploration. Currently, we do no
 
 References
 Satya Almasian, Milena Bruseva, and Michael Gertz. 2024a. Numbers matter! bringing quantity-awareness to retrieval systems. Preprint, arXiv:2407.10283.
-Satya Almasian, Vivian Kazakova, Philip Go¨ldner, and Michael Gertz. 2023. CQE: a comprehensive quan- tity extractor. arXiv preprint arXiv:2305.08853.
+Satya Almasian, Vivian Kazakova, Philip GoÂ¨ldner, and Michael Gertz. 2023. CQE: a comprehensive quan- tity extractor. arXiv preprint arXiv:2305.08853.
 Satya Almasian, Alexander Kosnac, and Michael Gertz. 2024b. QuantPlorer: Exploration of quanti- ties in text. In Advances in Information Retrieval, pages 171-176, Cham. Springer Nature Switzer- land.
 Chung-Chi Chen, Hiroya Takamura, Ichiro Kobayashi, and Yusuke Miyao. 2023. Improving numeracy by input reframing and quantitative pre-finetuning task. In Findings of the Association for Computational Linguistics: EACL 2023, pages 69-77.
 DeepSeek-AI, Daya Guo, et al. 2025. Deepseek-r1: Incentivizing reasoning capability in llms via rein- forcement learning. Preprint, arXiv:2501.12948.
 Jacob Devlin, Ming-Wei Chang, Kenton Lee, and Kristina Toutanova. 2019. BERT: Pre-training of deep bidirectional transformers for language under- standing. In NAACL Conference.
 
-Thibault Formal, Carlos Lassance, Benjamin Pi- wowarski, and Ste´phane Clinchant. 2021. SPLADE v2: Sparse lexical and expansion model for informa- tion retrieval. Preprint, arXiv:2109.10086.
+Thibault Formal, Carlos Lassance, Benjamin Pi- wowarski, and SteÂ´phane Clinchant. 2021. SPLADE v2: Sparse lexical and expansion model for informa- tion retrieval. Preprint, arXiv:2109.10086.
 Philip Gage. 1994. A new algorithm for data compres- sion. The C Users Journal archive, 12:23-38.
 Mor Geva, Ankit Gupta, and Jonathan Berant. 2020. Injecting numerical reasoning skills into language models. Preprint, arXiv:2004.04487.
 Ruiqi Guo, Philip Sun, Erik Lindgren, Quan Geng, David Simcha, Felix Chern, and Sanjiv Kumar. 2020. Accelerating large-scale inference with anisotropic vector quantization. In International Conference on Machine Learning.
 Vinh Thinh Ho, Yusra Ibrahim, Koninika Pal, Klaus Berberich, and Gerhard Weikum. 2019. Qsearch: Answering quantity queries from text. In ISWC, pages 237-257. Springer.
 Vinh Thinh Ho, Koninika Pal, Niko Kleer, Klaus Berberich, and Gerhard Weikum. 2020. Entities with quantities: extraction, search, and ranking. In WSDM Conference (Demo), pages 833-836.
 Vinh Thinh Ho, Koninika Pal, Simon Razniewski, Klaus Berberich, and Gerhard Weikum. 2021. Ex- tracting contextualized quantity facts from web ta- bles. In WebConf, pages 4033-4042.
-Vinh Thinh Ho, Daria Stepanova, Dragan Milchevski, Jannik Stro¨tgen, and Gerhard Weikum. 2022. En- hancing knowledge bases with quantity facts. In We- bConf, pages 893-901.
+Vinh Thinh Ho, Daria Stepanova, Dragan Milchevski, Jannik StroÂ¨tgen, and Gerhard Weikum. 2022. En- hancing knowledge bases with quantity facts. In We- bConf, pages 893-901.
 Yusra Ibrahim, Mirek Riedewald, and Gerhard Weikum. 2016. Making sense of entities and quan- tities in web tables. In Proceedings of the 25th ACM International on Conference on Information and Knowledge Management, pages 1703-1712.
 Zhihua Jin, Xin Jiang, Xingbo Wang, Qun Liu, Yong Wang, Xiaozhe Ren, and Huamin Qu. 2021. Numgpt: Improving numeracy ability of generative pre-trained models. Preprint, arXiv:2109.03137.
 Karen Sparck Jones. 1972. A statistical interpretation of term specificity and its applications in retrieval. Journal of Documentation, 28(1):11-20.
 Karen Sparck Jones, Steve Walker, and Stephen E Robertson. 2000. A probabilistic model of informa- tion retrieval: Development and comparative exper- iments (parts 1 and 2). Information Processing and Management, 36(6):779-840.
-Rafal Jo´zefowicz, Oriol Vinyals, Mike Schuster, Noam M. Shazeer, and Yonghui Wu. 2016. Ex- ploring the limits of language modeling. ArXiv, abs/1602.02410.
+Rafal JoÂ´zefowicz, Oriol Vinyals, Mike Schuster, Noam M. Shazeer, and Yonghui Wu. 2016. Ex- ploring the limits of language modeling. ArXiv, abs/1602.02410.
 George Katsogiannis-Meimarakis and Georgia Koutrika. 2023. A survey on deep learning ap- proaches for text-to-sql. The VLDB Journal, 32:905-936.
 
 Diederik P. Kingma and Jimmy Ba. 2017. Adam: A method for stochastic optimization. Preprint, arXiv:1412.6980.
@@ -509,7 +571,7 @@ Bhaskar Mitra and Nick Craswell. 2018. An intro- duction to neural information r
 Ronak Pradeep, Sahel Sharifymoghaddam, and Jimmy Lin. 2023. Rankzephyr: Effective and robust zero- shot listwise reranking is a breeze! Preprint, arXiv:2312.02724.
 Nils Reimers and Iryna Gurevych. 2019. Sentence- BERT: Sentence embeddings using siamese bert- networks. In Proceedings of the 2019 Conference on Empirical Methods in Natural Language Process- ing. Association for Computational Linguistics.
 Subhro Roy, Tim Vieira, and Dan Roth. 2015. Reason- ing about quantities in natural language. Transac- tions of the Association for Computational Linguis- tics, 3:1-13.
-Maciej Rybin´ski, Stephen Wan, Sarvnaz Karimi, Ce´cile Paris, Brian Jin, Neil Huth, Peter J. Thorburn, and Dean P. Holzworth. 2023. Sciharvester: Search- ing scientific documents for numerical values. Pro- ceedings of the 46th International ACM SIGIR Con- ference on Research and Development in Informa- tion Retrieval.
+Maciej RybinÂ´ski, Stephen Wan, Sarvnaz Karimi, CeÂ´cile Paris, Brian Jin, Neil Huth, Peter J. Thorburn, and Dean P. Holzworth. 2023. Sciharvester: Search- ing scientific documents for numerical values. Pro- ceedings of the 46th International ACM SIGIR Con- ference on Research and Development in Informa- tion Retrieval.
 
 Keshav Santhanam, Omar Khattab, Jon Saad- Falcon, Christopher Potts, and Matei Zaharia. 2022. ColBERTv2: Effective and efficient re- trieval via lightweight late interaction. NAACL, abs/2112.01488.
 Rico Sennrich, Barry Haddow, and Alexandra Birch. 2016. Neural machine translation of rare words with subword units. In Proceedings of the 54th An- nual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers), pages 1715- 1725, Berlin, Germany. Association for Computa- tional Linguistics.
@@ -523,19 +585,19 @@ Dhanasekar Sundararaman, Shijing Si, Vivek Subra- manian, Guoyin Wang, Devamanyu
 Avijit Thawani, Jay Pujara, Pedro A Szekely, and Filip Ilievski. 2021. Representing numbers in NLP: a sur- vey and a vision. arXiv preprint arXiv:2103.13136.
 Aaron van den Oord, Yazhe Li, and Oriol Vinyals. 2019. Representation learning with contrastive pre- dictive coding. Preprint, arXiv:1807.03748.
 
-Petar Velic?kovic´ and Charles Blundell. 2021. Neural algorithmic reasoning. Patterns, 2(7):100273.
-Petar Velic?kovic´, Matko Bos?njak, Thomas Kipf, Alexander Lerchner, Raia Hadsell, Razvan Pascanu, and Charles Blundell. 2022. Reasoning-modulated representations. Preprint, arXiv:2107.08881.
+Petar Velic?kovicÂ´ and Charles Blundell. 2021. Neural algorithmic reasoning. Patterns, 2(7):100273.
+Petar Velic?kovicÂ´, Matko Bos?njak, Thomas Kipf, Alexander Lerchner, Raia Hadsell, Razvan Pascanu, and Charles Blundell. 2022. Reasoning-modulated representations. Preprint, arXiv:2107.08881.
 Eric Wallace, Yizhong Wang, Sujian Li, Sameer Singh, and Matt Gardner. 2019. Do NLP models know numbers? probing numeracy in embeddings. In EMNLP Conference.
-Thomas Wolf, Lysandre Debut, Victor Sanh, Julien Chaumond, Clement Delangue, Anthony Moi, Pier- ric Cistac, Tim Rault, Re´mi Louf, Morgan Funtow- icz, Joe Davison, Sam Shleifer, Patrick von Platen, Clara Ma, Yacine Jernite, Julien Plu, Canwen Xu, Teven Le Scao, Sylvain Gugger, Mariama Drame, Quentin Lhoest, and Alexander M. Rush. 2020. Huggingface's transformers: State-of-the-art natural language processing. Preprint, arXiv:1910.03771.
+Thomas Wolf, Lysandre Debut, Victor Sanh, Julien Chaumond, Clement Delangue, Anthony Moi, Pier- ric Cistac, Tim Rault, ReÂ´mi Louf, Morgan Funtow- icz, Joe Davison, Sam Shleifer, Patrick von Platen, Clara Ma, Yacine Jernite, Julien Plu, Canwen Xu, Teven Le Scao, Sylvain Gugger, Mariama Drame, Quentin Lhoest, and Alexander M. Rush. 2020. Huggingface's transformers: State-of-the-art natural language processing. Preprint, arXiv:1910.03771.
 Weixu Zhang, Yu Wang, and Ming Fan. 2023. Towards robustness of large language models on text-to-sql task: An adversarial and cross-domain investigation. In Artificial Neural Networks and Machine Learning - ICANN 2023, pages 181-192, Cham. Springer Na- ture Switzerland.
 Wayne Xin Zhao, Jing Liu, Ruiyang Ren, and Ji-Rong Wen. 2024. Dense text retrieval based on pretrained language models: A survey. ACM Trans. Inf. Syst., 42(4).
 
 Dense Retrieval with Quantity Comparison Intent (Appendix)
 
 A Mantissa encoding details
-Suppose token and state vectors in the transformer have J elements each. This is partitioned into Jm elements for the mantissa and Je for the exponent. Following (Jin et al., 2021) if the mantissa mb ? R extracted from span b in Figure 1 is to be repre- sented as m? b ? RJm , the jth element is the value of a Gaussian kernel with mean µj which depends on j:
+Suppose token and state vectors in the transformer have J elements each. This is partitioned into Jm elements for the mantissa and Je for the exponent. Following (Jin et al., 2021) if the mantissa mb ? R extracted from span b in Figure 1 is to be repre- sented as m? b ? RJm , the jth element is the value of a Gaussian kernel with mean Âµj which depends on j:
 
-µj =
+Âµj =
 
 10 - (-10)
 
@@ -544,7 +606,7 @@ Jm - 1
 
 d + (-10),	and	(13)
 
-   m? b[j] = exp(-|mb - µj|2/s2)	(14) where we choose s = 1 and Jm to be 90% of BERT embedding dimension J = 768.
+   m? b[j] = exp(-|mb - Âµj|2/s2)	(14) where we choose s = 1 and Jm to be 90% of BERT embedding dimension J = 768.
 B Fine tuning loss for numeral reconstruction
 Consider the text fragment iphone 15s 389 dol lars. The standard method that LMs use to en- code text makes no distinction between words and quantities-they use byte-pair or wordpiece dictionaries to tokenize the text. Recent works (Thawani et al., 2021) suggest that this hinders appropriate representation of numbers. Moreover, these works show that using special methods for encoding numbers can improves the quality of rep- resentation significantly.
   If the base embedding matrix B has J embed- ding dimensions for each token, we divide the J dimensions into two parts, Je for the exponent and Jm for the mantissa, with Je + Jm = J. Thus y[[num], :Je] and y[[num], Je:] are designated as the exponent and the mantissa embedding respec- tively, at the transformer output. Following Jin
@@ -554,7 +616,7 @@ Consider the text fragment iphone 15s 389 dol lars. The standard method that LMs
 
 Figure 10: A tricky win example.
 lief "a op b" for op ? {<, =, >}.
-   N(op, ya, yb) = Nop,q(ya) · Nop,d(yb) (16) where Nop,q, Nop,d : RJ ? RJ are LRL feed- forward networks with 128 hidden units, that take ya, yb as input. Avoiding early interaction and using dot-product at the output enables the use of approximate nearest neighbor search (Malkov and Yashunin, 2018; Guo et al., 2020; Sun et al., 2023; Simhadri et al., 2023). We use 2-layer feed- forward networks with each layer of width 128.
+   N(op, ya, yb) = Nop,q(ya) Â· Nop,d(yb) (16) where Nop,q, Nop,d : RJ ? RJ are LRL feed- forward networks with 128 hidden units, that take ya, yb as input. Avoiding early interaction and using dot-product at the output enables the use of approximate nearest neighbor search (Malkov and Yashunin, 2018; Guo et al., 2020; Sun et al., 2023; Simhadri et al., 2023). We use 2-layer feed- forward networks with each layer of width 128.
 D  Retrieval fine-tuning loss details
 We use the InfoNCE loss (van den Oord et al., 2019) for optimizing the retrieval objective. Given a query Q, a relevant document D? and a sam- ple of less relevant documents {D?}, we impose Lretr =
 escore(D?|Q)/t
@@ -573,7 +635,7 @@ on the exponent, given ground truth quantity ex- tractions from CQE (Almasian et
 C Comparison networks Nop
 The comparison scoring functions are designed with indexability in mind. For this reason we use three separate networks Nop, which score the be-
 
-where score(D•|Q) are computed as described in
+where score(DÂ•|Q) are computed as described in
 Section 3.9, and t is the temperature, chosen as
 0.02 based on validation.
 E Example win/loss
