@@ -57,7 +57,43 @@ Student initialization In addition to the previously described optimization and 
 Table 1: DistilBERT retains 97% of BERT performance. Comparison on the dev sets of the GLUE benchmark. ELMo results as reported by the authors. BERT and DistilBERT results are the medians of 5 runs with different seeds.
 
 Model	Score  CoLA  MNLI  MRPC  QNLI  QQP  RTE  SST-2  STS-B  WNLI
-ELMo68.744.168.676.671.186.253.491.570.456.3BERT-base79.556.386.788.691.889.669.392.789.053.5DistilBERT77.051.382.287.589.288.559.991.386.956.3
+ELMo
+68.7
+44.1
+68.6
+76.6
+71.1
+86.2
+53.4
+91.5
+70.4
+56.3
+
+BERT-base
+79.5
+56.3
+86.7
+88.6
+91.8
+89.6
+69.3
+92.7
+89.0
+53.5
+
+DistilBERT
+77.0
+51.3
+82.2
+87.5
+89.2
+88.5
+59.9
+91.3
+86.9
+56.3
+
+
 
 Table 2: DistilBERT yields to comparable performance on downstream tasks. Com- parison on downstream tasks: IMDb (test ac- curacy) and SQuAD 1.1 (EM/F1 on dev set). D: with a second step of distillation during fine-tuning.
 
@@ -87,7 +123,22 @@ We also studied whether we could add another step of distillation during the ada
 
 Table 4: Ablation study. Variations are relative to the model trained with triple loss and teacher weights initialization.
 
-AblationVariation on GLUE macro-scoreØ - Lcos - Lmlm-2.96Lce - Ø - Lmlm-1.46Lce - Lcos - Ø-0.31Triple loss + random weights initialization-3.69
+Ablation
+Variation on GLUE macro-score
+
+Ã˜ - Lcos - Lmlm
+-2.96
+
+Lce - Ã˜ - Lmlm
+-1.46
+
+Lce - Lcos - Ã˜
+-0.31
+
+Triple loss + random weights initialization
+-3.69
+
+
 teacher for an additional term in the loss (knowledge distillation). In this setting, there are thus two successive steps of distillation, one during the pre-training phase and one during the adaptation phase. In this case, we were able to reach interesting performances given the size of the model: 79.8 F1 and
 70.4 EM, i.e. within 3 points of the full model.
 Size and inference speed
@@ -114,7 +165,7 @@ Yinhan Liu, Myle Ott, Naman Goyal, Jingfei Du, Mandar S. Joshi, Danqi Chen, Omer
 Roy Schwartz, Jesse Dodge, Noah A. Smith, and Oren Etzioni. Green ai. ArXiv, abs/1907.10597, 2019.
 Emma Strubell, Ananya Ganesh, and Andrew McCallum. Energy and policy considerations for deep learning in nlp. In ACL, 2019.
 Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N. Gomez, Lukasz Kaiser, and Illia Polosukhin. Attention is all you need. In NIPS, 2017.
-Thomas Wolf, Lysandre Debut, Victor Sanh, Julien Chaumond, Clement Delangue, Anthony Moi, Pierric Cistac, Tim Rault, Rémi Louf, Morgan Funtowicz, and Jamie Brew. Transformers: State-of-the-art natural language processing, 2019.
+Thomas Wolf, Lysandre Debut, Victor Sanh, Julien Chaumond, Clement Delangue, Anthony Moi, Pierric Cistac, Tim Rault, RÃ©mi Louf, Morgan Funtowicz, and Jamie Brew. Transformers: State-of-the-art natural language processing, 2019.
 Cristian Bucila, Rich Caruana, and Alexandru Niculescu-Mizil. Model compression. In KDD, 2006.
 Geoffrey E. Hinton, Oriol Vinyals, and Jeffrey Dean. Distilling the knowledge in a neural network. ArXiv, abs/1503.02531, 2015.
 Yukun Zhu, Ryan Kiros, Richard S. Zemel, Ruslan Salakhutdinov, Raquel Urtasun, Antonio Torralba, and Sanja Fidler. Aligning books and movies: Towards story-like visual explanations by watching movies and reading books. 2015 IEEE International Conference on Computer Vision (ICCV), pages 19-27, 2015.
