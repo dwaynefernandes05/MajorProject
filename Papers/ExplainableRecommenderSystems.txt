@@ -225,13 +225,17 @@ observed that both models use vectors to represent objects, and                 
 
 
 
-                                        1.	  I tem-­‐based	  I nterpretation:           z𝑣 = [z1𝑣 ; z2𝑣 ; ...; z𝐶𝑣 ] ∈ R𝐶×𝐷 . For each observed user-item pair, it
+                                        1.	
+  I tem-­‐based	
+  I nterpretation:           z𝑣 = [z1𝑣 ; z2𝑣 ; ...; z𝐶𝑣 ] ∈ R𝐶×𝐷 . For each observed user-item pair, it
                                                                                           is expected that only a part of the factors will be activated in pre-
       Recommendation                                                                      serving similarity. If factor 𝑐 is the potential cause of making user 𝑢
                                                                                           interact with item 𝑡, in order for ⟨z𝑢𝑐 , z𝑐𝑡 ⟩ to have a large score, not
                                                                                           only should the angle be small between z𝑢𝑐 and z𝑐𝑡 , we also expect
                                                                                           them to have large lengths.
-                                       2.	  Attribute-­‐based	  Interpretation:            In certain models, more flexible interactions between factorized
+                                       2.	
+  Attribute-­‐based	
+  Interpretation:            In certain models, more flexible interactions between factorized
                                       Schwarzenegger, Sci-Fi, AI/Robotics
                                                                                           representations are designed. For example, in Factorization Ma-
                                                                                           chines [30], cross-factor interactions are allowed (i.e., ⟨z𝑢𝑐 1 , z𝑐𝑡 2 ⟩ also
@@ -299,11 +303,20 @@ The link prediction can also be written as 𝑌𝑢,𝑡 ≈ ⟨z𝑢 , z𝑡 �
 
 
 
-    e1                                                                                                                                                            Factor	  
-                          t1                          Entity	                                     :	  	  	   𝐳#$%&                                          Assignment
-                                                                                                                                                                                             Multiple	  
+    e1                                                                                                                                                            Factor	
+  
+                          t1                          Entity	
+                                     :	
+  	
+  	
+   𝐳#$%&                                          Assignment
+                                                                                                                                                                                             Multiple	
+  
                                                     Embedding                                                                                                                  1             Factors
-                                                                                                   :	  	  	   𝐳'(#
+                                                                                                   :	
+  	
+  	
+   𝐳'(#
                                                                                                                   #
     e2                                                                                                                                                                         2
                                                                                                                                                                                         1
@@ -311,15 +324,33 @@ The link prediction can also be written as 𝑌𝑢,𝑡 ≈ ⟨z𝑢 , z𝑡 �
     e3                                                                                                                                                                         1        2
                                                                                                                                                                                2        1              1
                                                                                                                                                                                         2              2
-                         t3      User	  
+                         t3      User	
+  
     e4                         Embedding
                                                                                                                                                                                1
-                                                                                            :	  	   	   𝐳)$%&                                                               2
-    e5             Item	                                                                   :	  	  	   𝐳*#+
-                                                                                                           )                      :	  	   	  𝐳#$%&                                  Multiple	  
+                                                                                            :	
+  	
+   	
+   𝐳)$%&                                                               2
+    e5             Item	
+                                                                   :	
+  	
+  	
+   𝐳*#+
+                                                                                                           )                      :	
+  	
+   	
+  𝐳#$%&                                  Multiple	
+  
                  Embedding
-                                                                                            :	  	  	   𝐳'(#
-                                                                                                           )                      :	  	   	  𝐳'(#
+                                                                                            :	
+  	
+  	
+   𝐳'(#
+                                                                                                           )                      :	
+  	
+   	
+  𝐳'(#
                                                                                                                                                  #
                                                                                                                                                                                        Factors
 
@@ -586,25 +617,41 @@ tation, and analyze the insight from interpretation.                            
             Figure 5: Quantitative evaluation of explanation faithfulness on MovieLens (left), LastFM (middle) and Yelp (right).
 
                                                                                                                                                                              t835                   t1179
-                𝐶         MovieLens                 LastFM               Yelp                                                                                   Four	  Peaks	  Brewing       Kyoto	  Scottsdale
+                𝐶         MovieLens                 LastFM               Yelp                                                                                   Four	
+  Peaks	
+  Brewing       Kyoto	
+  Scottsdale
                                                                                                                                                                                                                      t1717
-                                                                                                                                                 t4124                                                                        Thai	  Cottage
-                                                                                                                               Rosita's	  Place
+                                                                                                                                                 t4124                                                                        Thai	
+  Cottage
+                                                                                                                               Rosita's	
+  Place
       𝑐0 − 2              0.3398/0.3437       0.2541/0.2722   0.1170/0.1267                                                                                                                                          t14176
-                                                                                                                                                   t1140                                                                      Bahama	  Buck's               factor	  3
-      𝑐0 − 1              0.3422/0.3439       0.2613/0.2754   0.1195/0.1234                             factor	  3         Pizzeria	  Bianco
+                                                                                                                                                   t1140                                                                      Bahama	
+  Buck's               factor	
+  3
+      𝑐0 − 1              0.3422/0.3439       0.2613/0.2754   0.1195/0.1234                             factor	
+  3         Pizzeria	
+  Bianco
                                                                                                                                                                                                                      t1499
                                                                                                                                                  t1497                       u755                u1523
-        𝑐0                0.3427/0.3427       0.2656/0.2656   0.1202/0.1202                                 ≠               Pizzeria	  Bianco’
-                                                                                                                                                                                                                              Street	  Boba	  Café
+        𝑐0                0.3427/0.3427       0.2656/0.2656   0.1202/0.1202                                 ≠               Pizzeria	
+  Bianco’
+                                                                                                                                                                                                                              Street	
+  Boba	
+  Café
                                                                                                                                                                                                                                                               ≠
       𝑐0 + 1              0.3429/0.3308       0.2721/0.2547   0.1204/0.1098                                                                   e45587                                                                 e45587
-                                                                                                                                                                                                                                    state::AZ          factor	  3
-                                                                                                          factor	  3      state::AZ
+                                                                                                                                                                                                                                    state::AZ          factor	
+  3
+                                                                                                          factor	
+  3      state::AZ
                                                                                                                                           e45648                                                                     e45545
 Table 4: Performance of the proposed model in 𝑁 𝐷𝐶𝐺@100                                                                                                                                                                       attributes::BusinessAcc
-                                                                                                          factor	  1 attributes::GoodFor                                                                                      eptsCreditCards::True
-                                                                                                                                                                                                                                                      factor	  1
+                                                                                                          factor	
+  1 attributes::GoodFor                                                                                      eptsCreditCards::True
+                                                                                                                                                                                                                                                      factor	
+  1
                                                                                                                         Meal::{‘dinner’}
 by varying the number of factors 𝐶, where 𝑐 0 = 4, 4, 6 for
 MovieLens, LastFM and Yelp, respectively.
