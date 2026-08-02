@@ -127,7 +127,7 @@ The dataset is derived from industrial e-commerce and has
   ArcFace normalizes both the feature vectors and weight vectors to reside on a unit hypersphere. This normalization ensures that the classification decision is solely based on the angular distance between features and weights. The margin ?? is added to the angle ??yi corresponding to the correct class. This margin poses a challenge for the classifier to assign the correct class unless the feature vector is very close to the correct weight vector. Consequently, it enhances the compactness within classes and the discrepancy between classes. The scale factor ?? is employed to control the magnitude of the logits, which stabilizes the training process by preventing the logits from becoming too small. By incorporating an angular margin, ArcFace ensures that the feature vectors of samples from the
 
 been published online [24]. Originally, it was prepared for product duplicate detection. Despite having different objectives, the structure and model of the data can be applied to various outputs. The dataset consists of 34,250 rows of text and image data, including 32,413 images and 11,014 labels. Each row contains an ID, image, text, and label, in Table 1 shown example of dataset.
-  Prior to analysis, the dataset undergoes preprocessing. The text is converted to lowercase and stop words are removed. Additionally, the images are resized to 512×512 pixels. However, it is important to note that the distribution of the dataset is imbalanced.
+  Prior to analysis, the dataset undergoes preprocessing. The text is converted to lowercase and stop words are removed. Additionally, the images are resized to 512Ã—512 pixels. However, it is important to note that the distribution of the dataset is imbalanced.
 
 Table 1. Example of product image and name
 
@@ -225,7 +225,31 @@ Table 4. Evaluation result on original dataset
 Figure 5. Product match found by image model
 
 
-ModelPrecisionRecallF1-ScoreTF-IDF0.91820.52730.6111BERT0.90000.72210.7587CharacterBERT0.88300.77600.7922EfficientNetB30.66670.85800.6600BERT + EfficientNetB30.84100.89850.8327
+Model
+Precision
+Recall
+F1-Score
+TF-IDF
+0.9182
+0.5273
+0.6111
+BERT
+0.9000
+0.7221
+0.7587
+CharacterBERT
+0.8830
+0.7760
+0.7922
+EfficientNetB3
+0.6667
+0.8580
+0.6600
+BERT + EfficientNetB3
+0.8410
+0.8985
+0.8327
+
 CharacterBERT +
 
 0.8290	0.9135	0.8373
@@ -245,12 +269,36 @@ Table 5. Evaluation result on augmented dataset
 
 
 
-BERT
-0.9325
-0.8458
-0.8622450 / XB450 / XB-450 /
-EXTRA BASS KABELBANDO HANDSFREE
-EXTRA BASS XB450 -CharacterBERT0.95270.90000.9106RELAXINGEfficientNetB30.93170.87210.8726BERT + EfficientNetB30.89340.95970.9056Figure 6. Product matchfound by text model
+BERT
+
+0.9325
+
+0.8458
+
+0.8622
+450 / XB450 / XB-450 /
+EXTRA BASS KABEL
+BANDO HANDSFREE
+EXTRA BASS XB450 -
+CharacterBERT
+0.9527
+0.9000
+0.9106
+
+RELAXING
+EfficientNetB3
+0.9317
+0.8721
+0.8726
+
+
+BERT + EfficientNetB3
+0.8934
+0.9597
+0.9056
+Figure 6. Product match
+found by text model
+
 CharacterBERT +
 
 0.9052	0.9676	0.9186
@@ -277,14 +325,14 @@ https://doi.org/10.1007/s12525-021-00511-1
 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies, Volume 3 (Industry Papers), pp. 8-15. https://doi.org/10.18653/v1%2FN18-3002
 [5] Ristoski, P., Petrovski, P., Mika, P., Paulheim, H. (2018). A machine learning approach for product matching and categorization.  Semantic  Web,  9(5):  707-728.
 https://doi.org/10.3233/SW-180300
-[6] Tracz, J., Wójcik, P.I., Jasinska-Kobus, K., Belluzzo, R., Mroczkowski, R., Gawlik, I. (2020). BERT-based similarity learning for product matching. In Proceedings of Workshop on Natural Language Processing in E- Commerce, Barcelona, Spain, pp. 66-75.
-[7] Mazhar, K.A., Brodtbeck, M., Gühring, G. (2023). Similarity learning of product descriptions and images using multimodal neural networks. Natural Language Processing	Journal,	4:	100029.
+[6] Tracz, J., WÃ³jcik, P.I., Jasinska-Kobus, K., Belluzzo, R., Mroczkowski, R., Gawlik, I. (2020). BERT-based similarity learning for product matching. In Proceedings of Workshop on Natural Language Processing in E- Commerce, Barcelona, Spain, pp. 66-75.
+[7] Mazhar, K.A., Brodtbeck, M., GÃ¼hring, G. (2023). Similarity learning of product descriptions and images using multimodal neural networks. Natural Language Processing	Journal,	4:	100029.
 https://doi.org/10.1016/j.nlp.2023.100029
 [8] Deng, J., Guo, J., Yang, J., Xue, N., Kotsia, I., Zafeiriou,
 S. (2018). ArcFace: Additive angular margin loss for deep face recognition. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR),	pp.	4690-4699.
 
 https://doi.org/10.1109/CVPR.2019.00482
-[9] Arroyo, R., Jiménez-Cabello, D., Martínez-Cebrián, J. (2020). Multi-label classification of promotions in digital leaflets using textual and visual information. arXiv preprint	arXiv:2010.03331.
+[9] Arroyo, R., JimÃ©nez-Cabello, D., MartÃ­nez-CebriÃ¡n, J. (2020). Multi-label classification of promotions in digital leaflets using textual and visual information. arXiv preprint	arXiv:2010.03331.
 https://doi.org/10.48550/arXiv.2010.03331
 [10] Li, M., Kok, S., Tan, L. (2018). Don't classify, translate: Multi-level e-commerce product categorization via machine translation. arXiv preprint arXiv:1812.05774. https://doi.org/10.48550/arXiv.1812.05774
 [11] Gupte, K., Pang, L., Pasumarty, H.V. (2021). Multimodal product matching and category mapping: Text+image based deep neural network. IEEE International Conference on Big Data, Orlando, FL, USA,
@@ -297,8 +345,8 @@ H. (2020). FashionBERT: Text and image matching with adaptive loss for cross-mod
 https://doi.org/10.48550/arXiv.2005.09801
 [15] Zhuge, M., Gao, D., Fan, D., Jin, L., Chen, B., Zhou, H., Shao, L. (2021). Kaleido-BERT: Vision-language pre- training on fashion domain. arXiv Preprint arXiv:2103.16110.
 https://doi.org/10.48550/arXiv.2103.16110
-[16] Peeters, R., Bizer, C., Glavaš, G. (2020). Intermediate training of BERT for product matching. Small, 745(722): 2-112.
-[17] Falzone, S., Münster, T., Gühring, G. (2022). Measuring similarity for technical product descriptions with a character-level siamese neural network. In Tagungsband zum Workshop der Multiprojekt-Chip-Gruppe Baden- Württemberg, Technische Hochschule Ulm.
+[16] Peeters, R., Bizer, C., GlavaÂš, G. (2020). Intermediate training of BERT for product matching. Small, 745(722): 2-112.
+[17] Falzone, S., MÃ¼nster, T., GÃ¼hring, G. (2022). Measuring similarity for technical product descriptions with a character-level siamese neural network. In Tagungsband zum Workshop der Multiprojekt-Chip-Gruppe Baden- WÃ¼rttemberg, Technische Hochschule Ulm.
 [18] Zhang, X., Zhao, J., LeCun, Y. (2015). Character-level convolutional networks for text classification. Advances in Neural Information Processing Systems, 28. https://doi.org/10.48550/arXiv.1509.01626
 [19] Ma, W., Cui, Y., Si, C., Liu, T., Wang, S., Hu, G. (2020).
 CharBERT: Character-aware pre-trained language model. arXiv preprint arXiv:2011.01513. https://doi.org/10.18653/v1/2020.coling-main.4
