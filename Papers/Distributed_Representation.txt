@@ -82,7 +82,7 @@ The paragraph vectors and word vectors are trained using
 
 stochastic gradient descent and the gradient is obtained via backpropagation. At every step of stochastic gradient de- scent, one can sample a fixed-length context from a random paragraph, compute the error gradient from the network in Figure 2 and use the gradient to update the parameters in our model.
 At prediction time, one needs to perform an inference step to compute the paragraph vector for a new paragraph. This is also obtained by gradient descent. In this step, the pa- rameters for the rest of the model, the word vectors W and the softmax weights, are fixed.
-Suppose that there are N paragraphs in the corpus, M words in the vocabulary, and we want to learn paragraph vectors such that each paragraph is mapped to p dimen- sions and each word is mapped to q dimensions, then the model has the total of N × p + M × q parameters (ex- cluding the softmax parameters). Even though the number of parameters can be large when N is large, the updates during training are typically sparse and thus efficient.
+Suppose that there are N paragraphs in the corpus, M words in the vocabulary, and we want to learn paragraph vectors such that each paragraph is mapped to p dimen- sions and each word is mapped to q dimensions, then the model has the total of N Ã— p + M Ã— q parameters (ex- cluding the softmax parameters). Even though the number of parameters can be large when N is large, the updates during training are typically sparse and thus efficient.
 
 
 Figure 2. A framework for learning paragraph vector. This frame- work is similar to the framework presented in Figure 1; the only change is the additional paragraph token that is mapped to a vec- tor via matrix D. In this model, the concatenation or average of this vector with a context of three words is used to predict the fourth word. The paragraph vector represents the missing infor- mation from the current context and can act as a memory of the topic of the paragraph.
@@ -128,15 +128,42 @@ Results: We report the error rates of different methods in Table 1. The first hi
 
 Table 1. The performance of our method compared to other ap- proaches on the Stanford Sentiment Treebank dataset. The error rates of other methods are reported in (Socher et al., 2013b).
 
-ModelError rate
-(Positive/ Negative)Error rate
-  (Fine- grained)Na¨ive Bayes
-(Socher et al., 2013b)18.2 %59.0%SVMs (Socher et al., 2013b)20.6%59.3%Bigram Na¨ive Bayes
-(Socher et al., 2013b)16.9%58.1%Word Vector Averaging
-(Socher et al., 2013b)19.9%67.3%Recursive Neural Network
-(Socher et al., 2013b)17.6%56.8%Matrix Vector-RNN
-(Socher et al., 2013b)17.1%55.6%Recursive Neural Tensor Network
-(Socher et al., 2013b)14.6%54.3%Paragraph Vector12.2%51.3%
+Model
+Error rate
+(Positive/ Negative)
+Error rate
+  (Fine- grained)
+NaÂ¨ive Bayes
+(Socher et al., 2013b)
+18.2 %
+59.0%
+SVMs (Socher et al., 2013b)
+20.6%
+59.3%
+Bigram NaÂ¨ive Bayes
+(Socher et al., 2013b)
+16.9%
+58.1%
+Word Vector Averaging
+(Socher et al., 2013b)
+19.9%
+67.3%
+Recursive Neural Network
+(Socher et al., 2013b)
+17.6%
+56.8%
+Matrix Vector-RNN
+(Socher et al., 2013b)
+17.1%
+55.6%
+Recursive Neural Tensor Network
+(Socher et al., 2013b)
+14.6%
+54.3%
+Paragraph Vector
+12.2%
+51.3%
+
 
 more advanced methods (such as Recursive Neural Net- work (Socher et al., 2013b)), which require parsing and take into account the compositionality, perform much bet- ter.
 Our method performs better than all these baselines, e.g., recursive networks, despite the fact that it does not re- quire parsing. On the coarse-grained classification task, our method has an absolute improvement of 2.4% in terms of error rates. This translates to 16% relative improvement.
@@ -164,7 +191,37 @@ It achieves 7.42% which is another 1.3% absolute improve- ment (or 15% relative 
 
 Table 2. The performance of Paragraph Vector compared to other approaches on the IMDB dataset. The error rates of other methods are reported in (Wang & Manning, 2012).
 
-ModelError rateBoW (bnc) (Maas et al., 2011)12.20 %BoW (b?t'c) (Maas et al., 2011)11.77%LDA (Maas et al., 2011)32.58%Full+BoW (Maas et al., 2011)11.67%Full+Unlabeled+BoW (Maas et al., 2011)11.11%WRRBM (Dahl et al., 2012)12.58%WRRBM + BoW (bnc) (Dahl et al., 2012)10.77%MNB-uni (Wang & Manning, 2012)16.45%MNB-bi (Wang & Manning, 2012)13.41%SVM-uni (Wang & Manning, 2012)13.05%SVM-bi (Wang & Manning, 2012)10.84%NBSVM-uni (Wang & Manning, 2012)11.71%NBSVM-bi (Wang & Manning, 2012)8.78%Paragraph Vector7.42%
+Model
+Error rate
+BoW (bnc) (Maas et al., 2011)
+12.20 %
+BoW (b?t'c) (Maas et al., 2011)
+11.77%
+LDA (Maas et al., 2011)
+32.58%
+Full+BoW (Maas et al., 2011)
+11.67%
+Full+Unlabeled+BoW (Maas et al., 2011)
+11.11%
+WRRBM (Dahl et al., 2012)
+12.58%
+WRRBM + BoW (bnc) (Dahl et al., 2012)
+10.77%
+MNB-uni (Wang & Manning, 2012)
+16.45%
+MNB-bi (Wang & Manning, 2012)
+13.41%
+SVM-uni (Wang & Manning, 2012)
+13.05%
+SVM-bi (Wang & Manning, 2012)
+10.84%
+NBSVM-uni (Wang & Manning, 2012)
+11.71%
+NBSVM-bi (Wang & Manning, 2012)
+8.78%
+Paragraph Vector
+7.42%
+
 
 3.3. Information Retrieval with Paragraph Vectors
 We turn our attention to an information retrieval task which requires fixed-length representations of paragraphs.
@@ -172,12 +229,12 @@ Here, we have a dataset of paragraphs in the first 10 results returned by a sear
 From such collection, we derive a new dataset to test vector representations of paragraphs. For each query, we create a triplet of paragraphs: the two paragraphs are results of the same query, whereas the third paragraph is a randomly sampled paragraph from the rest of the collection (returned as the result of a different query). Our goal is to identify which of the three paragraphs are results of the same query. To achieve this, we will use paragraph vectors and compute the distances the paragraphs. A better representation is one that achieves a small distance for pairs of paragraphs of the same query and a larg distance for pairs of paragraphs of different queries.
 Here is a sample of three paragraphs, where the first para- graph should be closer to the second paragraph than the third paragraph:
 
-• Paragraph 1: calls from ( 000 ) 000 - 0000 . 3913 calls reported from this number . according to 4 re- ports the identity of this caller is american airlines .
+Â• Paragraph 1: calls from ( 000 ) 000 - 0000 . 3913 calls reported from this number . according to 4 re- ports the identity of this caller is american airlines .
 
-• Paragraph 2: do you want to find out who called you from +1 000 - 000 - 0000 , +1 0000000000 or ( 000
+Â• Paragraph 2: do you want to find out who called you from +1 000 - 000 - 0000 , +1 0000000000 or ( 000
 ) 000 - 0000 ? see reports and share information you have about this caller
 
-• Paragraph 3: allina health clinic patients for your convenience , you can pay your allina health clinic bill online . pay your clinic bill now , question and answers...
+Â• Paragraph 3: allina health clinic patients for your convenience , you can pay your allina health clinic bill online . pay your clinic bill now , question and answers...
 
 The triplets are split into three sets: 80% for training, 10% for validation, and 10% for testing. Any method that re- quires learning will be trained on the training set, while its hyperparameters will be selected on the validation set.
 We benchmark four methods to compute features for para- graphs: bag-of-words, bag-of-bigrams, averaging word vectors and Paragraph Vector. To improve bag-of-bigrams, we also learn a weighting matrix such that the distance be- tween the first two paragraphs is minimized whereas the distance between the first and the third paragraph is max- imized (the weighting factor between the two losses is a hyperparameter).
@@ -187,14 +244,26 @@ The results show that Paragraph Vector works well and gives a 32% relative impro
 
 Table 3. The performance of Paragraph Vector and bag-of-words models on the information retrieval task. "Weighted Bag-of- bigrams" is the method where we learn a linear matrix W on TF- IDF bigram features that maximizes the distance between the first and the third paragraph and minimizes the distance between the first and the second paragraph.
 
-ModelError rateVector Averaging10.25%Bag-of-words8.10 %Bag-of-bigrams7.28 %Weighted Bag-of-bigrams5.67%Paragraph Vector3.82%3.4. 
+Model
+Error rate
+Vector Averaging
+10.25%
+Bag-of-words
+8.10 %
+Bag-of-bigrams
+7.28 %
+Weighted Bag-of-bigrams
+5.67%
+Paragraph Vector
+3.82%
+3.4. 
 Some further observations
 We perform further experiments to understand various as- pects of the models. Here's some observations
 
-• PV-DM is consistently better than PV-DBOW. PV- DM alone can achieve results close to many results in this paper (see Table 2). For example, in IMDB, PV-DM only achieves 7.63%. The combination of PV-DM and PV-DBOW often work consistently bet- ter (7.42% in IMDB) and therefore recommended.
-• Using concatenation in PV-DM is often better than sum. In IMDB, PV-DM with sum can only achieve 8.06%. Perhaps, this is because the model loses the ordering information.
-• It's better to cross validate the window size. A good guess of window size in many applications is between 5 and 12. In IMDB, varying the window sizes between 5 and 12 causes the error rate to fluctuate 0.7%.
-• Paragraph Vector can be expensive, but it can be done in parallel at test time. On average, our implementa- tion takes 30 minutes to compute the paragraph vec- tors of the IMDB test set, using a 16 core machine (25,000 documents, each document on average has 230 words).
+Â• PV-DM is consistently better than PV-DBOW. PV- DM alone can achieve results close to many results in this paper (see Table 2). For example, in IMDB, PV-DM only achieves 7.63%. The combination of PV-DM and PV-DBOW often work consistently bet- ter (7.42% in IMDB) and therefore recommended.
+Â• Using concatenation in PV-DM is often better than sum. In IMDB, PV-DM with sum can only achieve 8.06%. Perhaps, this is because the model loses the ordering information.
+Â• It's better to cross validate the window size. A good guess of window size in many applications is between 5 and 12. In IMDB, varying the window sizes between 5 and 12 causes the error rate to fluctuate 0.7%.
+Â• Paragraph Vector can be expensive, but it can be done in parallel at test time. On average, our implementa- tion takes 30 minutes to compute the paragraph vec- tors of the IMDB test set, using a 16 core machine (25,000 documents, each document on average has 230 words).
 
 4. Related Work
 Distributed representations for words were first proposed in (Rumelhart et al., 1986) and have become a successful paradigm, especially for statistical language modeling (El- man, 1990; Bengio et al., 2006; Mikolov, 2012). Word vec- tors have been used in NLP applications such as word rep- resentation, named entity recognition, word sense disam- biguation, parsing, tagging and machine translation (Col- lobert & Weston, 2008; Turney & Pantel, 2010; Turian et al., 2010; Collobert et al., 2011; Socher et al., 2011b; Huang et al., 2012; Zou et al., 2013).
@@ -210,12 +279,12 @@ Our experiments on several text classification tasks such as Stanford Treebank a
 Although the focus of this work is to represent texts, our method can be applied to learn representations for sequen- tial data. In non-text domains where parsing is not avail- able, we expect Paragraph Vector to be a strong alternative to bag-of-words and bag-of-n-grams models.
 
 References
-Bengio, Yoshua, Schwenk, Holger, Sene´cal, Jean- Se´bastien, Morin, Fre´deric, and Gauvain, Jean-Luc. Neural probabilistic language models. In Innovations in Machine Learning, pp. 137-186. Springer, 2006.
+Bengio, Yoshua, Schwenk, Holger, SeneÂ´cal, Jean- SeÂ´bastien, Morin, FreÂ´deric, and Gauvain, Jean-Luc. Neural probabilistic language models. In Innovations in Machine Learning, pp. 137-186. Springer, 2006.
 
 Collobert, Ronan and Weston, Jason. A unified architecture for natural language processing: Deep neural networks with multitask learning. In Proceedings of the 25th In- ternational Conference on Machine Learning, pp. 160-
 167. ACM, 2008.
 
-Collobert, Ronan, Weston, Jason, Bottou, Le´on, Karlen, Michael, Kavukcuoglu, Koray, and Kuksa, Pavel. Nat- ural language processing (almost) from scratch. The Journal of Machine Learning Research, 12:2493-2537, 2011.
+Collobert, Ronan, Weston, Jason, Bottou, LeÂ´on, Karlen, Michael, Kavukcuoglu, Koray, and Kuksa, Pavel. Nat- ural language processing (almost) from scratch. The Journal of Machine Learning Research, 12:2493-2537, 2011.
 
 Dahl, George E., Adams, Ryan P., and Larochelle, Hugo. Training Restricted Boltzmann Machines on word obser- vations. In International Conference on Machine Learn- ing, 2012.
 
