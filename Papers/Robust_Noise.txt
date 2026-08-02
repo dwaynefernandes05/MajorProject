@@ -1,6 +1,6 @@
 Investigating the Robustness of Embedding Models on Noisy Input Texts
 Michael Dinzinger1,*, Laura Caspari1, Kanishka Ghosh Dastidar1, Jelena Mitrovic1 and Michael Granitzer1
-1University of Passau, Innstraße 41, 94032 Passau, Germany
+1University of Passau, InnstraÃŸe 41, 94032 Passau, Germany
 
 Abstract
 Integrating dense retrieval into Retrieval-Augmented Generation systems has significantly enhanced the power of generative language models, especially in the context of conversational search. Despite this advancement, the effect of noisy and poorly structured input text, often drawn from web pages covering multiple topics or languages, has not been thoroughly investigated. This paper addresses that gap by evaluating the robustness of embedding models in handling documents under realistic, noisy conditions beyond the clean and concise golden passage found in most academic datasets. We therefore introduce a synthetic dataset based on the MS-MARCO Passage Collection, in which the original passages are concatenated with text snippets extracted from extraneous web pages. This dataset consists of multiple subcorpora, whose concatenated context varies in length, positioning and relevance to the original query-relevant passage. Our findings reveal two critical limitations to model robustness: first, a positional bias in processing long documents, and second, a significant drop in retrieval performance when models are faced with semantically inconsistent input documents that combine query-relevant information with thematically unrelated (Out-of-Domain) text passages.
@@ -26,13 +26,13 @@ published 2025-12-18
 
 concern. Despite their wide application, e.g. in RAG systems, the question of how dense retrievers handle noisy documents - those containing a query-relevant passage alongside extraneous information, either related (In-Domain) or unrelated (Out-of-Domain) - remains underexplored. Therefore, investigating the resilience of dense retrievers to semantically inconsistent web texts is critical for maintaining reasonable performance.
   With our work, we aim to fill this gap by studying the impact of noisy input text on the performance of recent embedding models. Through a series of experiments using our tailor-made synthetic dataset, we demonstrate the extent to which text quality and structure affect the accuracy of dense retrieval models. This paper makes the following contributions:
-· Synthetic Dataset:
+Â· Synthetic Dataset:
 We introduce a tailor-made synthetic dataset based on the MS-MARCO Passage Collection. The dataset includes multiple subcorpora simulating semantically inconsistent web texts.
-· Robustness Analysis of Embedding Models:
+Â· Robustness Analysis of Embedding Models:
 We present a study of recent embedding models, focusing on their robustness when exposed to noisy input texts that combine query-relevant passages with extraneous information. Our experiments reveal two key constraints:
 - Handling long documents introduces a model-dependent positional bias.
 - The presence of topically unrelated information (Out-of-Domain context) significantly degrades retrieval performance.
-· Evaluation of Chunking Methods:
+Â· Evaluation of Chunking Methods:
 We compare various chunking methods and assess their ability to preserve contextual coherence when segmenting text documents. However, our findings suggest that existing approaches are either inadequate or impractical, highlighting the need for further research to develop more robust solutions.
 
   The remainder of this paper is organized as follows. In Section 2, we review related work on Retrieval-Augmented Generation and embedding models in dense retrieval. In Section 3, we describe the construction of our synthetic dataset and provide an overview of the embedding models selected for evaluation. Section 4 discusses the experimental results and presents two key limitations of current models. Section 5 compares chunking methods and evaluates their effectiveness in preserving contextual coherence as a potential solution to overcome the models' limitations. Finally, Section 6 concludes the paper with a summary of our contributions and a discussion of open research questions.
@@ -54,23 +54,23 @@ Coelho et al. study the existence of a Dwell in the Beginning effect in Transfor
 
 2.5. Chunking strategies
 During indexing, the first phase of a vector-based RAG pipeline, documents are processed, segmented, and transformed into embeddings to be stored in a vector database. In this context, chunking refers to the process of breaking down input text into smaller, manageable pieces [15]. This is often necessary to ensure that long documents are split into portions that fit in the embedding model's token limit. However, chunking does more than just accommodate model constraints; it also enhances contextual coherence within each segment.
-  Naive chunking methods, such as splitting the text into fixed-length segments, are widely used because of their simplicity and effectiveness in many cases. These methods can be enhanced by introducing chunk overlap or by setting breakpoints only at sentence boundaries. Furthermore, Günther et al presented an innovative approach called Late Chunking, where text is split after being processed by the Transformer model but before mean pooling [16]. This technique takes advantage of Transformer models' long-context capabilities, and ensures that each chunk captures the broader document's context within its embedding.
+  Naive chunking methods, such as splitting the text into fixed-length segments, are widely used because of their simplicity and effectiveness in many cases. These methods can be enhanced by introducing chunk overlap or by setting breakpoints only at sentence boundaries. Furthermore, GÃ¼nther et al presented an innovative approach called Late Chunking, where text is split after being processed by the Transformer model but before mean pooling [16]. This technique takes advantage of Transformer models' long-context capabilities, and ensures that each chunk captures the broader document's context within its embedding.
   Beyond naive approaches, more advanced techniques like Semantic Chunking, Agentic Chunking [17], and Contextual Retrieval [18] have emerged using LMs in the chunking process. Such methods may include dynamic breakpoints, where text is divided based on semantic coherence rather than fixed length, or augmenting chunks with summarized information from neighboring segments. The goal of these approaches is to preserve both the contextual richness and semantic integrity of the text, resulting in embeddings that are better aligned with the retrieval task. Yet, while these methods improve contextual coherence, it remains unclear to which degree they are capable of handling semantically inconsistent and noisy web documents, which we systematically simulate in our synthetic dataset.
 
 3. Experimental Setup
 3.1. Synthetic dataset
 To evaluate the robustness of embedding models and chunking methods under real-world conditions, we created a synthetic dataset designed to simulate "noisy" documents. This noise is modeled to intentionally break contextual coherence, in order to study its impact on retrieval performance. For instance, we observe that, after applying respective parsing tools, text snippets extracted from web documents still contain disconnected content such as user comments or boilerplate sections. Web texts hence remain inconsistent in their structure and content, combining text segments which are not necessarily related to each other.
   Figure 1 illustrates the composition of the Synthetic Noise dataset, which consists of 41,371 document samples per subcorpus. It is constructed using passages from the MS-MARCO collection [19], augmented by adding artificial context. The original passages are concise, averaging about 72 tokens (measured using the BERT tokenizer), and typically, these snippets contain only the information directly relevant to their corresponding query. In addition to the passage text, the MS-MARCO dataset includes URLs linking to the source web pages, allowing us to scrape further content related to the original piece of information. The Synthetic Noise samples are constructed by padding the given short passages with extraneous content from web pages linked in the MS-MARCO collection. These synthetic documents vary along three key dimensions, resulting in 36 distinct subcorpora derived from the 41,371 original core passages:
-· Document length:
+Â· Document length:
 We vary the length of the synthetic documents to measure how the ratio of relevant to query- irrelevant information impacts retrieval performance.
-· Positioning of the original passage:
+Â· Positioning of the original passage:
 We adjust the position of the original text snippet within the document to study positional biases in its dense vector representation.
 
 
 
 Figure 1: Synthetic document samples with In-Domain and Out-of-Domain context.
 
-· Context type:
+Â· Context type:
 We include both related and unrelated contexts to assess how semantic consistency in the input text (or lack thereof) influences retrieval performance.
   Our dataset thus includes samples with concatenated contexts in two distinct levels of relevance to the core passage. In-Domain contexts are extracted from web pages that contain information related, though not necessarily relevant to the query associated with the original passage1. While these contexts do not directly address the query, they often discuss similar topics. This maintains - to a certain extent - contextual coherence within the synthetic document. In contrast, Out-of-Domain contexts are taken from web pages randomly selected from the MS-MARCO corpus and lack any objective relevance to the original query or passage. Since these snippets typically cover entirely unrelated subjects, they break the contextual coherence. The lack of coherence makes it more difficult for embedding models to accurately represent the relevant information of the original passage in the document vector.
   As discussed, web texts often lack consistent contextual coherence. Using our synthetic dataset, we systematically examine the impact of document length, positional bias, and the consistency of context relevance on embedding models. By isolating these factors, we aim to understand how coherence deteriorates and how noisy, real-world data affects both retrieval accuracy and efficiency.
@@ -78,7 +78,42 @@ We include both related and unrelated contexts to assess how semantic consistenc
 Table 1
 List of evaluated embedding models
 
-Embedding Model  Model Size (M Parameters)DimensionalityMax Tokens  NDCG@10 on MS-MARCOBGE small (en, v1.5) [20]3338451240.83Arctic M (v1.5) [8]10976851242.03Stella (1.5B, en, v5)1,5431,02451245.22Jina (v3) [21]5721,0248,19240.82GTE Qwen2 (1.5B) [22]1,7761,53632,00043.36GTE Qwen2 (7B) [22]7,6133,58432,00045.98
+Embedding Model
+  Model Size (M Parameters)
+Dimensionality
+Max Tokens
+  NDCG@10 on MS-MARCO
+BGE small (en, v1.5) [20]
+33
+384
+512
+40.83
+Arctic M (v1.5) [8]
+109
+768
+512
+42.03
+Stella (1.5B, en, v5)
+1,543
+1,024
+512
+45.22
+Jina (v3) [21]
+572
+1,024
+8,192
+40.82
+GTE Qwen2 (1.5B) [22]
+1,776
+1,536
+32,000
+43.36
+GTE Qwen2 (7B) [22]
+7,613
+3,584
+32,000
+45.98
+
 
 
 
@@ -96,14 +131,144 @@ Context type
  
 100 tokens (68%)		300 tokens (24%)		500 tokens (14%) start	mid	end	start	mid	end	start	mid	end
 
-BGE smallID78.5477.3977.0074.8866.4961.7675.5262.5160.68baseline: 77.69OOD70.6961.5459.7133.8711.557.8925.022.284.41
-Arctic MID79.9779.3279.8581.4872.9170.5080.0168.1762.45baseline: 79.64OOD73.0065.7466.0454.1513.0518.5746.456.404.28
-StellaID81.9079.7278.4480.3075.1173.1178.8274.1367.11baseline: 81.95OOD72.8056.9453.2642.6910.8217.4830.487.688.01100 tokens (68%)	500 tokens (14%)	4000 tokens (2%)
+BGE small
+ID
+78.54
+77.39
+77.00
+74.88
+66.49
+61.76
+75.52
+62.51
+60.68
+baseline: 77.69
+OOD
+70.69
+61.54
+59.71
+33.87
+11.55
+7.89
+25.02
+2.28
+4.41
+
+Arctic M
+ID
+79.97
+79.32
+79.85
+81.48
+72.91
+70.50
+80.01
+68.17
+62.45
+baseline: 79.64
+OOD
+73.00
+65.74
+66.04
+54.15
+13.05
+18.57
+46.45
+6.40
+4.28
+
+Stella
+ID
+81.90
+79.72
+78.44
+80.30
+75.11
+73.11
+78.82
+74.13
+67.11
+baseline: 81.95
+OOD
+72.80
+56.94
+53.26
+42.69
+10.82
+17.48
+30.48
+7.68
+8.01
+100 tokens (68%)	500 tokens (14%)	4000 tokens (2%)
 
 
-JinaID77.0374.5974.8175.6567.6470.1059.6961.9454.14baseline: 77.33OOD68.2456.7958.9431.236.4119.682.981.641.67
-GTE Q. 1.5BID78.31  78.4978.2174.8074.4876.4768.8369.9177.64baseline: 77.84OOD63.86	60.0159.5611.326.0225.936.171.8433.20
-GTE Q. 7BID83.8382.4480.9081.6477.3876.9874.8073.6878.60baseline: 83.04OOD77.4466.4859.9037.4413.3423.0117.836.5633.85
+Jina
+ID
+77.03
+74.59
+74.81
+75.65
+67.64
+70.10
+59.69
+61.94
+54.14
+baseline: 77.33
+OOD
+68.24
+56.79
+58.94
+31.23
+6.41
+19.68
+2.98
+1.64
+1.67
+
+GTE Q. 1.5B
+ID
+78.31  78.49
+78.21
+74.80
+74.48
+76.47
+68.83
+69.91
+77.64
+baseline: 77.84
+OOD
+63.86	60.01
+59.56
+11.32
+6.02
+25.93
+6.17
+1.84
+33.20
+
+GTE Q. 7B
+ID
+83.83
+82.44
+80.90
+81.64
+77.38
+76.98
+74.80
+73.68
+78.60
+baseline: 83.04
+OOD
+77.44
+66.48
+59.90
+37.44
+13.34
+23.01
+17.83
+6.56
+33.85
+
 
 3.2. Embedding models
 Table 1 lists six dense retrieval models in ascending order based on their performance, dimensionality, and number of parameters. The selected embedding models fall into two groups: 512-token models and long-context models (8,192+ tokens), both widely used as first-stage retrievers in RAG systems due to their strong performance on academic benchmarks like the Massive Text Embedding Benchmark (MTEB) [3]. The 512-token models are efficient for shorter, more structured documents. In contrast, long-context models are designed to process extensive input sequences, making them better suited for handling large, fragmented web documents. Recent works such as Late Chunking [16] and Long- RAG [12] demonstrate the potential that long-context retrievers offer to RAG, despite the costs of greater model sizes and computational overhead.
@@ -158,7 +323,63 @@ In the previous section, we identified two critical limitations in the robustnes
 Table 3
 Impact of chunking methods on nDCG@10 in %. #Tokens is the average number of tokens per document using a BERT-based Tokenizer. Embedding Model: Jina (v3)
 
-Dataset#TokensFullNaiveLateSemanticOptimalFiQA2018176.247.3346.2147.5142.60-NFCorpus337.136.6935.5436.8035.18-SciFact316.572.3371.8373.2171.09-TREC-COVID318.477.6872.9577.5270.85-MS-MARCO Doc. (300k)1,604.570.1873.0171.61--NarrativeQA (LongEmbed)74,843.634.2573.9940.56--Synth. Noise samples (OOD)2,106.222.9344.4541.6334.3578.61
+Dataset
+#Tokens
+Full
+Naive
+Late
+Semantic
+Optimal
+FiQA2018
+176.2
+47.33
+46.21
+47.51
+42.60
+-
+NFCorpus
+337.1
+36.69
+35.54
+36.80
+35.18
+-
+SciFact
+316.5
+72.33
+71.83
+73.21
+71.09
+-
+TREC-COVID
+318.4
+77.68
+72.95
+77.52
+70.85
+-
+MS-MARCO Doc. (300k)
+1,604.5
+70.18
+73.01
+71.61
+-
+-
+NarrativeQA (LongEmbed)
+74,843.6
+34.25
+73.99
+40.56
+-
+-
+Synth. Noise samples (OOD)
+2,106.2
+22.93
+44.45
+41.63
+34.35
+78.61
+
 Fixed-length text splitting: In Table 3, we observe that choosing the appropriate chunking strategy can significantly impact retrieval performance. For short-document datasets, naive chunking - splitting the text based on a fixed token length - performs worse than full document retrieval. This is because naive chunking often results in the loss of important contextual information across chunks, thereby reducing retrieval accuracy. Late Chunking provides a solution in these cases by preserving contextual information from surrounding chunks, leading to noticeably higher retrieval scores.
   However, for datasets with longer documents, such as MS-MARCO Document, NarrativeQA, and Synthetic Noise, the trend reverses. These datasets contain documents that typically span beyond one or two paragraphs, and under such conditions, naive chunking outperforms full document retrieval as well as more advanced methods. Interestingly, it even slightly surpasses the performance of Late Chunking. For longer documents surpassing 1000+ tokens, it is seemingly neither effective to embed the full document nor to apply chunked mean pooling, as the contextual information captured from the entire document dilutes the semantic vector representation.
 
@@ -185,8 +406,8 @@ Declaration on Generative AI
 During the preparation of this work, the author(s) used ChatGPT in order to: Improve writing style, Paraphrase and reword. After using this tool/service, the author(s) reviewed and edited the content as needed and take(s) full responsibility for the publication's content.
 
 References
-[1] P. Lewis, E. Perez, A. Piktus, F. Petroni, V. Karpukhin, N. Goyal, H. Küttler, M. Lewis, W.-t. Yih,
-T. Rocktäschel, S. Riedel, D. Kiela, Retrieval-augmented generation for knowledge-intensive NLP tasks, in: Proceedings of the 34th International Conference on Neural Information Processing Systems, NIPS '20, Curran Associates Inc., Red Hook, NY, USA, 2020.
+[1] P. Lewis, E. Perez, A. Piktus, F. Petroni, V. Karpukhin, N. Goyal, H. KÃ¼ttler, M. Lewis, W.-t. Yih,
+T. RocktÃ¤schel, S. Riedel, D. Kiela, Retrieval-augmented generation for knowledge-intensive NLP tasks, in: Proceedings of the 34th International Conference on Neural Information Processing Systems, NIPS '20, Curran Associates Inc., Red Hook, NY, USA, 2020.
 [2] H. Yu, A. Gan, K. Zhang, S. Tong, Q. Liu, Z. Liu, Evaluation of Retrieval-Augmented Generation: A Survey, 2024. doi:10.48550/ARXIV.2405.07437.
 [3] N. Muennighoff, N. Tazi, L. Magne, N. Reimers, MTEB: Massive Text Embedding Benchmark, in: Proceedings of the 17th Conference of the European Chapter of the Association for Compu- tational Linguistics, Association for Computational Linguistics, 2023. doi:10.18653/v1/2023. eacl-main.148.
 [4] J. Bevendorff, S. Gupta, J. Kiesel, B. Stein, An Empirical Comparison of Web Content Extraction Algorithms, in: Proceedings of the 46th International ACM SIGIR Conference on Research and Development in Information Retrieval, SIGIR '23, ACM, 2023. doi:10.1145/3539618.3591920.
@@ -195,22 +416,22 @@ T. Rocktäschel, S. Riedel, D. Kiela, Retrieval-augmented generation for knowledg
 [6] G. Izacard, M. Caron, L. Hosseini, S. Riedel, P. Bojanowski, A. Joulin, E. Grave, Unsupervised Dense Information Retrieval with Contrastive Learning, 2021. doi:10.48550/ARXIV.2112.09118.
 [7] V. Karpukhin, B. Oguz, S. Min, P. Lewis, L. Wu, S. Edunov, D. Chen, W.-t. Yih, Dense Passage Retrieval for Open-Domain Question Answering, in: Proceedings of the 2020 Conference on Empirical Methods in Natural Language Processing (EMNLP), Association for Computational Linguistics, 2020. doi:10.18653/v1/2020.emnlp-main.550.
 [8] L. Merrick, D. Xu, G. Nuti, D. Campos, Arctic-Embed: Scalable, Efficient, and Accurate Text Embedding Models, 2024. doi:10.48550/ARXIV.2405.05374.
-[9] N. Thakur, N. Reimers, A. Rücklé, A. Srivastava, I. Gurevych, BEIR: A Heterogenous Benchmark for Zero-shot Evaluation of Information Retrieval Models, 2021. doi:10.48550/ARXIV.2104.08663.
+[9] N. Thakur, N. Reimers, A. RÃ¼cklÃ©, A. Srivastava, I. Gurevych, BEIR: A Heterogenous Benchmark for Zero-shot Evaluation of Information Retrieval Models, 2021. doi:10.48550/ARXIV.2104.08663.
 [10] F. Cuconasu, G. Trappolini, F. Siciliano, S. Filice, C. Campagnano, Y. Maarek, N. Tonellotto,
 F. Silvestri, The Power of Noise: Redefining retrieval for rag systems, in: Proceedings of the 47th International ACM SIGIR Conference on Research and Development in Information Retrieval, SIGIR 2024, ACM, 2024. doi:10.1145/3626772.3657834.
 [11] T. Chen, H. Wang, S. Chen, W. Yu, K. Ma, X. Zhao, H. Zhang, D. Yu, Dense X Retrieval: What Retrieval Granularity Should We Use?, 2023. doi:10.48550/ARXIV.2312.06648.
 [12] Z. Jiang, X. Ma, W. Chen, LongRAG: Enhancing Retrieval-Augmented Generation with Long- context LLMs, 2024. doi:10.48550/ARXIV.2406.15319.
 [13] K. Luo, Z. Liu, S. Xiao, K. Liu, BGE Landmark Embedding: A Chunking-Free Embedding Method For Retrieval Augmented Long-Context Large Language Models, 2024. doi:10.48550/ARXIV. 2402.11573.
-[14] J. Coelho, B. Martins, J. Magalhães, J. Callan, C. Xiong, Dwell in the Beginning: How language models embed long documents for dense retrieval, 2024. doi:10.48550/ARXIV.2404.04163.
+[14] J. Coelho, B. Martins, J. MagalhÃ£es, J. Callan, C. Xiong, Dwell in the Beginning: How language models embed long documents for dense retrieval, 2024. doi:10.48550/ARXIV.2404.04163.
 [15] B. Smith, A. Troynikov, Evaluating Chunking Strategies for Retrieval, Technical Report, Chroma, 2024. URL: https://research.trychroma.com/evaluating-chunking.
-[16] M. Günther, I. Mohr, B. Wang, H. Xiao, Late Chunking: Contextual Chunk Embeddings Using Long-Context Embedding Models, 2024. doi:10.48550/ARXIV.2409.04701.
+[16] M. GÃ¼nther, I. Mohr, B. Wang, H. Xiao, Late Chunking: Contextual Chunk Embeddings Using Long-Context Embedding Models, 2024. doi:10.48550/ARXIV.2409.04701.
 [17] G.	Kamradt,	5	Levels	of	Text	Splitting,	https://github.com/FullStackRetrieval-com/ RetrievalTutorials, 2024. Accessed: 2024-01-10.
 [18] Anthropic	AI,	Introducing	contextual	retrieval,	https://www.anthropic.com/news/
 \contextual-retrieval, 2024. Accessed: 2024-01-10.
 [19] P. Bajaj, D. Campos, N. Craswell, L. Deng, J. Gao, X. Liu, R. Majumder, A. McNamara, B. Mitra,
 T. Nguyen, M. Rosenberg, X. Song, A. Stoica, S. Tiwary, T. Wang, MS MARCO: A Human Generated MAchine Reading COmprehension Dataset, 2016. doi:10.48550/ARXIV.1611.09268.
 [20] S. Xiao, Z. Liu, P. Zhang, N. Muennighoff, D. Lian, J.-Y. Nie, C-Pack: Packed Resources For General Chinese Embeddings, 2023. doi:10.48550/ARXIV.2309.07597.
-[21] S. Sturua, I. Mohr, M. K. Akram, M. Günther, B. Wang, M. Krimmel, F. Wang, G. Mastrapas,
+[21] S. Sturua, I. Mohr, M. K. Akram, M. GÃ¼nther, B. Wang, M. Krimmel, F. Wang, G. Mastrapas,
 A. Koukounas, N. Wang, H. Xiao, jina-embeddings-v3: Multilingual Embeddings With Task LoRA, 2024. doi:10.48550/ARXIV.2409.10173.
 [22] Z. Li, X. Zhang, Y. Zhang, D. Long, P. Xie, M. Zhang, Towards General Text Embeddings with Multi-stage Contrastive Learning, 2023. doi:10.48550/ARXIV.2308.03281.
 [23] Y. Gao, Y. Xiong, X. Gao, K. Jia, J. Pan, Y. Bi, Y. Dai, J. Sun, M. Wang, H. Wang, Retrieval-Augmented Generation for Large Language Models: A Survey, 2023. doi:10.48550/ARXIV.2312.10997.
