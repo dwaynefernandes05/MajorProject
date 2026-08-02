@@ -1,6 +1,6 @@
 
-Universidad Politécnica de Madrid
-Escuela Técnica Superior de Ingenieros Informáticos
+Universidad PolitÃ©cnica de Madrid
+Escuela TÃ©cnica Superior de Ingenieros InformÃ¡ticos
 
 Master in Data Science
 
@@ -18,7 +18,7 @@ Semantic Similarity for Public Procurement Tender Drafting
 
 
 
-Author: Pablo Bande Sánchez - Girón
+Author: Pablo Bande SÃ¡nchez - GirÃ³n
 
 
 
@@ -31,7 +31,7 @@ Author: Pablo Bande Sánchez - Girón
 
 Madrid. July, 2024
 
-This Master Thesis has been deposited in ETSI Informáticos de la Universidad Politécnica de Madrid.
+This Master Thesis has been deposited in ETSI InformÃ¡ticos de la Universidad PolitÃ©cnica de Madrid.
 
 
 
@@ -43,23 +43,23 @@ This Master Thesis has been deposited in ETSI Informáticos de la Universidad Pol
 
 
 Master Thesis
-Máster en Ciencia de Datos
+MÃ¡ster en Ciencia de Datos
 
 Title:	Semantic Similarity for Public Procurement Tender Drafting July, 2024
 
 
-Author: Pablo Bande Sánchez Girón
+Author: Pablo Bande SÃ¡nchez GirÃ³n
 
 
 Supervisor:	Co-supervisor:
-Óscar Corcho García	María Navas Loro
+Ã“scar Corcho GarcÃ­a	MarÃ­a Navas Loro
 
 
-Escuela Técnica Superior de Ingenieros Informáticos Dpto. Inteligencia Artificial
-Universidad Politécnica de Madrid
+Escuela TÃ©cnica Superior de Ingenieros InformÃ¡ticos Dpto. Inteligencia Artificial
+Universidad PolitÃ©cnica de Madrid
 
-Escuela Técnica Superior de Ingenieros Informáticos Dpto. Sistemas Informáticos
-Universidad Politécnica de Madrid
+Escuela TÃ©cnica Superior de Ingenieros InformÃ¡ticos Dpto. Sistemas InformÃ¡ticos
+Universidad PolitÃ©cnica de Madrid
 
 Abstract
 When public sector entities need to purchase necessary goods, products, services, or utilities, they publish tenders, and for ethical reasons, this procedure must be open to the public, allowing businesses of all sizes to compete for the contract. Since the money comes from taxes and funds must be as transparent and fair as possible. Public tender refers to the document that contains the offer together with its conditions and details. There are many tenders available because every public institution frequently advertises them for any assistance required coming from a third-party company. A great portion of these tenders are for very similar common procedures and because most of them are prepared from scratch and differ significantly in terms of style, terminology choice, and structure, there is a lot of redundancy which causes the tender drafting process to be very inefficient. To facilitate and speed up the creation of these documents, it would be ideal to be able to retrieve similar tenders given a brief description. To streamline this process, advanced algorithms for semantic textual similarity will be utilized and evaluated. Currently, these documents are tagged with their Common Procurement Vocabulary (CPV), which are categorization codes that set up a classification system for public procurement to standardize how authorities and entities describe the contract goals. This can be used to filter tender databases to retrieve specific services or goods related documents, nevertheless, this process can be improved by applying a semantic similarity layer for more precise search.
@@ -194,7 +194,19 @@ each word in the corpus. In order to show the vocabulary word as vectorized, tok
 Example:
 Blue sky, blue ocean = [1,0,0], [0,1,0], [1,0,0], [0,0,1]
 
-blue100sky010ocean001Table 1. One-hot encoding example
+blue
+1
+0
+0
+sky
+0
+1
+0
+ocean
+0
+0
+1
+Table 1. One-hot encoding example
 This text representation method is simple and effective for general categorical data. Nevertheless, it has clear limitations due to the high dimensionality and lack of semantic meaning. However, as we will see in some of the algorithms explained later, one-hot encoding is used for initial steps such as neural network input conversion.
 
 
@@ -208,7 +220,47 @@ Example :
 3. The apple is red.
 Then we create a matrix to represent this, where each row is a sentence and each column is a unique word. The cell values are the word frequencies in the respective sentences.
 
-Sentenceblueskyoceantheappleisongrassred121100000020001111103000111001Table 2. One-hot encoding example
+Sentence
+blue
+sky
+ocean
+the
+apple
+is
+on
+grass
+red
+1
+2
+1
+1
+0
+0
+0
+0
+0
+0
+2
+0
+0
+0
+1
+1
+1
+1
+1
+0
+3
+0
+0
+0
+1
+1
+1
+0
+0
+1
+Table 2. One-hot encoding example
 The Bag of Words (BoW) technique is very compatible with a wide range of algorithms that require numerical input and enables diverse complex applications such as text classification tasks, information retrieval and grouping similar documents based on the word frequency. This capacity is especially useful for effectively organizing large text corpora. The simplicity of the implementation and computational efficiency are the strong points of this algorithm, besides the basic feature extraction that it offers with an easy to understand text representation. However, this simplicity comes with some bad repercussions, such as the loss of meaning of the text since the order and context of the words are not considered and the high dimensionality due to the nature of sparse vectors wasting a big amount of memory. Additionally, BoW assigns equal weights to all words, which ends up giving more importance to stop words and common words than important ones. We could use a stop filter to remove them from the data and avoid this issue, however it still may not adequately emphasize unique terms within a big collection of documents.
 
 
@@ -231,17 +283,115 @@ Example sentences :
 The term frequency is the number of times a term appears in a document divided by the total number of terms in that document.
 
 
-Sentenceblueskyoceantheappleisongrassred10.50.250.2500000020000.330.170.170.170.1730000.250.250.25000.25Table 3. Term frequency example
+Sentence
+blue
+sky
+ocean
+the
+apple
+is
+on
+grass
+red
+1
+0.5
+0.25
+0.25
+0
+0
+0
+0
+0
+0
+2
+0
+0
+0
+0.33
+0.17
+0.17
+0.17
+0.17
+
+3
+0
+0
+0
+0.25
+0.25
+0.25
+0
+0
+0.25
+Table 3. Term frequency example
    2. Calculate Inverse Document Frequency (IDF) The inverse document frequency (IDF) is calculated as:
 	?????????? ???????????? ???? ??????????????????	
 ???????????? ???? ?????????????????? ???????????????????? ??h?? ????????
 
 
-blueskyoceantheappleisongrassred1.101.101.101.181.181.181.101.101.10Table 4. Inverse document frequency example
-???? - ?????? = ???? × ??????
+blue
+sky
+ocean
+the
+apple
+is
+on
+grass
+red
+1.10
+1.10
+1.10
+1.18
+1.18
+1.18
+1.10
+1.10
+1.10
+Table 4. Inverse document frequency example
+???? - ?????? = ???? Ã— ??????
 Summary of TF-IDF Scores
 
-Sentenceblueskyoceantheappleisongrassred10.550.2750.27500000020000.05940.03060.03060.1870.187030000.0450.0450.045000.275Table 5. TF-IDF example result
+Sentence
+blue
+sky
+ocean
+the
+apple
+is
+on
+grass
+red
+1
+0.55
+0.275
+0.275
+0
+0
+0
+0
+0
+0
+2
+0
+0
+0
+0.0594
+0.0306
+0.0306
+0.187
+0.187
+0
+3
+0
+0
+0
+0.045
+0.045
+0.045
+0
+0
+0.275
+Table 5. TF-IDF example result
 From such a small corpus, conclusions are not definitive, but we can observe that words unique to a single document such as "blue," "sky," "ocean," "grass," and "red" get higher TF-IDF scores, emphasizing their importance in distinguishing their document from other documents. Common words across documents like "the" and "is" have lower scores due to their higher frequency in multiple documents, making them less useful for representing and distinguishing different documents. A more general example would be in a collection of documents about technology, there will be words like "software" that will be present in most of the texts and with more than one instance. In this context, these terms will not help us to identify and distinguish each document matter. However, words with less frequency in most of the documents, like "health" will be more representative, and says that the article could be about technological advancements in the medical field.
 The drawbacks of this approach are similar to the BoW, where the semantic relationship between words is not detected and the scalability is not optimal since the structure is based on sparse vectors, leading to memory issues and computation inefficiencies. Due to the nature of the process, every time the
 
@@ -303,15 +453,27 @@ word. Given a specific word of the text as an input, the model will have to look
 The neural network will be trained by feeding the skip-grams, which are sets of the target word and one of the context words. It tries to maximize the likelihood of context words around with the use of negative sampling or hierarchical softmax. There will be negative samples of skip-gram pairs with a proportion of (5/20) or (2/5) for small and big datasets respectively. The model knowledge will be defined statistically from the amount of times each pair is received. Words that usually are close in the text will be related somehow, creating some kind of semantic relationship or even identifying synonyms.
 Example of skipgrams.
 
-Window sizeSource textSkip-grams
+Window size
+Source text
+Skip-grams
 
 
-2
-The red apple is on the grassapple, the apple, red apple, is apple, onThe red apple is on the grassgrass, on grass, the
 
-3
+2
 
-The red apple is on the grassapple, the apple, red apple, is apple, on apple, theTable 6. Skip-gram windows size example
+The red apple is on the grass
+apple, the apple, red apple, is apple, on
+
+The red apple is on the grass
+grass, on grass, the
+
+
+3
+
+
+The red apple is on the grass
+apple, the apple, red apple, is apple, on apple, the
+Table 6. Skip-gram windows size example
 The weight matrix is built as part of the neural network training. For the skip-gram model, it's trained on word pairs, but the word pairs are generated from all of the sentences in your training text.
 This model is considerably slower than CBOW because it predicts numerous context words but more effectively captures word-context relationship and accuracy with infrequent words. It is also more sensitive to hyperparameters such as context windows size and learning rate and requires more computational power and memory.
 
@@ -322,11 +484,20 @@ Opposed to skip-grams, this model predicts the target word based on surrounding 
 In the training phase we generate training pairs for each word in the corpus ([context words], target word) and use negative sampling as well. The context words are the words surrounding the target word within the context window. This process is very similar to the skip-gram but in a different format.
 
 
-Window sizeSource texttraining pairs
+Window size
+Source text
+training pairs
 
-2
-The red apple is on the grass
-[the, red, is, on], appleThe red apple is on the grass[on, the], grassTable 7. CBOW training pairs example
+
+2
+
+The red apple is on the grass
+
+[the, red, is, on], apple
+
+The red apple is on the grass
+[on, the], grass
+Table 7. CBOW training pairs example
 
 
 The model maximizes the probability of the target word given the context. Results in a faster method because of the context vector unification and consumes less computational resources. The downside is the loss of accuracy and effectiveness managing and representing the words.
@@ -491,7 +662,37 @@ This model is designed for masked language modeling. However, through fine-tunin
 2.5 General comparison
 
 
-ModelsBoW, TF-IDFDoc2vec, USE, Sentence Bert, RoBERTaVectorsSparseCompactDimensionalityHigh-dimensional	vectors, same size as the vocabulary.Low dimensional vectors, generally from 50 to 500 dimensions.Contextual RelationshipContextual	relationships between words not captured.Enhance the understanding of semantic meanings and connections among words.InterpretabilityEasy	to	interpret	and understand.Models are dense and complex, harder to understand.Computational complexityFor small vocabularies, the computational cost is lower, but costly for larger ones.Training	is	computationally costly, once trained, it is efficient.Handling synonymsSynonyms	are	treated	as distinct words.Identifies	similarities	among words with the same meaning.Handling unknown wordsIgnore unknown words. Bad performance.Better managing them, specially pretrained models from larger databases.Training	data requirementsApplicable to all datasets without  the  need  for pre-training.Generating effective embeddings necessitates the use of extensive datasets and some pre-training.ScalabilityThe scalability of the system may decrease as the vocabulary expands.The dense representation and lower dimensionality contribute to its increased scalability.Table 8. General embedding models comparison
+Models
+BoW, TF-IDF
+Doc2vec, USE, Sentence Bert, RoBERTa
+Vectors
+Sparse
+Compact
+Dimensionality
+High-dimensional	vectors, same size as the vocabulary.
+Low dimensional vectors, generally from 50 to 500 dimensions.
+Contextual Relationship
+Contextual	relationships between words not captured.
+Enhance the understanding of semantic meanings and connections among words.
+Interpretability
+Easy	to	interpret	and understand.
+Models are dense and complex, harder to understand.
+Computational complexity
+For small vocabularies, the computational cost is lower, but costly for larger ones.
+Training	is	computationally costly, once trained, it is efficient.
+Handling synonyms
+Synonyms	are	treated	as distinct words.
+Identifies	similarities	among words with the same meaning.
+Handling unknown words
+Ignore unknown words. Bad performance.
+Better managing them, specially pretrained models from larger databases.
+Training	data requirements
+Applicable to all datasets without  the  need  for pre-training.
+Generating effective embeddings necessitates the use of extensive datasets and some pre-training.
+Scalability
+The scalability of the system may decrease as the vocabulary expands.
+The dense representation and lower dimensionality contribute to its increased scalability.
+Table 8. General embedding models comparison
 
 2.6 Metrics and distances
 
@@ -537,7 +738,7 @@ This fixes the main downside of euclidean distance and instead of the distances,
 
                        Figure 11. Cosine similarity The formula to calculate is the following:
 
-???????????? ????????????????????(??, ??) = ??????(?) =   ?? · ??  
+???????????? ????????????????????(??, ??) = ??????(?) =   ?? Â· ??  
 It can take values between -1 and 1, negative indicating dissimilarity and positive similarity. between both texts. It is very useful for clustering and classification tasks on documents because compared to the euclidean distance, the scale does not interfere with the results.
 
 
@@ -569,7 +770,7 @@ Figure 13. Flowchart
 
 3.2 Data analysis
 
-The data consists of 61,397 tenders. It is structured in a csv file that contains the file name, description of the object, CPVs and URI to access to the pdf file of each document. This structured database was given by co-supervisor of the project María Navas Loro. The analysis on the data will be done after being preprocessed and removing noise for clearer insights.
+The data consists of 61,397 tenders. It is structured in a csv file that contains the file name, description of the object, CPVs and URI to access to the pdf file of each document. This structured database was given by co-supervisor of the project MarÃ­a Navas Loro. The analysis on the data will be done after being preprocessed and removing noise for clearer insights.
 This thesis will revolve around the descriptions of the tenders, thus we will analyze the distribution of their length and discuss how this could affect the performance. As we can observe in Figure 14, the distribution is slightly right-skewed, with the majority of descriptions around 19-27 words in length and has a long tail showing that there are a few very long descriptions. These outliers can be appreciated in the box plot of Figure 15 which are significant on this right side and can cause inconveniences for our embedding models and will be addressed in the data processing section.
 
 
@@ -640,28 +841,28 @@ Figure 20. Clusters visualization
 For each group, the most common words were extracted in order to have a deeper understanding on the theme and categories of tenders that forms them and these were the results:
 Cluster 0:
 - Construction-related activities, including building, installation, and engineering work.
-- Keywords: trabajo, construcción, pavimentación, instalación, obra, edificio.
+- Keywords: trabajo, construcciÃ³n, pavimentaciÃ³n, instalaciÃ³n, obra, edificio.
 Cluster 1:
 - Variety of services, with a notable emphasis on insurance, transportation, social services, and maintenance. This is a very generic category, hence the overlapping on other clusters.
 - Keywords: servicio, seguro, transporte, social, limpieza, mantenimiento.
 Cluster 2:
 - IT services and consulting are prominent in this cluster, including software development, consulting, and training services.
-- Keywords: servicio, software, consultor, formación, desarrollo, sistema.
+- Keywords: servicio, software, consultor, formaciÃ³n, desarrollo, sistema.
 Cluster 3:
 - Equipment procurement and installation services, highlighting various products and apparatus.
-- Keywords: equipo, instalación, trabajo, producto, aparato, maquinaria.
+- Keywords: equipo, instalaciÃ³n, trabajo, producto, aparato, maquinaria.
 
 Cluster 4:
 - Services related to advertising, cultural events, sports, and artistic activities are dominant in this cluster. Compared to the rest of the groups, this is a very specific and distinctive one.
-   - Keywords: servicio, publicidad, deportivo, cultural, artístico Cluster 5:
+   - Keywords: servicio, publicidad, deportivo, cultural, artÃ­stico Cluster 5:
 - Engineering and architectural services, including project design, planning, and inspection. Close to cluster 0 because both share the architectural and construction theme.
-- Keywords: servicio, ingeniería, arquitectura, construcción, inspección, proyecto.
+- Keywords: servicio, ingenierÃ­a, arquitectura, construcciÃ³n, inspecciÃ³n, proyecto.
 Cluster 6:
 - Health and medical services are the primary focus, including various healthcare-related support and security services. This one is also very unique and easy to differentiate from the rest, although graphically it is very spread.
-- Keywords: servicio, salud, medicina, médico, asistencia, seguridad.
+- Keywords: servicio, salud, medicina, mÃ©dico, asistencia, seguridad.
 Cluster 7:
 - Repair and maintenance services, particularly for equipment and vehicles. Graphically it is the second most spread and overlaps mainly group 3, this might be because the repair and maintenance are for elements and equipment from that cluster.
-- Keywords: servicio, reparación, mantenimiento, equipo, vehículo, maquinario.
+- Keywords: servicio, reparaciÃ³n, mantenimiento, equipo, vehÃ­culo, maquinario.
 
 
 At a higher scale, we can see that the clusters 0 and 3 are the only ones that do not contain the word "servicio" in the keywords and are focused on construction and machinery. In the plot both can be seen together on top. The rest of the space represents services. At a lower scale, all groups were analyzed and detected a pattern in their keyword to identify the fields that are represented by the tenders that take part of them. Overall, six main categories can be found in the tenders: healthcare, IT, cultural events, construction projects, maintenance and equipment and goods.
@@ -711,7 +912,7 @@ automatically creates negative pairs from other batches. This can lead to creati
 
 There will be three different evaluation phases in order to analyze how well the embeddings from each approach represents the tenders theme and retains their semantic meaning. Models will have two variants, one trained and that operates with preprocessed data and another one with raw lowercase, some models do not benefit from this process and the results will show whether it is a good practice or not.
 First of all, a Spanish version of the Semantic Textual Similarity benchmark [16][17] will be used to see how well the models perform on generic data capturing their knowledge and using the similarity metric to define how close two sentences are. The way each of them handles unknown words will be very important in this test. Furthermore, using textual data from other domains not related to the tenders allows to perceive and ensure that fine-tuned models are not overfitting. This dataset is structured in three columns: sentence1, sentence2 and label, which measures how similar both sentences are. Pearson correlation coefficient between the predicted similarities and the actual labels will define how well our models work.
-Next, after doing a general analysis of the behavior with generic data, a more domain specific study will be executed. The data used for this phase was given by the co-supervisor of the project María Navas Loro and consists of a csv file with 1,505 new tenders and the same structure as the training data. These documents will be grouped by their CPV, with the idea behind that tenders with the same common procurement vocabulary must be semantically similar. The average cosine similarity of the tenders within each group will be computed and averaged through all sets. This will show how well the algorithms capture the similarity between tenders from the same categories. However, to ensure that these results are representative and models do not suffer from overfitting the syntactic patterns, the average cosine similarity of the whole dataset will be calculated. This value should not be too low, because common procedures tend to repeat and the CPV distribution is not very balanced, and not very high at the same time to be able to differ between categories.
+Next, after doing a general analysis of the behavior with generic data, a more domain specific study will be executed. The data used for this phase was given by the co-supervisor of the project MarÃ­a Navas Loro and consists of a csv file with 1,505 new tenders and the same structure as the training data. These documents will be grouped by their CPV, with the idea behind that tenders with the same common procurement vocabulary must be semantically similar. The average cosine similarity of the tenders within each group will be computed and averaged through all sets. This will show how well the algorithms capture the similarity between tenders from the same categories. However, to ensure that these results are representative and models do not suffer from overfitting the syntactic patterns, the average cosine similarity of the whole dataset will be calculated. This value should not be too low, because common procedures tend to repeat and the CPV distribution is not very balanced, and not very high at the same time to be able to differ between categories.
 Finally, the models that obtain the best scores on these previous evaluations will be used for clustering the test data and see how well they can identify distinct groups with independent thematic on the tenders. Besides visual analysis, other metrics will be used for more solid proof of their performance such  as  Silhouette Score [13], Davies-Bouldin Index [14] and Calinski-Harabasz Index [15].
 - Silhouette score measures the similarity of elements to their own clusters compared to the rest of the clusters and the higher, the better defined they are.
 - Davies-Bouldin Index represents the average similarity ratio of each cluster with the one that is most similar to it and lower values indicate better clustering.
@@ -729,7 +930,33 @@ Using the Spanish STS dataset, the correlation between the cosine similarity bet
 
 
 
-ModelSTS scoreRawPreprocessingTF-IDF0.6180.625Doc2Vec0.4360.508USE0.6770.589Sentence BERT0.7510.664Sentence BERT fine-tuned0.7480.673RoBERTa0.4190.365RoBERTa fine-tuned0.7120.600Table 9. Results from STS benchmark
+Model
+STS score
+
+Raw
+Preprocessing
+TF-IDF
+0.618
+0.625
+Doc2Vec
+0.436
+0.508
+USE
+0.677
+0.589
+Sentence BERT
+0.751
+0.664
+Sentence BERT fine-tuned
+0.748
+0.673
+RoBERTa
+0.419
+0.365
+RoBERTa fine-tuned
+0.712
+0.600
+Table 9. Results from STS benchmark
 
 
 TF-IDF results in both raw and preprocessed data are poor but better than expected. It was built using a limited vocabulary from the tenders available, while the semantic textual similarity dataset contains terms from other fields. Generally TF-IDF does not handle unknown words very well, ignoring them and causing an information loss, nevertheless, despite this and the lack of deep semantic understanding this model extracts, compared to the rest, the score was good. It slightly improves using preprocessed data which might be because of the normalization of the words.
@@ -749,7 +976,33 @@ First, the similarity between the tender descriptions with the same common procu
 
 
 
-ModelAverage cosine similarityRawPreprocessingTF-IDF0.2720.240Doc2Vec0.2570.381USE0.6700.581Sentence BERT0.5710.604Sentence BERT fine-tuned0.7230.752RoBERTa0.9680.964RoBERTa fine-tuned0.6850.777Table 10. Average cosine similarity for all documents inside each CPV group
+Model
+Average cosine similarity
+
+Raw
+Preprocessing
+TF-IDF
+0.272
+0.240
+Doc2Vec
+0.257
+0.381
+USE
+0.670
+0.581
+Sentence BERT
+0.571
+0.604
+Sentence BERT fine-tuned
+0.723
+0.752
+RoBERTa
+0.968
+0.964
+RoBERTa fine-tuned
+0.685
+0.777
+Table 10. Average cosine similarity for all documents inside each CPV group
 
 First of all, it is very visible that in this case data preprocessing improved most of the approaches' scores, even the complex ones. This might be because the STS benchmark dataset is refined and does not contain noise unlike the one used for testing here. TF-IDF and Doc2Vec had very poor results, with the lowest average similarities, showing how bad they are at capturing deep semantic similarities. USE and Sentence BERT got significantly higher results but not solid enough for a reliable usage. Similarly to the previous evaluation, RoBERTa had suspicious outcomes with values close to one which seems to be overfitting to syntactic patterns rather than a genuine semantic understanding. Finally, the approaches with the best performance by a large margin are the fine-tuned BERT and RoBERTa, a clear example of how important it is to fine-tune the models with domain specific data in order to achieve more optimal solutions.
 
@@ -758,7 +1011,33 @@ To have a better understanding of the previous analysis, the average cosine simi
 
 
 
-ModelAverage cosine similarityRawPreprocessingTF-IDF0.0650.015Doc2Vec0.0640.034USE0.5730.460Sentence BERT0.3080.310Sentence BERT fine-tuned0.2690.270RoBERTa0.9650.958RoBERTa fine-tuned0.1460.167Table 11. Average cosine similarity for all documents results
+Model
+Average cosine similarity
+
+Raw
+Preprocessing
+TF-IDF
+0.065
+0.015
+Doc2Vec
+0.064
+0.034
+USE
+0.573
+0.460
+Sentence BERT
+0.308
+0.310
+Sentence BERT fine-tuned
+0.269
+0.270
+RoBERTa
+0.965
+0.958
+RoBERTa fine-tuned
+0.146
+0.167
+Table 11. Average cosine similarity for all documents results
 
 
 The low average pairwise cosine similarity scores of TF-IDF and Doc2Vec are consistent with their limited ability to capture semantic relationships, being the lowest, same as in tenders within the same CPV groups. RoBERTA obtained an extremely high average similarity again, which indicates that it captures a lot of syntactic similarities, leading to high similarity scores even when the actual semantic similarity might not be as high, thus becoming a not a reliable approach. Finally, the rest of the algorithms achieve a reasonable cosine similarity score for the context of this evaluation, which shows that their previous results were valid.
@@ -789,7 +1068,30 @@ Figure 22. sBERT and RoBERTa clusterings
 On Sentence BERT clustering with three clusters, Figure 22 shows that they are well defined, with clear distinctions between each group and uniformly distributed without any significant overlapping. Contrary to it, on the seven cluster grouping, although it shows more granularity, there is more overlapping and separation between clusters less clear. With the RoBERTa model the same can be noticed, the one with four clusters shows clearer separation and distinction, while the one with eight suffers from overlapping. Visually speaking, both models seem to perform very well at identifying thematic and grouping the tenders by them. In order to decide which does this job the best and for a more precise analysis several metrics will be calculated such as Silhouette Score, Davies-Bouldin Index and Calinski-Harabasz Index.
 
 
-ModelSentence BERT fine-tunedRoBERTa fine-tunedclusters3748Silhouette Score0.0920.0870.09430.102Davies-Bouldin Index2.8232.6312.6282.642Calinski-Harabasz Index126.64485.350109.33480.606Table 12. Clusters evaluation
+Model
+Sentence BERT fine-tuned
+RoBERTa fine-tuned
+clusters
+3
+7
+4
+8
+Silhouette Score
+0.092
+0.087
+0.0943
+0.102
+Davies-Bouldin Index
+2.823
+2.631
+2.628
+2.642
+Calinski-Harabasz Index
+126.644
+85.350
+109.334
+80.606
+Table 12. Clusters evaluation
 
 
 The RoBERTa model obtained the highest Silhouette scores, specially the one with eight clusters. This represents how similar are the descriptions to the rest of their own group and the higher, the more well defined clusters. The Davies-Bouldin Index the average of the maximum ratio of the within-cluster distance and the between-cluster distance for each cluster and the lower, the better. In this case the RoBERTa model also got the best results, specifically the four clusters one. Finally, Calinski-Harabasz Index where the higher this value is, the better defined clusters are, Sentence BERT three clusters is the winner, with RoBERTa four clusters behind.
@@ -904,7 +1206,7 @@ The code4 developed and used for this project has been uploaded to GitHub and is
 
 [5] N. Reimers and I. Gurevych, "Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks," in Proc. 2019 Conf. Empirical Methods in Natural Language Processing, Nov. 2019. Available: http://arxiv.org/abs/1908.10084.
 
-[6] A. Gutiérrez Fandiño et al., "MarIA: Spanish Language Models," Procesamiento del Lenguaje Natural, vol. 68, 2022. doi: 10.26342/2022-68-3. Available:
+[6] A. GutiÃ©rrez FandiÃ±o et al., "MarIA: Spanish Language Models," Procesamiento del Lenguaje Natural, vol. 68, 2022. doi: 10.26342/2022-68-3. Available:
 https://upcommons.upc.edu/handle/2117/367156#.YyMTB4X9A-0.mendele y.
 
 [7] A. Radford, K. Narasimhan, T. Salimans, and I. Sutskever, "Improving Language Understanding by Generative Pre-Training," Preprint, 2018. Available:
@@ -932,7 +1234,7 @@ pp. 224-227, Apr. 1979. doi: 10.1109/TPAMI.1979.4766909.
 
 [17] E. Agirre et al., "SemEval-2014 Task 10: Multilingual Semantic Textual Similarity," in SemEval@ COLING, 2014, pp. 81-91.
 
-[18] M. Iyyer, V. Manjunatha, J. Boyd-Graber, and H. Daumé III, "Deep Unordered Composition Rivals Syntactic Methods for Text Classification," in Proc. 53rd Annu. Meeting Assoc. Comput. Linguistics and 7th Int. Joint Conf. Natural Language Processing (Volume 1: Long Papers), Beijing, China, Jul. 2015, pp. 1681-1691. doi: 10.3115/v1/P15-1162. Available: https://aclanthology.org/P15-1162.
+[18] M. Iyyer, V. Manjunatha, J. Boyd-Graber, and H. DaumÃ© III, "Deep Unordered Composition Rivals Syntactic Methods for Text Classification," in Proc. 53rd Annu. Meeting Assoc. Comput. Linguistics and 7th Int. Joint Conf. Natural Language Processing (Volume 1: Long Papers), Beijing, China, Jul. 2015, pp. 1681-1691. doi: 10.3115/v1/P15-1162. Available: https://aclanthology.org/P15-1162.
 
 [19] "Hugging Face," Available: https://huggingface.co/.
 [20] "Machine Learning Mastery,"
