@@ -1,0 +1,524 @@
+                                                                          TendeR-Sims
+                                        Similarity Retrieval System for Public Tenders
+
+                     Guilherme Q. Vasconcelos1 , Guilherme F. Zabot1 , Daniel M. de Lima1 ,
+           José F. Rodrigues Jr.1 , Caetano Traina Jr.1 , Daniel dos S. Kaster2 , Robson L. F. Cordeiro1
+                      1 Institute   of Mathematics and Computer Sciences, University of São Paulo, São Carlos, Brazil,
+                                  2 Computer Science Department, State University of Londrina, Paraná, Brazil
+
+
+
+
+Keywords:             Relational Databases, Division Operator, Similarity Comparison, Complex Data, Ontology, Public Tendering.
+
+Abstract:             TendeR-Sims (Tender Retrieval by Similarity) is a system that helps to search for satisfiable request for ten-
+                      der’s lots in a database by filtering irrelevant lots, so companies can easily discover the contracts they can
+                      win. The system implements the Similarity-aware Relational Division Operator in a commercial Relational
+                      Database Management System (RDBMS), and compares products by combining a path distance in a prepro-
+                      cessed ontology with a textual distance. Tender-Sims focuses on answering the following query: select the
+                      lots where a company has a similar enough item for each of all required items. We evaluated our proposed
+                      system employing a dataset composed of product catologs of Brazilian companies in the food market and real
+                      requests for tenders with known results. In the presented experiments, TendeR Sims achieved up to 66% cost
+                      reduction at 90% recall when compared to the ground truth.
+
+
+
+1      INTRODUCTION                                                                            descriptions by identity (=) is useless for this
+                                                                                               type of data.
+The initial step of a public tendering process is to                                               Whenever identity comparison cannot be used in
+publish a Request For Tender (RFT) document out-                                               a given setting, comparing the data by similarity may
+lining the agency’s needs, requirements, criteria and                                          be the best solution (Zezula et al., 2010). Similarity
+instructions. When the RFT is designed to acquire                                              queries, in essence, analyze data objects represented
+goods, the later are usually grouped in lots, which can                                        by feature vectors extracted from intrinsic data infor-
+have the requirement that a bidding company should                                             mation. For example, images are usually compared
+provide all the goods listed. RFTs are semi-structured                                         against each other using numeric features that repre-
+documents, as their structure may vary for each speci-                                         sent color, texture or shape patterns extracted from
+fic request and agency, and product/service descripti-                                         their visual content. For textual data, on the other
+ons are usually written in natural language. Moreover,                                         hand, a bag-of-words representation defines a feature
+these documents are commonly organized by grou-                                                vector where each element indicates the presence or
+ping products and/or services in lots to which a busi-                                         absence of a specific word in the sentence; a TF-IDF
+ness must be able to supply all of them to qualify for                                         representation (Rajaraman and Ullman, 2011) aug-
+the tender. These characteristics makes challenging to                                         ments the bag-of-words by making each value quan-
+automatically match companies to tenders.                                                      tify the frequency of a word in the sentence norma-
+     It is interesting to note that the Division operator                                      lized by its frequency in all sentences; and so on. A
+from Relational Databases is well-suited to find                                               distance function is then used to measure similarity
+out whether or not a given business can provide all                                            between elements of a dataset using the chosen repre-
+products of a lot, since this operator was designed                                            sentation.
+to answer queries with the idea of “for all”, such as                                              The inclusion of similarity queries is usually done
+“Which companies have all products of a given lot?”.                                           by means of extending operators of the Relational Al-
+However, one cannot expect that the product descrip-                                           gebra, such as the Relational Division operator. This
+tions presented in a lot will be exactly identical to                                          operator was extended to support similarity compa-
+its counterparts in a business catalog, thus, comparing                                        rison (Gonzaga and Cordeiro, 2017) and it is well-
+
+
+
+                                                                                                                                                  143
+Vasconcelos, G., Zabot, G., de Lima, D., Rodrigues Jr., J., Traina Jr., C., Kaster, D. and Cordeiro, R.
+TendeR-Sims.
+DOI: 10.5220/0006697601430150
+In Proceedings of the 20th International Conference on Enterprise Information Systems (ICEIS 2018), pages 143-150
+ISBN: 978-989-758-298-1
+Copyright c 2019 by SCITEPRESS – Science and Technology Publications, Lda. All rights reserved
+ICEIS 2018 - 20th International Conference on Enterprise Information Systems
+
+
+
+
+suited to answer queries with an idea of “candidate                   computer solutions to recover and filter data from ten-
+elements and requirements” involving complex data                     dering process and the inclusion of similarity queries
+objects that despite of being distinct, can be similar                on RDBMS.
+to each other — which is the case in our application
+over product descriptions (semi/non-structured text).                 2.1 Similarity Queries
+     In this context, we propose the Tender Retrieval
+By Similarity system — TendeR-Sims, a system ca-                      Complex data like images, audio, fingerprints, textual
+pable of comparing product descriptions in request for                descriptions and graphs are typically manipulated by
+tender lots with those in a business catalog in order to              similarity. The queries require the dataset represented
+filter out irrelevant lots — those not satisfiable by the             as feature vectors and a distance function to evaluate
+company. TendeR-Sims takes advantage of the afore-                    the dissimilarity between pairs of data elements.
+mentioned Similarity-aware Relational Division ope-                       The inclusion of similarity queries in RDBMS can
+rator to answer queries with the idea of “for all” in                 be performed either by extending the core of the sy-
+textual data. The similarity is achieved by comparing                 stem or by implementing external resources that exe-
+elements from RFT lots and business catalogs against                  cute similarity-aware operations and return informa-
+elements in an ontology that organize terms according                 tion to the core. For instance, PostgreSQL-IE (Gu-
+to their semantics in a given tender domain. Elements                 liato et al., 2009) and Kiara (Oliveira et al., 2016)
+from the RFT lots and business catalogs are said si-                  encapsulate similarity query algorithms in User De-
+milar if their closest element in the ontology belongs                fined Functions in PostgreSQL while SimDB (Silva
+to the same group.                                                    et al., 2010) is an extension of PostgreSQL’s core. Si-
+     To validate our proposals, we performed a case                   ren (Barioni et al., 2006), SimbA (Bedo et al., 2014)
+study using data from real RFTs and business cata-                    are similarity retrieval middlewares that recognizes
+logs in the context of the Brazillian food market. In                 an extended SQL syntax by intercepting the canoni-
+this study, our TendeR Sims system was highly ef-                     cal query, executing similarity operations externally
+fective with up to 66% cost reduction at a 90% recall                 and rewriting the query with stardard SQL statements.
+threshold when searching request for tenders where a                  Finally, FMI-SiR (Kaster et al., 2010) is a module
+given business is most likely to be able to attend. Our               that use interface and resource extensions provided
+main contributions in this work are as follows.                       by Oracle to implement DBMS-linked data types, fe-
+ 1. Prospective Client Identification – We carefully                  ature extractors, distance functions and indexes for
+     developed an automatic mediator system between                   similarity-based retrieval.
+     public organizations and private companies targe-                    Most researchers have been extending relational
+     ted at reducing the efforts of the latter when se-               operators to support similary queries based on two
+     lecting RFTs to bid for.                                         approches (Zezula et al., 2010): a) the range query,
+ 2. Case Study – We validated our system with real                    which selects all elements that are similar enough to
+     data in the context of food RFTs in Brazil. To                   a query center element, up to a predefined threshold;
+     make it possible, we also developed and publis-                  and b) k-Nearest Neighbors (k-NN) query, which re-
+     hed:                                                             turns the k most similar elements to the query center.
+  2.1. A novel food ontology in Brazilian Portuguese;                     One of the extended operators is the Similarity-
+                                                                      aware Division (Gonzaga and Cordeiro, 2017). This
+  2.2. An example dataset of Brazilian RFTs and food
+                                                                      new operator is able to evaluate complex data and ans-
+        business catalogs.
+                                                                      wers queries with the concept of “for all”. As we
+     The remainder of this article is organized as fol-               discussed in the introductory section, the Similarity-
+lows: Section 2 presents the background word and                      aware Division is a basis to our work, so we detail it
+related work, Section 3 focuses the development met-                  in the next subsection.
+hodology of our system proposal, Section 4 reports
+the results obtained in our case study with Brazilian
+                                                                      2.2 Similarity-Aware Division
+RFTs, and Section 5 concludes this article.
+                                                                      The Division operation from the Relational Algebra
+                                                                      directly corresponds to the Universal Quantification
+2     BACKGROUND AND RELATED                                          from the Relational Calculus (Codd, 1972). It allows
+      WORK                                                            writing queries involving the concept of “for all” in
+                                                                      a simple and intuitive manner, such as “Which com-
+This section presents the background on similarity                    panies can provide all products listed in a request for
+queries, the division operator and the related work on                tender’s lot?”
+
+
+144
+                                                                                                         TendeR-Sims
+
+
+
+
+    To illustrate the division, let us consider this query   nistry of Defence usually demands the best technique
+about RFT lots and business catalogs, as well as the         over price, whereas a school requiring a catering com-
+example relations shown in Table 1. In this setting, re-     pany will probably go for the lowest price.
+lations CompanyProducts and RFTLotProducts list,                  In regards to information systems for consulting
+respectively, the products in the catalog of four dis-       Brazilian tenders, the Ministry of Planning, Budget
+tinct businesses (Table 1a) and the products in a given      and Management released, in 2007, the Compras-
+tender lot (Table 1b). The relational division between       net system (Ministério do Planejamento Desenvolvi-
+these two relations produces a third relation, Com-          mento e Gestão do Governo Federal do Brasil, 2007).
+pany (Table 1c), which contains the companies that           It is an online tool developed to publish information
+can provide all products required in the lot, containing     about tendering processes and hirings promoted by
+exactly the same descriptions, and, therefore, can bid       the Federal Brazilian Government. An interesting fe-
+for that lot.                                                ature is the eletronic tender dealing. It also aims to
+    However, the description of each product or ser-         provide easy access to request for tenders documents
+vice listed in a RFT rarely matches exactly the corre-       so that companies are encouraged participate in.
+sponding description found in business catalogs. This             Following the same perspective, in 2017, an on-
+happens for a number of reasons, like synonym repre-         line governmental system named Painel de Preços
+sentation, mispelling and the addition of extra infor-       (Ministério do Planejamento Desenvolvimento e
+mation such as trademarks or technical specifications.       Gestão do Governo Federal do Brasil, 2017) has been
+So, the relational division operator may miss compa-         released. It allows the storage, analysis and compari-
+nies that fully match an RFT lot but are discarded due       son of reference prices in the acquisition of goods and
+to small differences in product/service descriptions.        contracting services for public administration. The
+    As we mentioned earlier, long texts are commonly         tool allows anyone to compare prices for a particu-
+compared by similarity and not equality, thus the            lar item, possibly filtering the data by date or country
+similarity-aware division is better suited to answer         regions, displaying details of previous purchases for
+such queries. The Similarity-aware Division ope-             the purpose of establishing a reference price.
+rator (Gonzaga and Cordeiro, 2017) relaxes attribute              These systems are focused on presenting infor-
+comparisons that are intrinsic to the traditional divi-      mation regarding RFTs for the general audience and
+sion, originally performed by identity (=), by redefi-       lack more advanced features like manipulating or fil-
+ning them to be compared by similarity according to          tering the requirements themselves. As the authors
+an user-defined distance function and a threshold. In        did not find another tendering application in Brazil
+this setting, tuples of relation CompanyProducts (li-        with more advanced features, we propose TendeR-
+nes 4-6 in Table 1a) match by similarity tuples of re-       Sims. TendeR-Sims is focused on filtering Request
+lation RFTLotProducts (Table 1b), thus providing a           for Tender documents to reduce amount of effort nee-
+more complete answer by adding company Company               ded to search for RFTs to bid in, thus helping pro-
+#2 to the result (Table 1c).                                 spective companies to find contracts more easily.
+
+2.3    Computer-aided Tendering
+       Processes                                             3    METHODOLOGY
+In several countries, whenever a public sector agency        This section details our proposal, the TendeR-Sims sy-
+— such as the Legislative and Judicial Branch, the Pu-       stem – Tender Retrieval by Similarity. Provided that
+blic Ministry, the Court of Accounts, etc. — needs to        textual product descriptions are better compared by
+buy goods or request a service, it must open a tende-        similarity and such form of manipulation is still not
+ring process. This administrative procedure is public        properly supported by RDBMS, it becomes neces-
+and garantees market competition, as any private bu-         sary to implement new functionalities in the RDBMS
+siness can participate in, and isonomy as the business       environment in order to execute queries that use the
+that is best-suited to attend a tendering will be the one    similarity-aware division operator.
+selected (Batista and Prestes, 2004).                            We acquired request for tender documents and bu-
+    After the companies submit their proposal to be          siness product catalogs from online websites and cre-
+evaluated, each tender will be verified and the best         ated a food ontology to semantically group different
+proposal wins. There are four types of tenders in            representations for similar products.
+Brazil (Mazza, 2011): lowest price, best technique,              Then, we carefully designed a novel distance
+technique and price and highest bid. The types may           function well-suited to compare product descriptions
+vary from scenario to scenario. For instance, the Mi-        by similarity, based on the ontology and the Jaccard
+
+
+                                                                                                                 145
+ICEIS 2018 - 20th International Conference on Enterprise Information Systems
+
+
+
+
+Table 1: Example of division to select companies able to provide all products listed in an RFT lot. Notice that CompanyPro-
+ducts (a) with a darker shade are not present in the lot, so they are not matched to any product in the table RFTLotProducts (b).
+                    (a) CompanyProducts                       (b) RFTLotProducts                 (c) Companies
+                                                         ÷                               =
+                Company            Product                          Product                        Company
+               Company #1            bread                            bread                       Company #1
+               Company #1           butter                           butter                       Company #4
+               Company #1            milk
+               Company #2        white bread
+               Company #2       salted butter
+               Company #3        light butter
+               Company #3       tomato ketchup
+               Company #4            bread
+               Company #4           butter
+               Company #4           popcorn
+               Company #4          raw fish
+
+
+distance. It is worth to notice that similarity measure               so we decided to carry out the extraction of the pro-
+developed, in which we use the bag-of-words repre-                    duct information from their websites. For this, web-
+sentation and Jaccard distance, was chosen for sim-                   crawler clients were used, capable of capturing and
+plicity. Any other text representation model and simi-                extracting the information presented in their product
+larity metric can be used in TendeR-Sims. The text                    catalog. Data was then processed to remove informa-
+representation and distance function is effectively a                 tion related to brands, trademarks, units of measure,
+parameter of the SQL query. Finally, we implemen-                     quantity as well as symbols, stopwords and any other
+ted the similarity-aware division operator in a com-                  information that was irrelevant about the product it-
+mercial DBMS by extending the FMI-SiR similarity                      self. Part of the normalized data was used to build the
+retrieval module 1 .                                                  ontology and the other part was used in our experi-
+                                                                      ments.
+3.1       Data Acquisition
+                                                                      3.2 Ontology
+The tender documents were collected from Brazilian
+governmental agencies and non-governmental orga-                      The leaf nodes represent unique product categories
+nizations websites: the Social Commerce Service of                    and the parent nodes are generalizations of these cate-
+the state of Paraná (SESC·PR)2 , the Regional Council                gories, creating a hierarchical structure in which pro-
+of Engineering and Agronomy of the State of Paraná                   ducts share common nodes. we defined categories and
+(CREA·PR)3 , and the Camboriu/SC City Administra-                     subcategories to represent products of a food domain
+tion website4 — all written in Brazilian Portuguese.                  in Brazilian Portuguese in a hierarchical structure, be-
+    These websites provide tender documents in                        cause we did not found any such an ontology availa-
+Adobe’s Portable Document Format (PDF), in such a                     ble in this language. In Figure 1, the leaves are illus-
+way that any one can have download these documents                    trated as rectangles and circles represent leaf nodes5 .
+freely. Only food-related tenders that have been alre-                Thus, “turkey fillet” and “chicken fillet” are placed in
+ady completed were collected, that is, those that have                different leaf nodes, however, both are types of fowl,
+already been taken by some company. A total of nine                   so their ontology relation branches on the fowl node,
+RFT documents were obtained in this process and 18                    meaning they are different subcategories of fowl pro-
+companies catalogs were collected.                                    ducts. In the leaf nodes there are many textual repre-
+    Based on the defined scope of the tenders, a survey               sentation of the product. This representations are used
+of the companies participating in the bidding process                 to compare similarity between products. As shown in
+was carried out in order to create a database from their              figure 1, the leaf product “whole grain” contains fol-
+products. We did not have access to the internal da-                  lowing representations: “whole grain bread vitãogrão
+tabase of the companies participating in the tenders,                 12 grains”, “supreme whole grain bread apple and
+                                                                      nut” and “whole oatmeal bread”.
+   1 To       access     the     source       code       visit            We preprocessed the item descriptions in both the
+https://bitbucket.org/tendersimsproject/tendersims/                   RFTs and business catalogs to generate the ontology,
+    2 http://www.sescpr.com.br/sesc-parana/licitacoes
+    3 http://www.crea-pr.org.br/ws/licitacoes-do-crea-pr                  5 Our ontology is in Portuguese, but we translated to En-
+    4 http://www.camboriu.sc.gov.br/licitacoes compra.php             glish in the figure for easier explanation.
+
+
+146
+                                                                                                             TendeR-Sims
+
+
+
+
+                                                            Figure 2: Illustration of the elements of the ontology (in
+                                                            gray), the RFT’s text (in blue) and the business catalog’s (in
+                                                            red). Elements labeled from 1 to 4 are the 4-nearest neig-
+                                                            hbors of the RFT’s element and the elements labeled from
+                                                            5 to 8 are the 4-nearest neighbors of the business catalog’s
+Figure 1: Overview of our ontology with its classes and
+                                                            element.
+subclasses.
+                                                            distance, which is the relation between the amount
+which is one of the knowledge bases of our method.          of exclusive words (set difference) and the overall
+The ontology provides useful semantics when dealing         amount of distinct words (set union). As an exam-
+with synonyms with different spellings, e.g., “whole        ple, let us consider the comparison between “whole
+grain bread vitãogrão 12 grains” and “white bread         grain bread” and “whole grain bread loaf”, with re-
+bauducco”, which could be considered similar snacks         spective bag-of-words representations [1,1,1,0] and
+in an university restaurant, but different in a more re-    [1,1,1,1]. The distance between these two elements is
+strictive diet.                                             0.25, since there are three matching words out of four
+    The creation of the categories represented in Fi-       possible matches. The smaller the value, the more si-
+gure 1 is based on the food pyramid, in which the           milar the pair of elements is.
+food domain is divided into four large groups: a)
+                                                                This similarity calculus is represented in Figure 2.
+the energetics – the bases of human nutrition such as
+                                                            The element in blue is the text of a product in a RFT
+bread, pasta and other products rich in carbohydrates;
+                                                            lot, the element in red is the text of the product in the
+b) the builders – protein-rich foods; c) the regulators
+                                                            business catalog and the gray dots are the representa-
+– known for their high content of vitamins and mi-
+                                                            tions of the ontology’s leaf nodes elements. As seen
+nerals; and d) the extra energetics – sugars, oils and
+                                                            in the picture, the four closest elements to the text of
+fats. However, we also inserted new nodes to repre-
+                                                            the product in the RFT lot are the elements 1, 2, 3
+sent products that do not fit into the four large groups,
+                                                            and 4 while the four closest elements to the text of the
+such as industrialized products, as is the case with
+                                                            product in the business catalog are 5, 6, 7 and 8.
+canned food, colorants and flavoring agents. Each
+                                                                The semantical similarity is achieved by the on-
+product description were manually added to an ini-
+                                                            tologic categorization of the elements. If one of the
+tial ontology category according to their position in
+                                                            k-nearest elements of the product’s text in the RFT’s
+the food pyramid.
+                                                            lot and one of the k-nearest elements of the business
+    An example is the breads subcategory, which deri-
+                                                            catalog’s text belongs to the same category, the onto-
+ves from the energetics. Based on the ontology crea-
+                                                            logy consider the product in a RFT lot and the product
+ted, methods that use comparison by similarity can be
+                                                            in the business catalog to be similar.
+implemented using the hierarchy present in the onto-
+logy to improve the result returned by the comparison.
+                                                            3.4 Implementing TendeR-Sims in a
+3.3    Similarity Comparison                                    commercial RDBMS
+
+We measure two types of similarity: lexical and se-         To implement our proposed TendeR-Sims system, we
+mantical. To measure the lexical similarity, the leaves     extended the FMI-SiR similarity retrieval module.
+elements are represented as a bag-of-words in such          This module offers resources such as distance functi-
+a way that the text is represented as a sorted array        ons, feature extractors and database indexes for com-
+with the length equal to the amount of distinct words.      plex data. FMI-SiR is implemented in C++ as an Ora-
+Then, the bag-of-words is evaluated using the Jaccard       cle library that is controled by the query processor.
+
+
+                                                                                                                     147
+ICEIS 2018 - 20th International Conference on Enterprise Information Systems
+
+
+
+
+                                                                      to a given product from a given lot of a request for ten-
+                                                                      der, i.e lot one of RFT of id one. The corresponding
+                                                                      code is given as follows:
+                                                                      SELECT DISTINCT company
+                                                                      FROM CompanyProducts this
+                                                                      WHERE NOT EXISTS (
+                                                                      SELECT textDescription
+                                                                      FROM RFTLotProducts request
+                                                                      WHERE lot = 1 AND RFTID = 1 AND NOT EXISTS (
+                                                                      SELECT * FROM CompanyProducts product
+                                                                      WHERE product.company = this.company
+                                                                      AND OntologySimilarity(
+                                                                      request.textDescription,
+Figure 3: Sequence of operations to execute similarity-               product.textDescription,
+aware division. During the query execution, the DBMS                  "ontology_file", 2
+query processor execute similarity operation externally.              ) = 1
+                                                                      ));
+This allows applications to manipulate complex data                       This concludes our methodology. The next
+and use of Oracle database resources together.                        Section will present and discuss the experimental eva-
+    Specifically, we inserted our ontology, the Jaccard               luation of this method with the database we collected.
+distance function and the similarity function Ontolo-
+gySimilarity (which evaluates pairs of text segments)                       Data: text1, text2, k, ontologyFilePath
+inside the module. To associate our external simila-                        Result: a value representing if elements are
+rity function to the schema, one must run the folowing                              similar or not
+command on Oracle:                                                          begin
+                                                                               creates ontology structure based on
+CREATE FUNCTION                                                                 relationships in the ontologyFilePath; if
+OntologySimilarity                                                              ontologyStructure.similar(text1,text2,k)
+(text1 varchar2, text2 varchar2,
+ontologyPathFile varchar2, k number)
+                                                                                then
+RETURN float                                                                       return 1;
+AS                                                                             return 0;
+LANGUAGE C LIBRARY libfmisir                                              Algorithm 1: Skeleton of the OntologySimilarity al-
+NAME "OntologySimilarity"                                                 gorithm. text1 and text2 are the texts from the RFT
+WITH CONTEXT;                                                             lot’s product and the text from the business catalog’s
+    This command creates a function that takes, as pa-                    product. This function is invoked by the query pro-
+rameters, two texts and the number of neighbouring                        cessor, builds ontology in memory and uses the struc-
+elements and a structured file containing the relati-                     ture’s function ”similar” to measure similarity between
+onship between leaves elements and categories. The                        the elements.
+implementation is within the FMI-SiR module. When
+this function is invoked in a SQL query, the DBMS
+changes context from SQL to C++, as shown in Fi-                      4        EXPERIMENTS
+gure 3. The function loads the ontology into memory
+and evaluates whether or not the pair of product des-                 To evaluate TendeR-Sims in a meaningful context, we
+criptions received is classified to the same node. The                performed a semi-supervised case study in a realistic
+function returns one if a pair of elements is similar                 setting: a food distributor looking for contracts in the
+and zero otherwise. The pseudo-code this function is                  public sector using the data acquired in section 3.1.
+illustrated in Algorithm 1 and Algorithm 2. The later                 Our case study focused on the product description for
+represents the function in the ontology structure that                validation purposes, and we intend to consider other
+evaluates similarity between elements as descripted in                attributes in future work.
+section 3.3. This result is sent back to the RDBMS,                       We randomly selected 20% of the RFT lots and
+which continues to process the query.                                 manually labelled all the companies to satisfy (real
+    Provided that there is no explicit SQL implemen-                  positives) or not satisfy (real negatives) each RFT lot.
+tation for the division, it must be represented through               This resulted in a set of 35 RFT lots which were
+the combination of existing operators. We used dou-                   used as our evaluation database, with a positive preva-
+ble negation for this task, that is, we selected compa-               lence of 0.163, i.e., on average each company satisfies
+nies that do not have any product that are not similar                16.3% of all lots.
+
+
+148
+                                                                                                           TendeR-Sims
+
+
+
+
+   Data: text1, text2, k                                     avoided by the user when she uses TendeR-Sims.
+   Result: a value representing if elements are                  The power of such a filter can be expressed by
+            similar or not                                   the measures summarized in Table 2. Specificity tells
+   begin                                                     how many irrelevant lots are left out of the answer,
+      initialize an empty list of leaf’s names               which should be as high as possible in order to re-
+       and distances to text1;                               duce the number of RFTs that will be analyzed manu-
+      initialize an empty list of leaf’s names               ally by the user; Recall informs how many of relevant
+       and distances to text2;                               lots are returned in the query, which should be high
+      foreach leaf in ontologyStructure do                   in order to not ignore possibly satisfiable contracts;
+           foreach textRepresentation in leaf do             the value of Precision is how many of the returned
+               calculate jaccardDistance                     lots are indeed satisfiable, which should be high, so
+                between textRepresentation and               the user does not spend time analyzing irrelevant lots;
+                text1;                                       F1-Score is the harmonic average of Precision and
+               save value and leaf’s name in the             Recall, which summarizes the overall predictive and
+                list for text1;                              selective power for the positive class.
+               calculate jaccard distance
+                between textRepresentation and
+                                                                            Table 2: Evaluation results.
+                text2;
+               save value and leaf’s name in the                                         k=1       k=2
+                list for text2;                                           Specificity    0.958     0.805
+                                                                          Precision      0.740     0.474
+       foreach item in the list for text1 do                              Recall         0.607     0.902
+           foreach item in the list for text2 do                          F1-score       0.667     0.621
+               if leaf’s name in item for text1 is
+                                                                          ECR            0.762     0.656
+                 equal to leaf’s name in item for
+                 text2 then                                      According to the expectations in Table 2 at k = 1,
+                    return 1;
+                                                             if we use TendeR-Sims to filter these RFTs, the sy-
+       return 0;                                             stem will answer with ≈ 5 RFT lots on average, where
+ Algorithm 2: Skeleton of the similarity evaluation al-      3 or 4 (≈ 3.7) of those can really be satisfied by the
+ gorithm. This function is implemented in the Ontology-      company. The Precision of this answer is 3.7 / 5 ≈
+ Strucure class and it is invoked by Algorithm 1. It takes   74%, and the Recall is 3.7 / 6 ≈ 61%.
+ two texts and a number of neighboring elements as pa-           This means we can find (recall) ≈ 61% of rele-
+ rameters. In the leaf nodes object there are information    vant RFT lots by using TendeR-Sims then manually
+ about the leaf’s name and all the textual representati-     verifying only the five lots that were returned in the
+ ons.                                                        answer. For comparison, if we want to find the same
+                                                             amount of relevant lots by hand, we could randomly
+     From this evaluation database, we selected two          shuffle and select 21 lots (60% of the dataset), then
+companies catalogs (11.1%) to “train” our model —            verify all the selected lots manually. The number of
+only the products in these two catalogs were prepro-         objects to be manually verified in this case was redu-
+cessed and added to the ontology. A total of 3,068           ced from 21 to 5, a 76.2% cost reduction.
+products categories are present in this training list,           By adjusting this k — the similarity threshold, it
+and are further filtered by a more strict list of stop-      is possible to recall more RFT lots by trading off pre-
+words to better reflect the semantics of the product ca-     cision. In Table 2 we observe that setting k = 2 raises
+tegories present in the RFT lots. The words removed          Recall to 90.2% and lowers Precision to 47.4%. In
+includes numbers, manufacturer and product proper            this case, TendeR-Sims will return 11 results, where 5
+names. The resulting list has 2,229 product catego-          or 6 (≈ 5.4) of them will be relevant lots for the com-
+ries, which were then put into the ontology. The other       pany. Thus, to find 90% of the relevant RFT lots, the
+companies were used as the test dataset.                     manual effort is reduced from 32 (randomly picking
+     For each one of the RFT lots in the test data-          90% of the dataset) to 11 objects by using TendeR-
+set, TendeR-Sims queries the companies satisfying all        Sims, a 65.6% cost reduction for achieving 90% re-
+products in the lot. This behaviour make this system         call. It still is a significant cost reduction to find ne-
+act as a filter which removes irrelevant items from the      arly all (90%) of the relevant items in the database.
+analytical workflow. Those items are the lots that can-          This Estimated Cost Reduction (ECR in Table 2)
+not be satisfied by the company. The efficiency of this      is then an expected estimate of how many RFT lots
+filter is measured by how much manual work can be            will not be needed to be manually processed if the
+
+
+                                                                                                                  149
+ICEIS 2018 - 20th International Conference on Enterprise Information Systems
+
+
+
+
+user wants find the same proportion (recall) of rele-                 Bedo, M. V. N., Traina, A. J. M., and Traina Jr., C. (2014).
+vant RFT lots from the database. Larger databases                           Seamless integration of distance functions and fea-
+will benefit even more from our system, for example,                        ture vectors for similarity-queries processing. JIDM,
+a company looking for tendering any RFT lot in the                          5(3):308–320.
+country may need to analyze tens of thousand lots.                    Codd, E. F. (1972). Relational completeness of data base
+                                                                            sublanguages. IBM Research Report, RJ987.
+As the ECR is a ratio, proportinally many hours may
+                                                                      Gonzaga, A. S. and Cordeiro, R. L. F. (2017). The
+be saved by TendeR-Sims. We then conclude that                              similarity-aware relational division database operator.
+TendeR-Sims can reduce the amount of manual work                            In Proceedings of the Symposium on Applied Compu-
+and the associated cost by a significant amount.                            ting, SAC 2017, pages 913–914.
+                                                                      Guliato, D., Melo, E. V., Rangayyan, R. M., and Soa-
+                                                                            res, R. C. (2009). POSTGRESQL-IE: an image-
+                                                                            handling extension for postgresql. J. Digital Imaging,
+5     CONCLUSION                                                            22(2):149–165.
+                                                                      Kaster, D. S., Bugatti, P. H., Traina, A. J. M., and Traina Jr.,
+TendeR-Sims is a system carefully designed to filter                        C. (2010). Fmi-sir: A flexible and efficient module
+requests for tender (RFTs) according to whether or                          for similarity searching on oracle database. Journal of
+not a company of interest is suited to tender them.                         Information and Data Management, 1(2):229–244.
+    Considering that product descriptions in a request                Mazza, A. (2011). Manual de Direito Administrativo. Sa-
+document may differ from the companies product ca-                          raiva.
+talogs by little variations, so any comparison by iden-               Ministério do Planejamento Desenvolvimento e Gestão
+tity (=) will retrieve only exact matches and leave out                     do Governo Federal do Brasil (2007).               Com-
+relevant items, making this approach unsuited for this                      prasnet. https://www.comprasgovernamentais.gov.br/
+                                                                            index.php/comprasnet-siasg. Accessed: 2017-10-08.
+type of data. On the other hand, comparing complex
+                                                                      Ministério do Planejamento Desenvolvimento e Gestão
+data is better addressed by how similar (or inversely,
+                                                                            do Governo Federal do Brasil (2017).              Painel
+how distant) their are. Thus, our system relies on the                      de Preço. http://paineldeprecos.planejamento.gov.br/
+Similarity-aware Relational Division Operator.                              perguntas.html. Accessed: 2017-10-06.
+    We created a dataset, proposed an ontology and                    Oliveira, P. H., Fraideinberze, A. C., Laverde, N. A., Gual-
+extended a similarity retrieval module so that all data                     dron, H., Gonzaga, A. S., Ferreira, L. D., Oliveira,
+manipulation runs inside a well-known commercial                            W. D., Rodrigues Jr., J. F., Cordeiro, R. L. F., Traina
+RDBMS (Oracle 12c).                                                         Jr., C., Traina, A. J. M., and Sousa, E. P. M. (2016).
+    Our results show that TendeR-Sims can signifi-                          On the support of a similarity-enabled relational data-
+                                                                            base management system in civilian crisis situations.
+cantly reduce the number of manually analyzed RFT                           In Proceedings of the 18th International Conference
+lots and their overall associated cost by up to 76%                         on Enterprise Information Systems, ICEIS 2016, pa-
+of the original amount. As future work we plan to                           ges 119–126.
+improve the ontology, the similarity measure and ex-                  Rajaraman, A. and Ullman, J. D. (2011). Mining of Massive
+plore other ontology domains.                                               Datasets. Cambridge University Press, New York,
+                                                                            NY, USA.
+                                                                      Silva, Y. N., Aly, A. M., Aref, W. G., and Larson, P. (2010).
+                                                                            Simdb: a similarity-aware database system. In Pro-
+ACKNOWLEDGEMENTS                                                            ceedings of the ACM SIGMOD International Confe-
+                                                                            rence on Management of Data, SIGMOD 2010, pages
+Special thanks to the Databases and Images Group of                         1243–1246.
+ICMC/USP, to the CAPES, CNPq and FAPESP fun-                          Zezula, P., Amato, G., Dohnal, V., and Batko, M. (2010).
+ding agencies, to the ICMC/USP staff and also to the                        Similarity Search: The Metric Space Approach. Sprin-
+many individuals that contributed to this study.                            ger Publishing Company, Incorporated, United States,
+                                                                            1st edition.
+
+
+REFERENCES
+Barioni, M. C. N., Razente, H. L., Traina, A. J. M., and
+      Traina Jr., C. (2006). SIREN: A similarity retrieval
+      engine for complex data. In Proceedings of the 32nd
+      International Conference on Very Large Data Bases,
+      pages 1155–1158.
+Batista, H. G. and Prestes, C. (2004). Guia valor econômico
+      de licitações. Globo Livros.
+
+
+150
+

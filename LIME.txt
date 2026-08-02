@@ -1,0 +1,778 @@
+                                                                         “Why Should I Trust You?”
+                                                                 Explaining the Predictions of Any Classifier
+
+                                                            Marco Tulio Ribeiro                                           Sameer Singh                          Carlos Guestrin
+                                                           University of Washington                                 University of Washington                 University of Washington
+                                                           Seattle, WA 98105, USA                                   Seattle, WA 98105, USA                   Seattle, WA 98105, USA
+                                                           marcotcr@cs.uw.edu                                        sameer@cs.uw.edu                        guestrin@cs.uw.edu
+
+
+                                        ABSTRACT                                                                                        how much the human understands a model’s behaviour, as
+arXiv:1602.04938v3 [cs.LG] 9 Aug 2016
+
+
+
+
+                                        Despite widespread adoption, machine learning models re-                                        opposed to seeing it as a black box.
+                                        main mostly black boxes. Understanding the reasons behind                                          Determining trust in individual predictions is an important
+                                        predictions is, however, quite important in assessing trust,                                    problem when the model is used for decision making. When
+                                        which is fundamental if one plans to take action based on a                                     using machine learning for medical diagnosis [6] or terrorism
+                                        prediction, or when choosing whether to deploy a new model.                                     detection, for example, predictions cannot be acted upon on
+                                        Such understanding also provides insights into the model,                                       blind faith, as the consequences may be catastrophic.
+                                        which can be used to transform an untrustworthy model or                                           Apart from trusting individual predictions, there is also a
+                                        prediction into a trustworthy one.                                                              need to evaluate the model as a whole before deploying it “in
+                                          In this work, we propose LIME, a novel explanation tech-                                      the wild”. To make this decision, users need to be confident
+                                        nique that explains the predictions of any classifier in an in-                                 that the model will perform well on real-world data, according
+                                        terpretable and faithful manner, by learning an interpretable                                   to the metrics of interest. Currently, models are evaluated
+                                        model locally around the prediction. We also propose a                                          using accuracy metrics on an available validation dataset.
+                                        method to explain models by presenting representative indi-                                     However, real-world data is often significantly different, and
+                                        vidual predictions and their explanations in a non-redundant                                    further, the evaluation metric may not be indicative of the
+                                        way, framing the task as a submodular optimization prob-                                        product’s goal. Inspecting individual predictions and their
+                                        lem. We demonstrate the flexibility of these methods by                                         explanations is a worthwhile solution, in addition to such
+                                        explaining different models for text (e.g. random forests)                                      metrics. In this case, it is important to aid users by suggesting
+                                        and image classification (e.g. neural networks). We show the                                    which instances to inspect, especially for large datasets.
+                                        utility of explanations via novel experiments, both simulated                                      In this paper, we propose providing explanations for indi-
+                                        and with human subjects, on various scenarios that require                                      vidual predictions as a solution to the “trusting a prediction”
+                                        trust: deciding if one should trust a prediction, choosing                                      problem, and selecting multiple such predictions (and expla-
+                                        between models, improving an untrustworthy classifier, and                                      nations) as a solution to the “trusting the model” problem.
+                                        identifying why a classifier should not be trusted.                                             Our main contributions are summarized as follows.
+                                                                                                                                        • LIME, an algorithm that can explain the predictions of any
+                                                                                                                                          classifier or regressor in a faithful way, by approximating
+                                        1.      INTRODUCTION                                                                              it locally with an interpretable model.
+                                        Machine learning is at the core of many recent advances in
+                                        science and technology. Unfortunately, the important role                                       • SP-LIME, a method that selects a set of representative
+                                        of humans is an oft-overlooked aspect in the field. Whether                                       instances with explanations to address the “trusting the
+                                        humans are directly using machine learning classifiers as tools,                                  model” problem, via submodular optimization.
+                                        or are deploying models within other products, a vital concern                                  • Comprehensive evaluation with simulated and human sub-
+                                        remains: if the users do not trust a model or a prediction,                                       jects, where we measure the impact of explanations on
+                                        they will not use it. It is important to differentiate between                                    trust and associated tasks. In our experiments, non-experts
+                                        two different (but related) definitions of trust: (1) trusting a                                  using LIME are able to pick which classifier from a pair
+                                        prediction, i.e. whether a user trusts an individual prediction                                   generalizes better in the real world. Further, they are able
+                                        sufficiently to take some action based on it, and (2) trusting                                    to greatly improve an untrustworthy classifier trained on
+                                        a model, i.e. whether the user trusts a model to behave in                                        20 newsgroups, by doing feature engineering using LIME.
+                                        reasonable ways if deployed. Both are directly impacted by                                        We also show how understanding the predictions of a neu-
+                                        Permission to make digital or hard copies of all or part of this work for personal or             ral network on images helps practitioners know when and
+                                        classroom use is granted without fee provided that copies are not made or distributed             why they should not trust a model.
+                                        for profit or commercial advantage and that copies bear this notice and the full citation
+                                        on the first page. Copyrights for components of this work owned by others than the
+                                        author(s) must be honored. Abstracting with credit is permitted. To copy otherwise, or          2.   THE CASE FOR EXPLANATIONS
+                                        republish, to post on servers or to redistribute to lists, requires prior specific permission
+                                        and/or a fee. Request permissions from permissions@acm.org.                                        By “explaining a prediction”, we mean presenting textual or
+                                        KDD 2016 San Francisco, CA, USA                                                                 visual artifacts that provide qualitative understanding of the
+                                         c 2016 Copyright held by the owner/author(s). Publication rights licensed to ACM.
+                                                                                                                                        relationship between the instance’s components (e.g. words
+                                        ISBN 978-1-4503-4232-2/16/08. . . $15.00                                                        in text, patches in an image) and the model’s prediction. We
+                                        DOI: http://dx.doi.org/10.1145/2939672.2939778                                                  argue that explaining predictions is an important aspect in
+                                                         Flu                     sneeze
+                                               sneeze            Explainer
+                                               weight             (LIME)
+                                                                                 headache
+                                               headache
+                                               no fatigue                        no fatigue
+                                               age
+
+                     Model                 Data and Prediction                 Explanation      Human makes decision
+
+Figure 1: Explaining individual predictions. A model predicts that a patient has the flu, and LIME highlights
+the symptoms in the patient’s history that led to the prediction. Sneeze and headache are portrayed as
+contributing to the “flu” prediction, whilesneeze
+                                            “no fatigue” is evidence against it. With these, a doctor can make
+an informed decision about whether to trust the model’s prediction.
+                                                    headache
+getting humans to trust and use machine learning       effectively,
+                                                   active                                             Explainer
+if the explanations are faithful and intelligible.                                                    (LIME)
+   The process of explaining individual predictions is illus-
+trated in Figure 1.Human
+                      It is makes
+                            clear that a doctor is much better
+positioned to make adecision
+                         decision with the help Explanation
+                                                  of a model if
+intelligible explanations are provided. In this case, an ex-
+planation is a small list of symptoms with relative weights –
+symptoms that either contribute to the prediction (in green)
+or are evidence against it (in red). Humans usually have prior
+knowledge about the application domain, which they can use
+to accept (trust) or reject a prediction if they understand the
+reasoning behind it. It has been observed, for example, that
+providing explanations can increase the acceptance of movie            Figure 2: Explaining individual predictions of com-
+recommendations [12] and other automated systems [8].                  peting classifiers trying to determine if a document
+   Every machine learning application also requires a certain          is about “Christianity” or “Atheism”. The bar chart
+measure of overall trust in the model. Development and                 represents the importance given to the most rele-
+evaluation of a classification model often consists of collect-        vant words, also highlighted in the text. Color indi-
+ing annotated data, of which a held-out subset is used for             cates which class the word contributes to (green for
+automated evaluation. Although this is a useful pipeline for           “Christianity”, magenta for “Atheism”).
+many applications, evaluation on validation data may not
+correspond to performance “in the wild”, as practitioners               2, we show how individual prediction explanations can be
+often overestimate the accuracy of their models [20], and               used to select between models, in conjunction with accuracy.
+thus trust cannot rely solely on it. Looking at examples                In this case, the algorithm with higher accuracy on the
+offers an alternative method to assess truth in the model,              validation set is actually much worse, a fact that is easy to see
+especially if the examples are explained. We thus propose               when explanations are provided (again, due to human prior
+explaining several representative individual predictions of a           knowledge), but hard otherwise. Further, there is frequently
+model as a way to provide a global understanding.                       a mismatch between the metrics that we can compute and
+   There are several ways a model or its evaluation can go              optimize (e.g. accuracy) and the actual metrics of interest
+wrong. Data leakage, for example, defined as the uninten-               such as user engagement and retention. While we may not
+tional leakage of signal into the training (and validation)             be able to measure such metrics, we have knowledge about
+data that would not appear when deployed [14], potentially              how certain model behaviors can influence them. Therefore,
+increases accuracy. A challenging example cited by Kauf-                a practitioner may wish to choose a less accurate model for
+man et al. [14] is one where the patient ID was found to be             content recommendation that does not place high importance
+heavily correlated with the target class in the training and            in features related to “clickbait” articles (which may hurt
+validation data. This issue would be incredibly challenging             user retention), even if exploiting such features increases
+to identify just by observing the predictions and the raw               the accuracy of the model in cross validation. We note
+data, but much easier if explanations such as the one in                that explanations are particularly useful in these (and other)
+Figure 1 are provided, as patient ID would be listed as an              scenarios if a method can produce them for any model, so
+explanation for predictions. Another particularly hard to               that a variety of models can be compared.
+detect problem is dataset shift [5], where training data is
+different than test data (we give an example in the famous              Desired Characteristics for Explainers
+20 newsgroups dataset later on). The insights given by expla-           We now outline a number of desired characteristics from
+nations are particularly helpful in identifying what must be            explanation methods.
+done to convert an untrustworthy model into a trustworthy                 An essential criterion for explanations is that they must
+one – for example, removing leaked data or changing the                 be interpretable, i.e., provide qualitative understanding
+training data to avoid dataset shift.                                   between the input variables and the response. We note that
+   Machine learning practitioners often have to select a model          interpretability must take into account the user’s limitations.
+from a number of alternatives, requiring them to assess                 Thus, a linear model [24], a gradient vector [2] or an additive
+the relative trust between two or more models. In Figure                model [6] may or may not be interpretable. For example, if
+hundreds or thousands of features significantly contribute         3.2    Fidelity-Interpretability Trade-off
+to a prediction, it is not reasonable to expect any user to           Formally, we define an explanation as a model g ∈ G,
+comprehend why the prediction was made, even if individual         where G is a class of potentially interpretable models, such
+weights can be inspected. This requirement further implies         as linear models, decision trees, or falling rule lists [27], i.e. a
+that explanations should be easy to understand, which is           model g ∈ G can be readily presented to the user with visual
+not necessarily true of the features used by the model, and                                                             0
+                                                                   or textual artifacts. The domain of g is {0, 1}d , i.e. g acts
+thus the “input variables” in the explanations may need            over absence/presence of the interpretable components. As
+to be different than the features. Finally, we note that the       not every g ∈ G may be simple enough to be interpretable -
+notion of interpretability also depends on the target audience.    thus we let Ω(g) be a measure of complexity (as opposed to
+Machine learning practitioners may be able to interpret small      interpretability) of the explanation g ∈ G. For example, for
+Bayesian networks, but laymen may be more comfortable              decision trees Ω(g) may be the depth of the tree, while for
+with a small number of weighted features as an explanation.        linear models, Ω(g) may be the number of non-zero weights.
+   Another essential criterion is local fidelity. Although it is      Let the model being explained be denoted f : Rd → R. In
+often impossible for an explanation to be completely faithful      classification, f (x) is the probability (or a binary indicator)
+unless it is the complete description of the model itself, for     that x belongs to a certain class1 . We further use πx (z) as a
+an explanation to be meaningful it must at least be locally        proximity measure between an instance z to x, so as to define
+faithful, i.e. it must correspond to how the model behaves in      locality around x. Finally, let L(f, g, πx ) be a measure of
+the vicinity of the instance being predicted. We note that         how unfaithful g is in approximating f in the locality defined
+local fidelity does not imply global fidelity: features that       by πx . In order to ensure both interpretability and local
+are globally important may not be important in the local           fidelity, we must minimize L(f, g, πx ) while having Ω(g) be
+context, and vice versa. While global fidelity would imply         low enough to be interpretable by humans. The explanation
+local fidelity, identifying globally faithful explanations that    produced by LIME is obtained by the following:
+are interpretable remains a challenge for complex models.
+   While there are models that are inherently interpretable [6,                  ξ(x) = argmin L(f, g, πx ) + Ω(g)                 (1)
+17, 26, 27], an explainer should be able to explain any model,                             g∈G
+
+and thus be model-agnostic (i.e. treat the original model          This formulation can be used with different explanation
+as a black box). Apart from the fact that many state-of-           families G, fidelity functions L, and complexity measures Ω.
+the-art classifiers are not currently interpretable, this also     Here we focus on sparse linear models as explanations, and
+provides flexibility to explain future classifiers.                on performing the search using perturbations.
+   In addition to explaining predictions, providing a global
+perspective is important to ascertain trust in the model.          3.3    Sampling for Local Exploration
+As mentioned before, accuracy may often not be a suitable
+                                                                      We want to minimize the locality-aware loss L(f, g, πx )
+metric to evaluate the model, and thus we want to explain
+                                                                   without making any assumptions about f , since we want the
+the model. Building upon the explanations for individual
+                                                                   explainer to be model-agnostic. Thus, in order to learn
+predictions, we select a few explanations to present to the
+                                                                   the local behavior of f as the interpretable inputs vary, we
+user, such that they are representative of the model.
+                                                                   approximate L(f, g, πx ) by drawing samples, weighted by
+                                                                   πx . We sample instances around x0 by drawing nonzero
+3.    LOCAL INTERPRETABLE                                          elements of x0 uniformly at random (where the number of
+      MODEL-AGNOSTIC EXPLANATIONS                                  such draws is also uniformly sampled). Given a perturbed
+                                                                                       0
+  We now present Local Interpretable Model-agnostic Expla-         sample z 0 ∈ {0, 1}d (which contains a fraction of the nonzero
+                                                                                  0
+nations (LIME). The overall goal of LIME is to identify an         elements of x ), we recover the sample in the original repre-
+interpretable model over the interpretable representation          sentation z ∈ Rd and obtain f (z), which is used as a label for
+that is locally faithful to the classifier.                        the explanation model. Given this dataset Z of perturbed
+                                                                   samples with the associated labels, we optimize Eq. (1) to
+3.1    Interpretable Data Representations                          get an explanation ξ(x). The primary intuition behind LIME
+                                                                   is presented in Figure 3, where we sample instances both
+  Before we present the explanation system, it is impor-           in the vicinity of x (which have a high weight due to πx )
+tant to distinguish between features and interpretable data        and far away from x (low weight from πx ). Even though
+representations. As mentioned before, interpretable expla-         the original model may be too complex to explain globally,
+nations need to use a representation that is understandable        LIME presents an explanation that is locally faithful (linear
+to humans, regardless of the actual features used by the           in this case), where the locality is captured by πx . It is worth
+model. For example, a possible interpretable representation        noting that our method is fairly robust to sampling noise
+for text classification is a binary vector indicating the pres-    since the samples are weighted by πx in Eq. (1). We now
+ence or absence of a word, even though the classifier may          present a concrete instance of this general framework.
+use more complex (and incomprehensible) features such as
+word embeddings. Likewise for image classification, an in-         3.4    Sparse Linear Explanations
+terpretable representation may be a binary vector indicating
+                                                                     For the rest of this paper, we let G be the class of linear
+the “presence” or “absence” of a contiguous patch of similar
+                                                                   models, such that g(z 0 ) = wg · z 0 . We use the locally weighted
+pixels (a super-pixel), while the classifier may represent the
+                                                                   square loss as L, as defined in Eq. (2), where we let πx (z) =
+image as a tensor with three color channels per pixel. We
+                                                                   exp(−D(x, z)2 /σ 2 ) be an exponential kernel defined on some
+denote x ∈ Rd be the original representation of an instance
+                                           0
+being explained, and we use x0 ∈ {0, 1}d to denote a binary        1
+                                                                     For multiple classes, we explain each class separately, thus
+vector for its interpretable representation.                       f (x) is the prediction of the relevant class.
+                                                                  Algorithm 1 Sparse Linear Explanations using LIME
+                                                                  Require: Classifier f , Number of samples N
+                                                                  Require: Instance x, and its interpretable version x0
+                                                                  Require: Similarity kernel πx , Length of explanation K
+                                                                    Z ← {}
+                                                                    for i ∈ {1, 2, 3, ..., N } do
+                                                                       zi0 ← sample around(x0 )
+                                                                       Z ← Z ∪ hzi0 , f (zi ), πx (zi )i
+                                                                    end for
+                                                                    w ← K-Lasso(Z, K) . with zi0 as features, f (z) as target
+                                                                    return w
+Figure 3: Toy example to present intuition for LIME.
+The black-box model’s complex decision function f
+(unknown to LIME) is represented by the blue/pink
+background, which cannot be approximated well by                  the explanation on Z, and present this information to the
+a linear model. The bold red cross is the instance                user. This estimate of faithfulness can also be used for
+being explained. LIME samples instances, gets pre-                selecting an appropriate family of explanations from a set of
+dictions using f , and weighs them by the proximity               multiple interpretable model classes, thus adapting to the
+to the instance being explained (represented here                 given dataset and the classifier. We leave such exploration
+by size). The dashed line is the learned explanation              for future work, as linear explanations work quite well for
+that is locally (but not globally) faithful.                      multiple black-box models in our experiments.
+distance function D (e.g. cosine distance for text, L2 distance
+for images) with width σ.
+
+          L(f, g, πx ) =
+                         X
+                              πx (z) f (z) − g(z 0 )
+                                                     2
+                                                            (2)
+                                                                  3.5    Example 1: Text classification with SVMs
+                        z,z 0 ∈Z
+                                                                  In Figure 2 (right side), we explain the predictions of a
+                                                                  support vector machine with RBF kernel trained on uni-
+For text classification, we ensure that the explanation is        grams to differentiate “Christianity” from “Atheism” (on a
+interpretable by letting the interpretable representation be      subset of the 20 newsgroup dataset). Although this classifier
+a bag of words, and by setting a limit K on the number of         achieves 94% held-out accuracy, and one would be tempted
+words, i.e. Ω(g) = ∞1[kwg k0 > K]. Potentially, K can be          to trust it based on this, the explanation for an instance
+adapted to be as big as the user can handle, or we could          shows that predictions are made for quite arbitrary reasons
+have different values of K for different instances. In this       (words “Posting”, “Host”, and “Re” have no connection to
+paper we use a constant value for K, leaving the exploration      either Christianity or Atheism). The word “Posting” appears
+of different values to future work. We use the same Ω for         in 22% of examples in the training set, 99% of them in the
+image classification, using “super-pixels” (computed using        class “Atheism”. Even if headers are removed, proper names
+any standard algorithm) instead of words, such that the           of prolific posters in the original newsgroups are selected by
+interpretable representation of an image is a binary vector       the classifier, which would also not generalize.
+where 1 indicates the original super-pixel and 0 indicates a         After getting such insights from explanations, it is clear
+grayed out super-pixel. This particular choice of Ω makes         that this dataset has serious issues (which are not evident
+directly solving Eq. (1) intractable, but we approximate it by    just by studying the raw data or predictions), and that this
+first selecting K features with Lasso (using the regularization   classifier, or held-out evaluation, cannot be trusted. It is also
+path [9]) and then learning the weights via least squares (a      clear what the problems are, and the steps that can be taken
+procedure we call K-LASSO in Algorithm 1). Since Algo-            to fix these issues and train a more trustworthy classifier.
+rithm 1 produces an explanation for an individual prediction,
+its complexity does not depend on the size of the dataset,
+but instead on time to compute f (x) and on the number
+of samples N . In practice, explaining random forests with        3.6    Example 2: Deep networks for images
+1000 trees using scikit-learn (http://scikit-learn.org) on a      When using sparse linear explanations for image classifiers,
+laptop with N = 5000 takes under 3 seconds without any            one may wish to just highlight the super-pixels with posi-
+optimizations such as using gpus or parallelization. Explain-     tive weight towards a specific class, as they give intuition
+ing each prediction of the Inception network [25] for image       as to why the model would think that class may be present.
+classification takes around 10 minutes.                           We explain the prediction of Google’s pre-trained Inception
+   Any choice of interpretable representations and G will         neural network [25] in this fashion on an arbitrary image
+have some inherent drawbacks. First, while the underlying         (Figure 4a). Figures 4b, 4c, 4d show the superpixels expla-
+model can be treated as a black-box, certain interpretable        nations for the top 3 predicted classes (with the rest of the
+representations will not be powerful enough to explain certain    image grayed out), having set K = 10. What the neural
+behaviors. For example, a model that predicts sepia-toned         network picks up on for each of the classes is quite natural
+images to be retro cannot be explained by presence of absence     to humans - Figure 4b in particular provides insight as to
+of super pixels. Second, our choice of G (sparse linear models)   why acoustic guitar was predicted to be electric: due to the
+means that if the underlying model is highly non-linear even      fretboard. This kind of explanation enhances trust in the
+in the locality of the prediction, there may not be a faithful    classifier (even if the top predicted class is wrong), as it shows
+explanation. However, we can estimate the faithfulness of         that it is not acting in an unreasonable manner.
+      (a) Original Image          (b) Explaining Electric guitar (c) Explaining Acoustic guitar         (d) Explaining Labrador
+Figure 4: Explaining an image classification prediction made by Google’s Inception neural network. The top
+3 classes predicted are “Electric Guitar” (p = 0.32), “Acoustic guitar” (p = 0.24) and “Labrador” (p = 0.21)
+
+
+4.   SUBMODULAR PICK FOR                                                                 f1   f2   f3   f4   f5
+
+     EXPLAINING MODELS
+   Although an explanation of a single prediction provides
+some understanding into the reliability of the classifier to the
+user, it is not sufficient to evaluate and assess trust in the
+model as a whole. We propose to give a global understanding
+of the model by explaining a set of individual instances. This
+approach is still model agnostic, and is complementary to
+computing summary statistics such as held-out accuracy.
+                                                                   Figure 5: Toy example W. Rows represent in-
+   Even though explanations of multiple instances can be
+                                                                   stances (documents)Covered
+                                                                                        and columns
+                                                                                              Features represent features
+insightful, these instances need to be selected judiciously,
+                                                                   (words). Feature f2 (dotted blue) has the highest im-
+since users may not have the time to examine a large number
+                                                                   portance. Rows 2 and 5 (in red) would be selected
+of explanations. We represent the time/patience that humans
+                                                                   by the pick procedure, covering all but feature f1.
+have by a budget B that denotes the number of explanations
+they are willing to look at in order to understand a model.
+Given a set of instances X, we define the pick step as the         Algorithm 2 Submodular pick (SP) algorithm
+task of selecting B instances for the user to inspect.             Require: Instances X, Budget B
+   The pick step is not dependent on the existence of explana-       for all xi ∈ X do
+tions - one of the main purpose of tools like Modeltracker [1]          Wi ← explain(xi , x0i )            . Using Algorithm 1
+and others [11] is to assist users in selecting instances them-      end for
+selves, and examining the raw data and predictions. However,         for j ∈ {1  . . d0 } do
+since looking at raw data is not enough to understand predic-                 p. P   n
+                                                                        Ij ←         i=1 |Wij | . Compute feature importances
+tions and get insights, the pick step should take into account       end for
+the explanations that accompany each prediction. Moreover,           V ← {}
+this method should pick a diverse, representative set of expla-      while |V | < B do          . Greedy optimization of Eq (4)
+nations to show the user – i.e. non-redundant explanations              V ← V ∪ argmaxi c(V ∪ {i}, W, I)
+that represent how the model behaves globally.                       end while
+   Given the explanations for a set of instances X (|X| = n),        return V
+we construct an n × d0 explanation matrix W that represents
+the local importance of the interpretable components for
+each instance. When using linear models as explanations,
+for an instance xi and explanation gi = ξ(xi ), we set Wij =       such as color histograms or other features of super-pixels; we
+|wgij |. Further, for each component (column) j in W, we           leave further exploration of these ideas for future work.
+let Ij denote the global importance of that component in              While we want to pick instances that cover the important
+the explanation space. Intuitively, we want I such that            components, the set of explanations must not be redundant
+features that explain many different instances have higher         in the components they show the users, i.e. avoid selecting
+importance scores. In Figure 5, we show a toy example W,           instances with similar explanations. In Figure 5, after the
+with n = d0 = 5, where W is binary (for simplicity). The           second row is picked, the third row adds no value, as the
+importance function I should score feature f2 higher than          user has already seen features f2 and f3 - while the last row
+feature f1, i.e. I2 > I1 , since feature f2 is used to explain     exposes the user to completely new features. Selecting the
+more p instances. Concretely for the text applications, we set     second and last row results in the coverage of almost all the
+         Pn
+Ij =        i=1 Wij . For images, I must measure something
+                                                                   features. We formalize this non-redundant coverage intuition
+that is comparable across the super-pixels in different images,    in Eq. (3), where we define coverage as the set function c
+                                                                   that, given W and I, computes the total importance of the
+                                                                   features that appear in at least one instance in a set V .
+                                                                                100                          92.1
+                                                                                                                                 100                          97.0
+                              0
+                             d
+                                                                                                                                               78.9
+                             X
+              c(V, W, I) =         1[∃i∈V :Wij >0] Ij      (3)                  75            72.8                               75
+
+
+
+
+                                                                   Recall (%)
+
+
+
+
+                                                                                                                    Recall (%)
+                                                                                                     64.3
+                             j=1
+                                                                                50                                               50
+                                                                                                                                                      37.0
+The pick problem, defined in Eq. (4), consists of finding the
+                                                                                25                                               25     20.6
+set V, |V | ≤ B that achieves highest coverage.                                        17.4
+
+
+                                                                                 0                                                0
+              P ick(W, I) = argmax c(V, W, I)              (4)                        random parzen greedy   LIME                      random parzen greedy   LIME
+                              V,|V |≤B
+                                                                                       (a) Sparse LR                                   (b) Decision Tree
+The problem in Eq. (4) is maximizing a weighted coverage
+                                                                  Figure 6: Recall on truly important features for two
+function, and is NP-hard [10]. Let c(V ∪{i}, W, I)−c(V, W, I)
+                                                                  interpretable classifiers on the books dataset.
+be the marginal coverage gain of adding an instance i to a set
+V . Due to submodularity, a greedy algorithm that iteratively                   100                                              100                          97.8
+                                                                                                             90.2
+adds the instance with the highest marginal coverage gain to                                                                                   80.6
+                                                                                75                                               75
+the solution offers a constant-factor approximation guarantee
+
+
+
+
+                                                                   Recall (%)
+
+
+
+
+                                                                                                                    Recall (%)
+                                                                                              60.8   63.4
+
+of 1−1/e to the optimum [15]. We outline this approximation                     50                                               50                   47.6
+
+in Algorithm 2, and call it submodular pick.
+                                                                                25     19.2                                      25     17.4
+
+
+5.    SIMULATED USER EXPERIMENTS                                                 0
+                                                                                      random parzen greedy   LIME
+                                                                                                                                  0
+                                                                                                                                       random parzen greedy   LIME
+  In this section, we present simulated user experiments to                            (a) Sparse LR                                   (b) Decision Tree
+evaluate the utility of explanations in trust-related tasks. In
+particular, we address the following questions: (1) Are the       Figure 7: Recall on truly important features for two
+explanations faithful to the model, (2) Can the explanations      interpretable classifiers on the DVDs dataset.
+aid users in ascertaining trust in predictions, and (3) Are
+the explanations useful for evaluating the model as a whole.      and decision trees). In particular, we train both classifiers
+Code and data for replicating our experiments are available       such that the maximum number of features they use for any
+at https://github.com/marcotcr/lime-experiments.                  instance is 10, and thus we know the gold set of features
+                                                                  that the are considered important by these models. For
+5.1    Experiment Setup                                           each prediction on the test set, we generate explanations and
+  We use two sentiment analysis datasets (books and DVDs,         compute the fraction of these gold features that are recovered
+2000 instances each) where the task is to classify prod-          by the explanations. We report this recall averaged over all
+uct reviews as positive or negative [4]. We train decision        the test instances in Figures 6 and 7. We observe that
+trees (DT), logistic regression with L2 regularization (LR),      the greedy approach is comparable to parzen on logistic
+nearest neighbors (NN), and support vector machines with          regression, but is substantially worse on decision trees since
+RBF kernel (SVM), all using bag of words as features. We          changing a single feature at a time often does not have an
+also include random forests (with 1000 trees) trained with        effect on the prediction. The overall recall by parzen is low,
+the average word2vec embedding [19] (RF), a model that is         likely due to the difficulty in approximating the original high-
+impossible to interpret without a technique like LIME. We         dimensional classifier. LIME consistently provides > 90%
+use the implementations and default parameters of scikit-         recall for both classifiers on both datasets, demonstrating
+learn, unless noted otherwise. We divide each dataset into        that LIME explanations are faithful to the models.
+train (1600 instances) and test (400 instances).
+  To explain individual predictions, we compare our pro-          5.3                 Should I trust this prediction?
+posed approach (LIME), with parzen [2], a method that               In order to simulate trust in individual predictions, we first
+approximates the black box classifier globally with Parzen        randomly select 25% of the features to be “untrustworthy”,
+windows, and explains individual predictions by taking the        and assume that the users can identify and would not want
+gradient of the prediction probability function. For parzen,      to trust these features (such as the headers in 20 newsgroups,
+we take the K features with the highest absolute gradients        leaked data, etc). We thus develop oracle “trustworthiness”
+as explanations. We set the hyper-parameters for parzen and       by labeling test set predictions from a black box classifier as
+LIME using cross validation, and set N = 15, 000. We also         “untrustworthy” if the prediction changes when untrustworthy
+compare against a greedy procedure (similar to Martens            features are removed from the instance, and “trustworthy”
+and Provost [18]) in which we greedily remove features that       otherwise. In order to simulate users, we assume that users
+contribute the most to the predicted class until the prediction   deem predictions untrustworthy from LIME and parzen ex-
+changes (or we reach the maximum of K features), and a            planations if the prediction from the linear approximation
+random procedure that randomly picks K features as an             changes when all untrustworthy features that appear in the
+explanation. We set K to 10 for our experiments.                  explanations are removed (the simulated human “discounts”
+  For experiments where the pick procedure applies, we either     the effect of untrustworthy features). For greedy and random,
+do random selection (random pick, RP) or the procedure            the prediction is mistrusted if any untrustworthy features
+described in §4 (submodular pick, SP). We refer to pick-          are present in the explanation, since these methods do not
+explainer combinations by adding RP or SP as a prefix.            provide a notion of the contribution of each feature to the
+                                                                  prediction. Thus for each test set prediction, we can evaluate
+5.2    Are explanations faithful to the model?                    whether the simulated user trusts it using each explanation
+  We measure faithfulness of explanations on classifiers that     method, and compare it to the trustworthiness oracle.
+are by themselves interpretable (sparse logistic regression         Using this setup, we report the F1 on the trustworthy
+Table 1: Average F1 of trustworthiness for different                                                                     fewer untrustworthy predictions, and compare this choice to
+explainers on a collection of classifiers and datasets.                                                                  the classifier with higher held-out test set accuracy.
+                                                                                                                            We present the accuracy of picking the correct classifier
+                                          Books                                               DVDs                       as B varies, averaged over 800 runs, in Figure 8. We omit
+                                 LR     NN      RF SVM                                LR    NN      RF SVM               SP-parzen and RP-parzen from the figure since they did not
+                                                                                                                         produce useful explanations, performing only slightly better
+             Random             14.6    14.8   14.7        14.7                      14.2   14.3   14.5   14.4
+             Parzen             84.0    87.6   94.3        92.3                      87.0   81.7   94.2   87.3           than random. LIME is consistently better than greedy, irre-
+             Greedy             53.7    47.4   45.0        53.3                      52.4   58.1   46.6   55.1           spective of the pick method. Further, combining submodular
+             LIME               96.6    94.5   96.2        96.7                      96.6   91.8   96.1   95.6           pick with LIME outperforms all other methods, in particular
+                                                                                                                         it is much better than RP-LIME when only a few examples
+                                                                                                                         are shown to the users. These results demonstrate that the
+                   85                                                           85                                       trust assessments provided by SP-selected LIME explana-
+                                                                                                                         tions are good indicators of generalization, which we validate
+% correct choice
+
+
+
+
+                                                             % correct choice
+                                                                                                                         with human experiments in the next section.
+                   65
+                                                                                65                                       6.    EVALUATION WITH HUMAN SUBJECTS
+                                               SP-LIME                                                       SP-LIME
+                                               RP-LIME                                                       RP-LIME
+                                                                                                                            In this section, we recreate three scenarios in machine
+                   45
+                                               SP-greedy                                                     SP-greedy   learning that require trust and understanding of predictions
+                                               RP-greedy                                                     RP-greedy
+                                                                                45                                       and models. In particular, we evaluate LIME and SP-LIME
+                    0           10       20       30                              0           10       20       30
+                        # of instances seen by the user                               # of instances seen by the user    in the following settings: (1) Can users choose which of two
+                                                                                                                         classifiers generalizes better (§ 6.2), (2) based on the explana-
+                        (a) Books dataset                                             (b) DVDs dataset
+                                                                                                                         tions, can users perform feature engineering to improve the
+Figure 8: Choosing between two classifiers, as the                                                                       model (§ 6.3), and (3) are users able to identify and describe
+number of instances shown to a simulated user is                                                                         classifier irregularities by looking at explanations (§ 6.4).
+varied. Averages and standard errors from 800 runs.
+                                                                                                                         6.1    Experiment setup
+predictions for each explanation method, averaged over 100
+                                                                                                                           For experiments in §6.2 and §6.3, we use the “Christianity”
+runs, in Table 1. The results indicate that LIME dominates
+                                                                                                                         and “Atheism” documents from the 20 newsgroups dataset
+others (all results are significant at p = 0.01) on both datasets,
+                                                                                                                         mentioned beforehand. This dataset is problematic since it
+and for all of the black box models. The other methods either
+                                                                                                                         contains features that do not generalize (e.g. very informative
+achieve a lower recall (i.e. they mistrust predictions more
+                                                                                                                         header information and author names), and thus validation
+than they should) or lower precision (i.e. they trust too many
+                                                                                                                         accuracy considerably overestimates real-world performance.
+predictions), while LIME maintains both high precision and
+                                                                                                                           In order to estimate the real world performance, we create
+high recall. Even though we artificially select which features
+                                                                                                                         a new religion dataset for evaluation. We download Atheism
+are untrustworthy, these results indicate that LIME is helpful
+                                                                                                                         and Christianity websites from the DMOZ directory and
+in assessing trust in individual predictions.
+                                                                                                                         human curated lists, yielding 819 webpages in each class.
+5.4                     Can I trust this model?                                                                          High accuracy on this dataset by a classifier trained on 20
+                                                                                                                         newsgroups indicates that the classifier is generalizing using
+   In the final simulated user experiment, we evaluate whether
+                                                                                                                         semantic content, instead of placing importance on the data
+the explanations can be used for model selection, simulating
+                                                                                                                         specific issues outlined above. Unless noted otherwise, we
+the case where a human has to decide between two competing
+                                                                                                                         use SVM with RBF kernel, trained on the 20 newsgroups
+models with similar accuracy on validation data. For this
+                                                                                                                         data with hyper-parameters tuned via the cross-validation.
+purpose, we add 10 artificially “noisy” features. Specifically,
+on training and validation sets (80/20 split of the original                                                             6.2    Can users select the best classifier?
+training data), each artificial feature appears in 10% of the
+                                                                                                                            In this section, we want to evaluate whether explanations
+examples in one class, and 20% of the other, while on the
+                                                                                                                         can help users decide which classifier generalizes better, i.e.,
+test instances, each artificial feature appears in 10% of the
+                                                                                                                         which classifier would the user deploy “in the wild”. Specif-
+examples in each class. This recreates the situation where the
+                                                                                                                         ically, users have to decide between two classifiers: SVM
+models use not only features that are informative in the real
+                                                                                                                         trained on the original 20 newsgroups dataset, and a version
+world, but also ones that introduce spurious correlations. We
+                                                                                                                         of the same classifier trained on a “cleaned” dataset where
+create pairs of competing classifiers by repeatedly training
+                                                                                                                         many of the features that do not generalize have been man-
+pairs of random forests with 30 trees until their validation
+                                                                                                                         ually removed. The original classifier achieves an accuracy
+accuracy is within 0.1% of each other, but their test accuracy
+                                                                                                                         score of 57.3% on the religion dataset, while the “cleaned”
+differs by at least 5%. Thus, it is not possible to identify the
+                                                                                                                         classifier achieves a score of 69.0%. In contrast, the test accu-
+better classifier (the one with higher test accuracy) from the
+                                                                                                                         racy on the original 20 newsgroups split is 94.0% and 88.6%,
+accuracy on the validation data.
+                                                                                                                         respectively – suggesting that the worse classifier would be
+   The goal of this experiment is to evaluate whether a user
+                                                                                                                         selected if accuracy alone is used as a measure of trust.
+can identify the better classifier based on the explanations of
+                                                                                                                            We recruit human subjects on Amazon Mechanical Turk –
+B instances from the validation set. The simulated human
+                                                                                                                         by no means machine learning experts, but instead people
+marks the set of artificial features that appear in the B
+                                                                                                                         with basic knowledge about religion. We measure their
+explanations as untrustworthy, following which we evaluate
+                                                                                                                         ability to choose the better algorithm by seeing side-by-
+how many total predictions in the validation set should be
+                                                                                                                         side explanations with the associated raw data (as shown
+trusted (as in the previous section, treating only marked
+                                                                                                                         in Figure 2). We restrict both the number of words in each
+features as untrustworthy). Then, we select the classifier with
+                                                                                                                         explanation (K) and the number of documents that each
+                                                     100                                                     B = 10 instances with K = 10 words in each explanation (an
+                                                                    Random Pick (RP)
+                                                                                                  89.0       interface similar to Figure 2, but with a single algorithm).
+
+
+                                  % correct choice
+                                                                    Submodular Pick (RP)
+
+                                                                        80.0                                 As a reminder, the users here are not experts in machine
+                                                     80                                    75.0              learning and are unfamiliar with feature engineering, thus
+                                                             68.0                                            are only identifying words based on their semantic content.
+                                                     60                                                      Further, users do not have any access to the religion dataset
+                                                                                                             – they do not even know of its existence. We start the experi-
+                                                                                                             ment with 10 subjects. After they mark words for deletion,
+                                                     40                                                      we train 10 different classifiers, one for each subject (with the
+                                                             greedy                         LIME
+                                                                                                             corresponding words removed). The explanations for each
+Figure 9: Average accuracy of human subject (with                                                            classifier are then presented to a set of 5 users in a new round
+standard errors) in choosing between two classifiers.                                                        of interaction, which results in 50 new classifiers. We do a
+                                                                                                             final round, after which we have 250 classifiers, each with a
+                            0.8                                                                              path of interaction tracing back to the first 10 subjects.
+                                                           SP-LIME                                              The explanations and instances shown to each user are
+      Real world accuracy
+
+
+
+
+                                                           RP-LIME                                           produced by SP-LIME or RP-LIME. We show the average
+                            0.7                            No cleaning                                       accuracy on the religion dataset at each interaction round
+                                                                                                             for the paths originating from each of the original 10 subjects
+                                                                                                             (shaded lines), and the average across all paths (solid lines)
+                                                                                                             in Figure 10. It is clear from the figure that the crowd
+                            0.6                                                                              workers are able to improve the model by removing features
+                                                                                                             they deem unimportant for the task. Further, SP-LIME
+                                                                                                             outperforms RP-LIME, indicating selection of the instances
+                            0.5                                                                              to show the users is crucial for efficient feature engineering.
+                               0                                    1                  2                 3
+                                                              Rounds of interaction                             Each subject took an average of 3.6 minutes per round
+                                                                                                             of cleaning, resulting in just under 11 minutes to produce
+Figure 10: Feature engineering experiment. Each                                                              a classifier that generalizes much better to real world data.
+shaded line represents the average accuracy of sub-                                                          Each path had on average 200 words removed with SP,
+jects in a path starting from one of the initial 10 sub-                                                     and 157 with RP, indicating that incorporating coverage of
+jects. Each solid line represents the average across                                                         important features is useful for feature engineering. Further,
+all paths per round of interaction.                                                                          out of an average of 200 words selected with SP, 174 were
+                                                                                                             selected by at least half of the users, while 68 by all the
+person inspects (B) to 6. The position of each algorithm                                                     users. Along with the fact that the variance in the accuracy
+and the order of the instances seen are randomized between                                                   decreases across rounds, this high agreement demonstrates
+subjects. After examining the explanations, users are asked                                                  that the users are converging to similar correct models. This
+to select which algorithm will perform best in the real world.                                               evaluation is an example of how explanations make it easy
+The explanations are produced by either greedy (chosen                                                       to improve an untrustworthy classifier – in this case easy
+as a baseline due to its performance in the simulated user                                                   enough that machine learning knowledge is not required.
+experiment) or LIME, and the instances are selected either
+by random (RP) or submodular pick (SP). We modify the                                                        6.4    Do explanations lead to insights?
+greedy step in Algorithm 2 slightly so it alternates between                                                    Often artifacts of data collection can induce undesirable
+explanations of the two classifiers. For each setting, we repeat                                             correlations that the classifiers pick up during training. These
+the experiment with 100 users.                                                                               issues can be very difficult to identify just by looking at
+  The results are presented in Figure 9. Note that all of                                                    the raw data and predictions. In an effort to reproduce
+the methods are good at identifying the better classifier,                                                   such a setting, we take the task of distinguishing between
+demonstrating that the explanations are useful in determining                                                photos of Wolves and Eskimo Dogs (huskies). We train a
+which classifier to trust, while using test set accuracy would                                               logistic regression classifier on a training set of 20 images,
+result in the selection of the wrong classifier. Further, we see                                             hand selected such that all pictures of wolves had snow in
+that the submodular pick (SP) greatly improves the user’s                                                    the background, while pictures of huskies did not. As the
+ability to select the best classifier when compared to random                                                features for the images, we use the first max-pooling layer
+pick (RP), with LIME outperforming greedy in both cases.                                                     of Google’s pre-trained Inception neural network [25]. On
+6.3               Can non-experts improve a classifier?                                                      a collection of additional 60 images, the classifier predicts
+                                                                                                             “Wolf” if there is snow (or light background at the bottom),
+   If one notes that a classifier is untrustworthy, a common                                                 and “Husky” otherwise, regardless of animal color, position,
+task in machine learning is feature engineering, i.e. modifying                                              pose, etc. We trained this bad classifier intentionally, to
+the set of features and retraining in order to improve gener-                                                evaluate whether subjects are able to detect it.
+alization. Explanations can aid in this process by presenting                                                   The experiment proceeds as follows: we first present a
+the important features, particularly for removing features                                                   balanced set of 10 test predictions (without explanations),
+that the users feel do not generalize.                                                                       where one wolf is not in a snowy background (and thus the
+   We use the 20 newsgroups data here as well, and ask Ama-                                                  prediction is “Husky”) and one husky is (and is thus predicted
+zon Mechanical Turk users to identify which words from the                                                   as “Wolf”). We show the “Husky” mistake in Figure 11a. The
+explanations should be removed from subsequent training, for                                                 other 8 examples are classified correctly. We then ask the
+the worse classifier from the previous section (§6.2). In each                                               subject three questions: (1) Do they trust this algorithm
+round, the subject marks words for deletion after observing
+                                                                    learning, specifically for vision tasks [3, 29]. Letting users
+                                                                    know when the systems are likely to fail can lead to an
+                                                                    increase in trust, by avoiding “silly mistakes” [8]. These
+                                                                    solutions either require additional annotations and feature
+                                                                    engineering that is specific to vision tasks or do not provide
+                                                                    insight into why a decision should not be trusted. Further-
+                                                                    more, they assume that the current evaluation metrics are
+                                                                    reliable, which may not be the case if problems such as data
+                                                                    leakage are present. Other recent work [11] focuses on ex-
+                                                                    posing users to different kinds of mistakes (our pick step).
+                                                                    Interestingly, the subjects in their study did not notice the
+  (a) Husky classified as wolf         (b) Explanation              serious problems in the 20 newsgroups data even after look-
+Figure 11: Raw data and explanation of a bad                        ing at many mistakes, suggesting that examining raw data
+model’s prediction in the “Husky vs Wolf ” task.                    is not sufficient. Note that Groce et al. [11] are not alone in
+                                                                    this regard, many researchers in the field have unwittingly
+                                     Before          After          published classifiers that would not generalize for this task.
+                                                                    Using LIME, we show that even non-experts are able to
+ Trusted the bad model            10 out of 27   3 out of 27        identify these irregularities when explanations are present.
+ Snow as a potential feature      12 out of 27   25 out of 27       Further, LIME can complement these existing systems, and
+                                                                    allow users to assess trust even when a prediction seems
+     Table 2: “Husky vs Wolf ” experiment results.                  “correct” but is made for the wrong reasons.
+                                                                       Recognizing the utility of explanations in assessing trust,
+                                                                    many have proposed using interpretable models [27], espe-
+to work well in the real world, (2) why, and (3) how do             cially for the medical domain [6, 17, 26]. While such models
+they think the algorithm is able to distinguish between these       may be appropriate for some domains, they may not apply
+photos of wolves and huskies. After getting these responses,        equally well to others (e.g. a supersparse linear model [26]
+we show the same images with the associated explanations,           with 5 − 10 features is unsuitable for text applications). In-
+such as in Figure 11b, and ask the same questions.                  terpretability, in these cases, comes at the cost of flexibility,
+   Since this task requires some familiarity with the notion of     accuracy, or efficiency. For text, EluciDebug [16] is a full
+spurious correlations and generalization, the set of subjects       human-in-the-loop system that shares many of our goals
+for this experiment were graduate students who have taken at        (interpretability, faithfulness, etc). However, they focus on
+least one graduate machine learning course. After gathering         an already interpretable model (Naive Bayes). In computer
+the responses, we had 3 independent evaluators read their           vision, systems that rely on object detection to produce
+reasoning and determine if each subject mentioned snow,             candidate alignments [13] or attention [28] are able to pro-
+background, or equivalent as a feature the model may be             duce explanations for their predictions. These are, however,
+using. We pick the majority to decide whether the subject           constrained to specific neural network architectures or inca-
+was correct about the insight, and report these numbers             pable of detecting “non object” parts of the images. Here we
+before and after showing the explanations in Table 2.               focus on general, model-agnostic explanations that can be
+   Before observing the explanations, more than a third             applied to any classifier or regressor that is appropriate for
+trusted the classifier, and a little less than half mentioned       the domain - even ones that are yet to be proposed.
+the snow pattern as something the neural network was using             A common approach to model-agnostic explanation is learn-
+– although all speculated on other patterns. After examining        ing a potentially interpretable model on the predictions of
+the explanations, however, almost all of the subjects identi-       the original model [2, 7, 22]. Having the explanation be a
+fied the correct insight, with much more certainty that it was      gradient vector [2] captures a similar locality intuition to
+a determining factor. Further, the trust in the classifier also     that of LIME. However, interpreting the coefficients on the
+dropped substantially. Although our sample size is small,           gradient is difficult, particularly for confident predictions
+this experiment demonstrates the utility of explaining indi-        (where gradient is near zero). Further, these explanations ap-
+vidual predictions for getting insights into classifiers knowing    proximate the original model globally, thus maintaining local
+when not to trust them and why.                                     fidelity becomes a significant challenge, as our experiments
+                                                                    demonstrate. In contrast, LIME solves the much more feasi-
+7.    RELATED WORK                                                  ble task of finding a model that approximates the original
+   The problems with relying on validation set accuracy as          model locally. The idea of perturbing inputs for explanations
+the primary measure of trust have been well studied. Practi-        has been explored before [24], where the authors focus on
+tioners consistently overestimate their model’s accuracy [20],      learning a specific contribution model, as opposed to our
+propagate feedback loops [23], or fail to notice data leaks [14].   general framework. None of these approaches explicitly take
+In order to address these issues, researchers have proposed         cognitive limitations into account, and thus may produce
+tools like Gestalt [21] and Modeltracker [1], which help users      non-interpretable explanations, such as a gradients or linear
+navigate individual instances. These tools are complemen-           models with thousands of non-zero weights. The problem
+tary to LIME in terms of explaining models, since they do           becomes worse if the original features are nonsensical to
+not address the problem of explaining individual predictions.       humans (e.g. word embeddings). In contrast, LIME incor-
+Further, our submodular pick procedure can be incorporated          porates interpretability both in the optimization and in our
+in such tools to aid users in navigating larger datasets.           notion of interpretable representation, such that domain and
+   Some recent work aims to anticipate failures in machine          task specific interpretability criteria can be accommodated.
+8.   CONCLUSION AND FUTURE WORK                                    [8] M. T. Dzindolet, S. A. Peterson, R. A. Pomranky, L. G.
+In this paper, we argued that trust is crucial for effective           Pierce, and H. P. Beck. The role of trust in automation
+                                                                       reliance. Int. J. Hum.-Comput. Stud., 58(6), 2003.
+human interaction with machine learning systems, and that          [9] B. Efron, T. Hastie, I. Johnstone, and R. Tibshirani. Least
+explaining individual predictions is important in assessing            angle regression. Annals of Statistics, 32:407–499, 2004.
+trust. We proposed LIME, a modular and extensible ap-             [10] U. Feige. A threshold of ln n for approximating set cover. J.
+proach to faithfully explain the predictions of any model in           ACM, 45(4), July 1998.
+an interpretable manner. We also introduced SP-LIME, a            [11] A. Groce, T. Kulesza, C. Zhang, S. Shamasunder,
+method to select representative and non-redundant predic-              M. Burnett, W.-K. Wong, S. Stumpf, S. Das, A. Shinsel,
+                                                                       F. Bice, and K. McIntosh. You are the only possible oracle:
+tions, providing a global view of the model to users. Our              Effective test selection for end users of interactive machine
+experiments demonstrated that explanations are useful for a            learning systems. IEEE Trans. Softw. Eng., 40(3), 2014.
+variety of models in trust-related tasks in the text and image    [12] J. L. Herlocker, J. A. Konstan, and J. Riedl. Explaining
+domains, with both expert and non-expert users: deciding               collaborative filtering recommendations. In Conference on
+between models, assessing trust, improving untrustworthy               Computer Supported Cooperative Work (CSCW), 2000.
+                                                                  [13] A. Karpathy and F. Li. Deep visual-semantic alignments for
+models, and getting insights into predictions.
+                                                                       generating image descriptions. In Computer Vision and
+   There are a number of avenues of future work that we                Pattern Recognition (CVPR), 2015.
+would like to explore. Although we describe only sparse           [14] S. Kaufman, S. Rosset, and C. Perlich. Leakage in data
+linear models as explanations, our framework supports the              mining: Formulation, detection, and avoidance. In
+exploration of a variety of explanation families, such as de-          Knowledge Discovery and Data Mining (KDD), 2011.
+cision trees; it would be interesting to see a comparative        [15] A. Krause and D. Golovin. Submodular function
+study on these with real users. One issue that we do not               maximization. In Tractability: Practical Approaches to Hard
+                                                                       Problems. Cambridge University Press, February 2014.
+mention in this work was how to perform the pick step for         [16] T. Kulesza, M. Burnett, W.-K. Wong, and S. Stumpf.
+images, and we would like to address this limitation in the            Principles of explanatory debugging to personalize
+future. The domain and model agnosticism enables us to                 interactive machine learning. In Intelligent User Interfaces
+explore a variety of applications, and we would like to inves-         (IUI), 2015.
+tigate potential uses in speech, video, and medical domains,      [17] B. Letham, C. Rudin, T. H. McCormick, and D. Madigan.
+as well as recommendation systems. Finally, we would like              Interpretable classifiers using rules and bayesian analysis:
+                                                                       Building a better stroke prediction model. Annals of Applied
+to explore theoretical properties (such as the appropriate             Statistics, 2015.
+number of samples) and computational optimizations (such          [18] D. Martens and F. Provost. Explaining data-driven
+as using parallelization and GPU processing), in order to              document classifications. MIS Q., 38(1), 2014.
+provide the accurate, real-time explanations that are critical    [19] T. Mikolov, I. Sutskever, K. Chen, G. S. Corrado, and
+for any human-in-the-loop machine learning system.                     J. Dean. Distributed representations of words and phrases
+                                                                       and their compositionality. In Neural Information
+                                                                       Processing Systems (NIPS). 2013.
+Acknowledgements                                                  [20] K. Patel, J. Fogarty, J. A. Landay, and B. Harrison.
+We would like to thank Scott Lundberg, Tianqi Chen, and                Investigating statistical machine learning as a tool for
+Tyler Johnson for helpful discussions and feedback. This               software development. In Human Factors in Computing
+                                                                       Systems (CHI), 2008.
+work was supported in part by ONR awards #W911NF-13-
+                                                                  [21] K. Patel, N. Bancroft, S. M. Drucker, J. Fogarty, A. J. Ko,
+1-0246 and #N00014-13-1-0023, and in part by TerraSwarm,               and J. Landay. Gestalt: Integrated support for
+one of six centers of STARnet, a Semiconductor Research                implementation and analysis in machine learning. In User
+Corporation program sponsored by MARCO and DARPA.                      Interface Software and Technology (UIST), 2010.
+                                                                  [22] I. Sanchez, T. Rocktaschel, S. Riedel, and S. Singh. Towards
+                                                                       extracting faithful and descriptive representations of latent
+9.   REFERENCES                                                        variable models. In AAAI Spring Syposium on Knowledge
+                                                                       Representation and Reasoning (KRR): Integrating Symbolic
+ [1] S. Amershi, M. Chickering, S. M. Drucker, B. Lee,                 and Neural Approaches, 2015.
+     P. Simard, and J. Suh. Modeltracker: Redesigning             [23] D. Sculley, G. Holt, D. Golovin, E. Davydov, T. Phillips,
+     performance analysis tools for machine learning. In Human         D. Ebner, V. Chaudhary, M. Young, and J.-F. Crespo.
+     Factors in Computing Systems (CHI), 2015.                         Hidden technical debt in machine learning systems. In
+ [2] D. Baehrens, T. Schroeter, S. Harmeling, M. Kawanabe,             Neural Information Processing Systems (NIPS). 2015.
+     K. Hansen, and K.-R. Müller. How to explain individual      [24] E. Strumbelj and I. Kononenko. An efficient explanation of
+     classification decisions. Journal of Machine Learning             individual classifications using game theory. Journal of
+     Research, 11, 2010.                                               Machine Learning Research, 11, 2010.
+ [3] A. Bansal, A. Farhadi, and D. Parikh. Towards transparent    [25] C. Szegedy, W. Liu, Y. Jia, P. Sermanet, S. Reed,
+     systems: Semantic characterization of failure modes. In           D. Anguelov, D. Erhan, V. Vanhoucke, and A. Rabinovich.
+     European Conference on Computer Vision (ECCV), 2014.              Going deeper with convolutions. In Computer Vision and
+ [4] J. Blitzer, M. Dredze, and F. Pereira. Biographies,               Pattern Recognition (CVPR), 2015.
+     bollywood, boom-boxes and blenders: Domain adaptation        [26] B. Ustun and C. Rudin. Supersparse linear integer models
+     for sentiment classification. In Association for                  for optimized medical scoring systems. Machine Learning,
+     Computational Linguistics (ACL), 2007.                            2015.
+ [5] J. Q. Candela, M. Sugiyama, A. Schwaighofer, and N. D.       [27] F. Wang and C. Rudin. Falling rule lists. In Artificial
+     Lawrence. Dataset Shift in Machine Learning. MIT, 2009.           Intelligence and Statistics (AISTATS), 2015.
+ [6] R. Caruana, Y. Lou, J. Gehrke, P. Koch, M. Sturm, and        [28] K. Xu, J. Ba, R. Kiros, K. Cho, A. Courville,
+     N. Elhadad. Intelligible models for healthcare: Predicting        R. Salakhutdinov, R. Zemel, and Y. Bengio. Show, attend
+     pneumonia risk and hospital 30-day readmission. In                and tell: Neural image caption generation with visual
+     Knowledge Discovery and Data Mining (KDD), 2015.                  attention. In International Conference on Machine Learning
+ [7] M. W. Craven and J. W. Shavlik. Extracting tree-structured        (ICML), 2015.
+     representations of trained networks. Neural information      [29] P. Zhang, J. Wang, A. Farhadi, M. Hebert, and D. Parikh.
+     processing systems (NIPS), pages 24–30, 1996.                     Predicting failures of vision systems. In Computer Vision
+                                                                       and Pattern Recognition (CVPR), 2014.
+

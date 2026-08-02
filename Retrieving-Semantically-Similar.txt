@@ -1,0 +1,645 @@
+                                        September 2025
+
+
+
+
+                                                 Retrieving Semantically Similar
+                                                Decisions under Noisy Institutional
+                                                  Labels: Robust Comparison of
+arXiv:2512.05681v1 [cs.CL] 5 Dec 2025
+
+
+
+
+                                                       Embedding Methods
+                                                         Tereza NOVOTNA a,1 , and Jakub HARASTA b
+                                                              a Faculty
+                                                                of Law, Masaryk University, Brno, Czechia
+                                                      b Faculty of Law, Masaryk University, Brno, Czechia
+
+                                          ORCiD ID: Tereza Novotna https://orcid.org/0000-0002-1426-4547, Jakub Harasta
+                                                             https://orcid.org/0000-0002-5722-0325
+
+                                                    Abstract. Retrieving case law is a time-consuming task predominantly carried out
+                                                    by querying databases. We provide a comparison of two models in three different
+                                                    settings for Czech Constitutional Court decisions: (i) a large general-purpose em-
+                                                    bedder (OpenAI), (ii) a domain-specific BERT-trained from scratch on ∼30,000
+                                                    decisions using sliding windows and attention pooling. We propose a noise-aware
+                                                    evaluation including IDF-weighted keyword overlap as graded relevance, bina-
+                                                    rization via two thresholds (0.20 balanced, 0.28 strict), significance via paired
+                                                    bootstrap, and an nDCG diagnosis supported with qualitative analysis. Despite
+                                                    modest absolute nDCG (expected under noisy labels), the general OpenAI em-
+                                                    bedder decisively outperforms the domain pre-trained BERT in both settings at
+                                                    @10/@20/@100 across both thresholds; differences are statistically significant. Di-
+                                                    agnostics attribute low absolutes to label drift and strong ideals rather than lack of
+                                                    utility. Additionally, our framework is robust enough to be used for evaluation un-
+                                                    der a noisy gold dataset, which is typical when handling data with heterogeneous
+                                                    labels stemming from legacy judicial databases.
+                                                    Keywords. legal information retrieval, case law, embeddings, evaluation under
+                                                    noisy labels, Czech Constitutional Court
+
+
+
+
+                                        1. Introduction
+
+                                        Searching for similar decisions constitutes a large part of the work of analysts, clerks,
+                                        and judges at the Constitutional Court (ConC). We evaluate the possibility to deploy
+                                        automated methods to support the retrieval of semantically similar decisions.
+                                             Even though Czech jurisdiction is not precedent-based, legal certainty dictates
+                                        awareness of previous case law in similar legal matters. In the Czech (continental) legal
+                                        system, citing prior case law is not formally regulated, i.e., there are few to no rules re-
+                                        garding the similarity of facts or legal issues. Therefore, judges may cite decisions for
+                                          1 Corresponding   author: Tereza Novotna, email: tereza.novotna@law.muni.cz
+September 2025
+
+
+various reasons and with varying degrees of similarity. The informality influences the
+understanding of similarity, and the choice of experimental and evaluation methods to
+engage in retrieving semantically similar decisions from ConC database.
+     Czech ConC provides public access to its case law through the database NALUS2 .
+Standard retrieval techniques include querying the database for cases related to specific
+legal provisions and searching cases with similar keywords. The list of keywords consists
+of 713 items assigned to individual ConC decisions based on their thematic relevance.
+Keywords are assigned manually by the ConC’s staff, which is why we consider it to be
+a gold dataset. However, given the rotation of ConC’s staff, the lack of formal rules, and
+the rise of new legal issues, the dataset is noisy, marked by inconsistent methodology in
+assigning keywords across time and topics. The fact is well-known in Czechia, but its
+impact (e.g., implications for automation) understudied.
+     We compare two models (domain-trained BERT and off-shelf general OpenAI em-
+bedder) in three embedding-based retrieval methods on a large corpus and introduce an
+evaluation that tolerates noisy gold: IDF-weighted keyword overlap as graded gains; two
+relevance thresholds (0.20, 0.28) calibrated from data; paired bootstrap for significance;
+and nDCG diagnostics.
+     The Introduction is followed by Section 2 containing related work. Section 3 pro-
+vides description of Data and Benchmark, and Section 4 outlines the methods. We report
+results in Section 5 together with qualitative example of the noisiness. In Section 6, we
+discuss our findings, and provide Conclusion and Future Work in Section 7.
+     We provide the following contributions to AI&Law: (1) robust reproducible frame-
+work for LIR under noisy taxonomies, (2) study showing a large general embedder ≫ do-
+main BERT trained from scratch on ∼30k decisions, and (3) diagnostics (label drift, per-
+bin slices, decomposition) explaining modest absolute nDCG while preserving strong
+relative differences
+
+
+2. Related Work
+
+Given that the legal domain is predominantly expressed through written language, it is
+well-suited for the application of NLP and ML methods and tools [1, 2, 3, 4, 5, 6]. Signif-
+icant advances in law-related NLP were brought by pre-trained Transformer-based Lan-
+guage Models (TLMs) and subsequent introduction of Large Language Models (LLMs)
+to the public [6,7,8,9]. We are continuing this trend of applying NLP in the legal domain.
+     Legal information retrieval represents a long-standing research area with both
+theoretical challenges and practical implications. Text embeddings and TLMs/LLMs
+[10,11,12] are regularly implemented to enhance document retrieval. Models pre-trained
+for use in specific domains, such as SciBERT [13] for scientific literature, BioBERT [14]
+for biomedical literature, or Legal-BERT [15] for law, contribute to increased perfor-
+mance for domain-specific tasks. In case law retrieval, efforts include unsupervised
+techniques [16] or inclusion of supporting tools and models into the retrieval pipeline
+[17, 18, 19, 20]. We engage in the retrieval of the Czech ConC case law by using and
+evaluating the use of text embeddings.
+     LLMs are deployed for a plethora of domain-specific tasks where their zero-shot
+and few-shot capabilities offer added value [21, 22, 23]. Limitations related to various
+  2 nalus.usoud.cz
+September 2025
+
+
+models and their use are frequently reported [24, 25], with increasing effort going into
+prompt-engineering techniques and RAG to mitigate shortcomings in the high-stakes do-
+main [26, 27, 28]. Contribution to various known bottlenecks, e.g., annotation [21], the-
+matic analysis [29], legal aid intake [30] or law-related self-help [31], is well-established.
+Evaluation of performance is still challenging, given the scarcity of complex domain-
+specific benchmarks akin to [32]. Comparative evaluation efforts focusing on plethora
+of tasks and methods similar to [33] appeared only recently. We follow suit, employing
+OpenAI embedder and providing robust comparative evaluation of its performance on
+real-world data and well-known domain-specific tasks.
+
+
+3. Data and Benchmark
+
+3.1. Corpus and Metadata
+
+We used a subset of ConC decisions from the Czech Court Decisions Corpus (CzCDC)
+3 . The subset contains 73,086 ConC decisions from January 1993 to September 2018.
+
+Subsequently, we retrieved data from ConC’s NALUS, and obtained 18,238 decisions
+from October 2018 to September 2024. In total, there are 91,324 decisions. We also ob-
+tained all the metadata contained in this database: file number, decision and publication
+dates, reporting judge, related legal provisions, and keywords (in orig. ”Věcný rejstřı́k”).
+These are all the decisions of this court since its establishment in January 1993.
+     After discussion with ConC’s analytical department and inspection of the dataset of
+all decisions, we selected only decisions longer than 10,000 characters. Decisions shorter
+than this benchmark do not contain substantive legal arguments and are only formal
+rejections of constitutional complaints on procedural grounds (e.g., failure to meet the
+deadline). After this removal, 34,441 decisions remained, which we used for training
+BERT model and then for creating vector representations for all methods.
+
+3.2. Label Drift and Incompleteness
+
+First, analysed and described the keywords dataset to determine how it might influence
+the evaluation. We calculated the annual average number of keywords per decision, the
+number of unique keywords, the median number, the ratio of decisions with zero key-
+words, and the entropy of keywords. Due to the scope of the article, we present only the
+relevant sections below and in Table 1.
+                     Table 1. Back-of-the-envelope overlap under diversified labels.
+
+                   Scenario              k    H (bits)   Neff    E[|A ∩ B|]   P(zero)
+
+                   Typical year          3         6.9   118         0.076        0.93
+                   Richer year           3         7.8   226         0.040        0.96
+                   Aggressive tagging    5         6.9   118         0.212        0.81
+
+
+     Typical year uses the corpus medians: k is the median number of keywords per de-
+cision and H is the median annual doc-frequency entropy (bits), with Neff = 2H the ef-
+  3 hdl.handle.net/11372/LRT-3052
+September 2025
+
+
+fective active vocabulary. Richer year takes a high-diversity regime (e.g., upper-quartile
+H by year); k is the median for that year (or kept equal to Typical to isolate the effect of
+diversity). This shows that as the label space becomes larger and more uniformly used,
+the expected exact overlap k2 /Neff decreases. Aggressive tagging holds the vocabulary
+regime fixed (same H as Typical) but increases k (e.g., the 75th percentile or a policy
+of ≈ 5 tags per decision). This improves overlap but, when Neff is large, k2 /Neff ≪ 1 so
+                       2
+P(|A ∩ B| = 0) ≈ e−k /Neff remains high.
+      Our diagnostics show that, over time, decisions receive slightly more keywords, but
+the label space simultaneously becomes larger and more uniformly used (higher entropy).
+Exact keyword overlap between two similar decisions scales roughly with k2 /Neff , where
+k is the number of keywords per decision and Neff = 2H is the effective size of the active
+vocabulary implied by the doc-frequency entropy H. With typical values k ≈ 3 and Neff ≈
+100–200, the expected overlap E[|A ∩ B|] is ≪ 1 and the probability of zero overlap
+P(|A∩B| = 0) ≈ exp(−k2 /Neff ) remains high (often ≥ 0.8). Consequently, overlap-based
+gains - and therefore absolute nDCG - are conservative lower bounds on semantic quality
+in this corpus, even though relative differences between models are large and statistically
+significant.
+
+3.3. Query Set and Candidate Pool
+
+We form a query set of 2,000 decisions with assigned keywords (from metadata) from the
+dataset. To ensure that keyword overlap is at least measurable, we restrict the sampling
+pool to decisions with ≥ 2 keywords. We then apply stratified sampling along three axes
+that affect evaluation difficulty:
+    1. Keyword count per decision, binned as 2–3, 4–7, 8+.
+    2. Rarity of a decision’s tags, computed as the median IDF of its (deduplicated)
+       keyword set (IDF defined below) and split at the median into common vs. rarer.
+    3. Decision year, obtained from ”Date of publication” metadata, and binned by em-
+       pirical quantiles (three bins; ties handled by qcut with duplicates allowed).
+Within the resulting 3 × 2 × 3 = 18 strata, we allocate samples approximately evenly
+with a fixed random seed (reallocating surplus to larger strata when a stratum is under-
+populated). Each sampled query is identified by its normalized document ID.
+     Subsequently, at retrieval time, each model searches its full indexed corpus (we do
+not restrict the candidate set beyond the model’s own coverage), returns the top-k neigh-
+bors by cosine similarity with unit-normalized vectors, and excludes the self-match. Un-
+less noted otherwise, k = 100 and we report metrics at k ∈ {10, 20, 100}.
+
+3.4. Graded Relevance via IDF-Weighted Overlap
+
+Let A and B be the keyword sets for two decisions. We compute inverse document fre-
+quency over keyworded decisions as
+
+                                                    N
+                                   IDF(t) = log           ,
+                                                  d f (t)
+September 2025
+
+
+where d f (t) is the number of decisions whose keyword set contains t, and N is the
+number of decisions with at least one keyword.4
+   We take as graded gain the IDF-weighted Jaccard similarity:
+
+                                              ∑t∈A∩B IDF(t)
+            wJacc(A, B) =                                                 ∈ [0, 1].                        (1)
+                                ∑t∈A IDF(t) + ∑t∈B IDF(t) − ∑t∈A∩B IDF(t)
+
+This rewards overlap on diagnostic (high-IDF) keywords and down-weights ubiquitous
+keywords. We use wJacc directly as the graded relevance ri at rank i for nDCG and also
+report binarized metrics (P@k, MAP@k, RBP) by thresholding ri at two data-driven lev-
+els τ ∈ {0.20, 0.28}. The Balanced track (τ = 0.20) captures moderate overlaps; the
+Strict track (τ = 0.28) focuses on high-confidence overlaps. Thresholds are chosen by
+inspecting the empirical percentile distributions of wJacc for retrieved neighbors and for
+the corpus-level “ideal” candidates (i.e., all decisions sharing at least one keyword), and
+placed near the knees of those curves.5 We don’t report Recall@k because the denomi-
+nator Rτ (all τ-relevant items in the full corpus) is large, making Recall@k numerically
+small even for systems with strong head quality. In our setting, graded nDCG and head-
+oriented P@k/HitRate@k/RBP better reflect user utility.
+
+
+4. Methods
+
+4.1. BERT Pretraining (From Scratch, Czech Constitutional Court Corpus)
+
+We pretrain a BERT-style encoder from scratch on the full text of ∼30k Czech Constitu-
+tional Court decisions longer than 10,000 characters in text. Markup and boilerplate are
+stripped while preserving punctuation, numerals, and Czech diacritics. Text is normal-
+ized to NFC and kept cased (we do not lowercase Czech).
+     We learn a subword vocabulary on the court corpus using SentencePiece (Unigram)
+with a 32k inventory,6 which is well-suited to Czech morphology. All subsequent inputs
+use this tokenizer.
+     We use a BERT-base configuration (12 transformer layers, hidden size 768, 12 at-
+tention heads, GELU activations, layer/dropout 0.1). Parameters are randomly initialized
+and trained from scratch (no initialization from generic multilingual checkpoints).
+     To mitigate the 512-token limit, each document is chunked into fixed-length se-
+quences of 512 subword tokens using a sliding window with overlap (stride s, e.g.,
+s=256). This policy is used both during pretraining and later when producing document
+embeddings, ensuring that long decisions are fully covered and that local context is pre-
+served across windows.
+     We train with masked language modelling (MLM) only. Following standard prac-
+tice, 15% of tokens are selected for prediction with the 80/10/10 replacement rule
+   4 We preserve slashes inside a term (e.g., “právnı́ domněnka/presumpce”) and do not split such multiword
+
+forms; this respects the court’s taxonomy and avoids artificial fragmentation.
+   5 Operationally, nDCG uses the true ideal (IDCG) computed from wJacc; queries with IDCG@k = 0 are
+
+excluded from nDCG aggregates at that k but are retained for binarized metrics via their Rτ denominators.
+   6 Any comparable subword learner is acceptable; we preserve diacritics and do not apply additional heuristic
+
+splitting beyond whitespace and punctuation rules internal to SentencePiece.
+September 2025
+
+
+(mask/keep/random) and dynamic masking per epoch. We do not use next-sentence pre-
+diction (NSP). We trained the model on 10 epochs over 7 days on a single GPU.
+     At inference time, each 512-token window is encoded to hidden states {h1 , . . . , hT }
+(we exclude [CLS], [SEP] from pooling). We experiment with two pooling schemes:
+
+    1. Mean pooling (simple, stable): ewin = T1 ∑Ti=1 hi .
+    2. Self-attention pooling (diagnostic token weighting): αi ∝ exp(w⊤ hi ), ewin =
+       ∑i αi hi , with a learnable vector w (no supervision beyond the encoder; w is opti-
+       mized jointly or as a light head).
+
+     For an entire decision with windows W , we aggregate window embeddings by aver-
+                          (w)
+aging: edoc = |W1 | ∑w∈W ewin , then L2-normalize to unit length for cosine search (more in
+Section 4.4).
+     In the main comparative tables in Section 5 we report the attention-based-pooled
+variant for both methods as it was more accurate than average pooling (the data to prove
+this claim are beyond the scope of the paper but consistent with the current literature, e.g.
+[34]). No supervised IR fine-tuning is used. Retrieval relies purely on cosine similarity
+in the learned embedding space.
+
+4.2. OpenAI (general-purpose) model
+
+We use OpenAI’s text-embedding-3-large as an off-the-shelf embedder. The model
+produces 3,072-dimensional vectors by default and is the current high-accuracy embed-
+ding family from OpenAI, with documented gains over prior ada-002 on MIRACL
+and MTEB benchmarks. It also supports an optional dimensions parameter to shorten
+embeddings (for storage/speed) while retaining most retrieval quality. In our pipeline,
+we embed the decision’s factual section, and we report results under the label OpenAI-
+embedder facts.
+
+4.3. Document scope settings
+
+We build two BERT embedding variants that differ only in the text span fed to the en-
+coder. (i) Full decisions: the complete opinion is chunked with a 512-token sliding win-
+dow (stride 128), each window is encoded, and window embeddings are averaged into a
+single document vector (then L2-normalized). (ii) Facts only: we extract the contiguous
+segment that describes the factual background of the case (parties and salient events) and
+embed only this segment with the same windowing/aggregation policy. The facts section
+is identified with simple, deterministic rules over the court’s internal layout: regexes an-
+chored to section headings and typographic markers in the source (e.g., bold/uppercase
+labels, colon-terminated headers), followed by span capture until the next major heading.
+The choice is motivated by the hypothesis that compressing long, multi-topic decisions
+into one vector induces topic averaging and noise. In contrast, the factual description
+is shorter, denser, and more comparable across cases—hence more discriminative for
+semantic similarity.
+September 2025
+
+
+      For the OpenAI embedder, we likewise adopt the facts-only scope in this experiment:
+it aligns with our hypothesis about comparability and, pragmatically, reduces token costs
+while allowing an entire facts segment to fit as a single input.7
+
+4.4. Retrieval Setup
+
+Decision embeddings in all three methods are L2-normalized, so cosine similarity
+reduces to inner product: for a query decision with vector eq and a candidate ed ,
+cos(eq , ed ) = e⊤
+                 q ed . We issue the query using the decision’s own embedding and retrieve
+the top-k nearest neighbours (k ∈ {10, 20, 100}), excluding the self-match. Search is ex-
+act inner-product kNN using FAISS IndexFlatIP in float32. No lexical constraints,
+metadata filters, or re-ranking are applied; candidates can come from any year/panel. For
+fairness across models, the query set is the intersection of documents present in all in-
+dices, but each model searches its full indexed corpus (we do not restrict the candidate
+pool to the intersection unless stated). Ties are broken deterministically by (similarity,
+document ID). All reported runs are reproducible via fixed random seeds for query sam-
+pling and stable index construction. Intuitively, a higher cosine indicates greater direc-
+tional alignment (more similar decisions).
+
+4.5. Evaluation Metrics and Significance
+
+Let the ranked list for a query be (d1 , . . . , dk ). We use a graded gain ri = wJacc(Aquery , Adi ) ∈
+[0, 1] (Eq. 1). For binary metrics we threshold ri at τ and write bi = 1[ ri ≥ τ ].
+nDCG@k (graded, τ-independent). Discounted cumulative gain at k and its normaliza-
+tion by the ideal value IDCG@k (sorting by ri ):
+                                    k
+                                        2ri − 1                                  DCG@k
+                    DCG@k = ∑                      ,          nDCG@k =                 .
+                                  i=1 log2 (i + 1)                              IDCG@k
+It jointly reflects how many strong overlaps exist and how early they are ranked. Because
+ri is graded, nDCG does not depend on τ. In our corpus, absolute values are conservative
+due to sparse/fragmented labels, but relative differences across models are robust.
+P@k (binary at τ).        Precision at k is the fraction of the top-k that meets the threshold:
+                                                       1 k
+                                             P@k =       ∑ bi .
+                                                       k i=1
+It answers a user question: “If I look at the first k, how many are strong matches?” Higher
+τ ⇒ stricter matches ⇒ lower P@k.
+MAP@k (binary at τ).           Average precision at k averages the precision observed at each
+hit:
+
+                                                  1       k       ∑ij=1 b j
+                                  AP@k =                 ∑ bi ·
+                                               ∑ki=1 bi i=1           i
+                                                                            ,
+
+
+  7 Using the full decision with the OpenAI embedder yields substantially longer inputs and higher cost without
+
+changing the retrieval pipeline. We therefore reserve that setting for future work.
+September 2025
+
+
+with the convention AP@k = 0 if there is no hit in the top k. We report the mean over
+queries (MAP). MAP rewards systems that place many relevant items early. Values can
+be small when the relevance pool is large or when τ is stringent.
+HitRate@k (binary at τ). Hit rate (a.k.a. success@k) is the probability of finding at
+least one relevant item in the top-k:
+                                           "         #
+                                                         k
+                                       HitRate@k = 1    ∑ bi ≥ 1
+                                                        i=1
+(averaged over queries). It captures a “first useful result” experience and is easy to inter-
+pret.
+RBP@10 (binary at τ, user patience p). Rank-Biased Precision models a user who
+continues from rank i to i+1 with probability p:
+                                                             10
+                                   RBP@10 = (1 − p) ∑ p i−1 bi .
+                                                             i=1
+With p=0.9 we emphasize early ranks but still credit deeper results. RBP is an expected-
+utility view of head quality.
+WeightedOverlap@k and OverlapCount@k (diagnostics; τ-independent).                          These are
+additive summaries of the overlap in the top-k:
+                          k                                                    k
+OverlapCount@k = ∑ Aquery ∩ Adi ,                   WeightedOverlap@k = ∑              ∑          IDF(t).
+                         i=1                                                  i=1 t∈Aquery ∩Adi
+
+They indicate how many keywords—and how diagnostic (high-IDF)—are shared across
+the retrieved head. They help explain nDCG movements and are useful when labels are
+diverse: larger weighted overlap signals semantically closer neighbors even when binary
+metrics at a high τ are conservative.
+     To assess statistical significance, we use paired bootstrap over queries (resample
+queries with replacement; report mean ∆, 95% CI, and two-sided bootstrap p).
+
+
+5. Results
+
+5.1. Main Comparison: Balanced and Strict Tracks
+
+
+Table 2. Results at k = 10 with τ = 0.20 over 2,000 queries. nDCG uses graded gains (r = wJacc) and is
+τ-independent.
+
+ Model                    nDCG@10        MAP@10      P@10     HitRate@10   RBP@10    Weighted/Cnt@10
+
+ OpenAI-embedder facts         0.190      0.00291    0.260         0.716    0.175       42.80 / 12.18
+ BERT ab all                   0.090      0.00078    0.106         0.467    0.071       27.81 / 8.57
+ BERT ab facts                 0.060      0.00027    0.067         0.364    0.046       14.28 / 4.81
+
+
+     We binarize graded gains r = wJacc(A, B) at thresholds τ ∈ {0.20, 0.28} to ob-
+tain precision–style metrics. Raising τ makes relevance more stringent, so P@k and Hi-
+tRate@k drop as expected, while the relative model ordering is preserved. Across both
+September 2025
+
+Table 3. Results at k = 10 with τ = 0.28 (more stringent relevance). nDCG is unchanged; binary metrics
+reflect the higher threshold.
+
+ Model                     nDCG@10       MAP@10         P@10     HitRate@10   RBP@10        Weighted/Cnt@10
+
+ OpenAI-embedder facts       0.190        0.00501        0.168      0.550       0.113         42.80 / 12.18
+ BERT ab all                 0.090        0.00115        0.060      0.315       0.040         27.81 / 8.57
+ BERT ab facts               0.060        0.00042        0.038      0.231       0.026         14.28 / 4.81
+
+
+               Table 4. Results at k = 20 (graded nDCG; binary metrics at τ ∈ {0.20, 0.28}).
+
+                  Model                    nDCG@20 P@20 (.20/.28) Hit@20 (.20/.28)
+
+                  OpenAI-embedder facts         0.187        0.236/0.151      0.802/0.649
+                  BERT ab all                   0.090        0.096/0.053      0.600/0.406
+                  BERT ab facts                 0.059        0.058/0.032      0.472/0.309
+
+
+              Table 5. Results at k = 100 (graded nDCG; binary metrics at τ ∈ {0.20, 0.28}).
+
+                 Model                    nDCG@100 P@100 (.20/.28) Hit@100 (.20/.28)
+
+                 OpenAI-embedder facts         0.182         0.179/0.109       0.936/0.827
+                 BERT ab all                   0.090         0.070/0.038       0.855/0.657
+                 BERT ab facts                 0.061         0.045/0.024       0.774/0.571
+
+
+thresholds and at k ∈ {10, 20, 100}, the OpenAI embedder decisively outperforms BERT
+model at both settings. At k=10, for example, P@10 moves from 0.260 to 0.168 and Hi-
+tRate@10 from 0.716 to 0.550 as τ rises from 0.20 to 0.28, whereas nDCG@10 (graded)
+remains at 0.190.
+Table 6. Paired bootstrap over 2,000 common queries (B = 2000 resamples). ∆ is mean difference A−B; 95%
+CI in brackets. All p < 0.001.
+
+         Comparison                                     Metric         ∆        95% CI           p
+
+         τ = 0.20
+         OpenAI-embedder facts − BERT ab all            nDCG@10     +0.099 [0.093, 0.105] < 0.001
+         OpenAI-embedder facts − BERT ab all            P@10        +0.154 [0.144, 0.165] < 0.001
+         OpenAI-embedder   facts − BERT   ab   all      Hit@10      +0.250 [0.224, 0.275] < 0.001
+         OpenAI-embedder   facts − BERT   ab   facts    nDCG@10     +0.130 [0.124, 0.136] < 0.001
+         OpenAI-embedder   facts − BERT   ab   facts    P@10        +0.194 [0.183, 0.204] < 0.001
+         OpenAI-embedder   facts − BERT   ab   facts    Hit@10      +0.353 [0.329, 0.378] < 0.001
+
+         τ = 0.28
+         OpenAI-embedder facts − BERT ab all            nDCG@10     +0.099 [0.093, 0.105] < 0.001
+         OpenAI-embedder facts − BERT ab all            P@10        +0.108 [0.099, 0.116] < 0.001
+         OpenAI-embedder facts − BERT ab all            Hit@10      +0.236 [0.211, 0.262] < 0.001
+         OpenAI-embedder facts − BERT ab facts          nDCG@10     +0.130 [0.124, 0.136] < 0.001
+         OpenAI-embedder facts − BERT ab facts          P@10        +0.130 [0.121, 0.139] < 0.001
+         OpenAI-embedder facts − BERT ab facts          Hit@10      +0.319 [0.296, 0.343] < 0.001
+
+
+     All head-to-head gaps at k = 10 are statistically significant under paired bootstrap
+September 2025
+
+
+(Table 6), with tight 95% confidence intervals across both τ tracks: OpenAI outperforms
+Bert models on nDCG@10, P@10, and HitRate@10 with p < 0.001 in every case.
+      Together with our label-drift analysis, this supports the conclusion that absolute
+nDCG is conservative under diversified labels, yet relative differences are large and sta-
+tistically significant.
+
+5.2. Qualitative Examples
+
+To illustrate the noisiness of the dataset, we provide the following example of a case
+law retrieval task. One of the classical issues of criminal law is the right against self-
+incrimination. The Czech ConC heard many cases on the extent of self-incrimination,
+with one of the core issues being whether or not the right protects suspects from be-
+ing subjected to sanctions (e.g., fines) when refusing to cooperate during the collection
+of DNA samples. ConC consists of individual senates, which on occasion give rise to
+different answers when ruling on similar legal issues. In this instance, the senates dis-
+agreed on the scope of protection and ruled differently (Case no. I. ÚS 671/05 in Febru-
+ary 2006, and Case no. III. ÚS 655/06 in May 2007). When the Constitutional court
+received another petition concerned with the scope of protection, the issue triggered a
+rare unification procedure (Opinion no. Pl. ÚS-st. 30/10 in November 2010), leading to
+the establishment of the new scope of protection (Case no. II. ÚS 2369/08 in December
+2010). Nowadays, ConC mostly follows the established practice (e.g., Case no. IV. ÚS
+666/19 in May 2019), offering little to no distinction. Case law retrieval on the scope of
+right against self-incrimination should (in both educational and professional settings) in-
+clude these five documents.8 We computed wJacc in Table 7 to demonstrate the disparity
+between keywords assigned in the official court database to these five documents.
+Table 7. Keyword similarity illustrating noisiness of the keywords assigned to decisions (case numbers
+abbreviated)
+
+                                  671/05     655/06       30/10      2369/08      666/19
+
+                     671/05            1        0.2      0.3333       0.1111         0.2
+                     655/06          0.2          1      0.3333          0.25        0.2
+                     30/10        0.3333     0.3333           1       0.3333      0.1429
+                     2369/08      0.1111       0.25      0.3333             1     0.1111
+                     666/19          0.2        0.2      0.1429       0.1111           1
+
+
+
+
+6. Discussion
+
+Despite being trained on ∼30k in-domain decisions, our from-scratch BERT lags behind
+the off-the-shelf OpenAI embedder. The likely drivers are scale and objective: the gen-
+eral embedder benefits from orders of magnitude more pretraining tokens and a broader
+semantic curriculum, yielding representations that are better aligned for cross-document
+similarity. By contrast, our domain model is capacity-limited and trained with MLM
+  8 These five do not exhaust the topic fully, but provide for an example of the noisiness, which is well-known
+
+within the Czeh legal community.
+September 2025
+
+
+only, without contrastive or retrieval-aware signals and without cross-document posi-
+tives. Sliding windows (512 with overlap) increase exposure to long decisions but do
+not inject new supervision; many windows in a single case are semantically redundant,
+so averaging them can dilute discriminative cues. Empirically, the general embedder re-
+trieves neighbors with more and more diagnostic tag overlap even under strict thresholds,
+indicating that scale and general semantics dominate domain-only MLM at this task.
+     Absolute nDCG values should be read as conservative lower bounds rather than
+poor utility. Our gold standard is exact keyword overlap drawn from a large, evolving
+vocabulary with few tags per decision; as shown in our label-drift diagnostics and over-
+lap model, the expected intersection between two semantically similar decisions is small
+(E[|A∩B|]≪1 when k2 /Neff is small). We further supported this conclusion with an illus-
+trative qualitative analysis of decisions concerning the same legal issue. This depresses
+graded gains even when retrieved decisions are genuinely related. Head user metrics
+(P@k, HitRate@k, RBP) and bootstrap gaps nevertheless show large, statistically robust
+improvements for the OpenAI embedder across k ∈ {10, 20, 100} and τ ∈ {0.20, 0.28}.
+     First, model choice matters: a strong general-purpose embedder can outperform a
+domain-specific BERT trained only with MLM, even on legal texts. Second, to raise ab-
+solute effectiveness under diversified labels, future work should move beyond single-
+vector document representations toward paragraph-level or multi-vector retrieval, and
+explore hybrid sparse+dense pipelines (lexical recall plus dense ranking). We inten-
+tionally did no re-ranking here to isolate embedding quality; adding a shallow cross-
+encoder/listwise re-ranker is a natural next step.
+
+
+7. Conclusion and Future Work
+
+We presented a compact, robust evaluation of semantic retrieval for Czech Constitutional
+court decisions under noisy institutional labels and found that a strong general-purpose
+embedder decisively and significantly outperforms a carefully engineered, from-scratch
+domain BERT trained on approximately 30,000 cases. These results suggest that pre-
+training scale and breadth of semantic coverage matter more than in-domain MLM alone
+for this task. Looking ahead, we plan to improve absolute effectiveness by moving to
+paragraph-level (multi-vector) representations and hybrid sparse+dense retrieval, to ex-
+plore larger-scale continued pretraining of the domain model, and to complement the
+overlap-based gold with a human assessment by judges and judicial assistants.
+
+
+References
+
+ [1]   Bench-Capon T, Araszkiewicz M, Ashley K, Atkinson K, Bex F, Borges F, et al. A history of AI and
+       Law in 50 papers: 25 years of the international conference on AI and Law. Artificial Intelligence and
+       Law. 2012;20(3):215-319.
+ [2]   Governatori G, Bench-Capon T, Verheij B, Araszkiewicz M, Francesconi E, Grabmair M. Thirty years
+       of Artificial Intelligence and Law: the first decade. Artificial Intelligence and Law. 2022;30(4):481-519.
+ [3]   Sartor G, Araszkiewicz M, Atkinson K, Bex F, van Engers T, Francesconi E, et al. Thirty years of
+       Artificial Intelligence and Law: the second decade. Artificial Intelligence and Law. 2022;30(4):521-57.
+ [4]   Villata S, Araszkiewicz M, Ashley K, Bench-Capon T, Branting LK, Conrad JG, et al. Thirty years of
+       artificial intelligence and law: the third decade. Artificial Intelligence and Law. 2022;30(4):561-91.
+ [5]   Katz DM, Hartung D, Gerlach L, Jana A, Bommarito II MJ. Natural language processing in the legal
+       domain. arXiv preprint arXiv:230212039. 2023.
+September 2025
+
+
+ [6]   Siino M, Falco M, Croce D, Rosso P. Exploring llms applications in law: A literature review on current
+       legal nlp approaches. IEEE Access. 2025.
+ [7]   Greco CM, Tagarelli A. Bringing order into the realm of Transformer-based language models for artifi-
+       cial intelligence and law. Artificial Intelligence and Law. 2024;32(4):863-1010.
+ [8]   Lai J, Gan W, Wu J, Qi Z, Yu PS. Large language models in law: A survey. AI Open. 2024;5:181-96.
+ [9]   Naveed H, Khan AU, Qiu S, Saqib M, Anwar S, Usman M, et al. A comprehensive overview of large
+       language models. ACM Transactions on Intelligent Systems and Technology. 2025;16(5):1-72.
+[10]   Mikolov T, Chen K, Corrado G, Dean J. Efficient estimation of word representations in vector space.
+       arXiv preprint arXiv:13013781. 2013.
+[11]   Le Q, Mikolov T. Distributed representations of sentences and documents. In: International conference
+       on machine learning. PMLR; 2014. p. 1188-96.
+[12]   Devlin J, Chang MW, Lee K, Toutanova K. Bert: Pre-training of deep bidirectional transformers for
+       language understanding. In: Proceedings of the 2019 conference of the North American chapter of
+       the association for computational linguistics: human language technologies, volume 1 (long and short
+       papers); 2019. p. 4171-86.
+[13]   Beltagy I, Lo K, Cohan A. SciBERT: A pretrained language model for scientific text. arXiv preprint
+       arXiv:190310676. 2019.
+[14]   Lee J, Yoon W, Kim S, Kim D, Kim S, So CH, et al. BioBERT: a pre-trained biomedical language
+       representation model for biomedical text mining. Bioinformatics. 2020;36(4):1234-40.
+[15]   Chalkidis I, Fergadiotis M, Malakasiotis P, Aletras N, Androutsopoulos I. LEGAL-BERT: The muppets
+       straight out of law school. arXiv preprint arXiv:201002559. 2020.
+[16]   Mandal A, Ghosh K, Ghosh S, Mandal S. Unsupervised approaches for measuring textual similarity
+       between legal court case reports. Artificial Intelligence and Law. 2021;29(3):417-51.
+[17]   Westermann H, Savelka J, Benyekhlef K. Paragraph similarity scoring and fine-tuned BERT for le-
+       gal information retrieval and entailment. In: JSAI International Symposium on Artificial Intelligence.
+       Springer; 2020. p. 269-85.
+[18]   Vuong YTH, Bui QM, Nguyen HT, Nguyen TTT, Tran V, Phan XH, et al. SM-BERT-CR: a deep learning
+       approach for case law retrieval with supporting model. Artificial Intelligence and Law. 2023;31(3):601-
+       28.
+[19]   Mentzingen H, António N, Bacao F. Effectiveness in retrieving legal precedents: exploring text summa-
+       rization and cutting-edge language models toward a cost-efficient approach. Artificial Intelligence and
+       Law. 2025:1-21.
+[20]   Tang Y, Qiu R, Huang Z. UQLegalAI@ COLIEE2025: Advancing Legal Case Retrieval with Large
+       Language Models and Graph Neural Networks. arXiv preprint arXiv:250520743. 2025.
+[21]   Savelka J, Ashley KD. The unreasonable effectiveness of large language models in zero-shot semantic
+       annotation of legal texts. Frontiers in Artificial Intelligence. 2023;6:1279794.
+[22]   Lee J, Lee G. Long context window-based zero-shot legal interpretation of building codes and regula-
+       tions. Automation in Construction. 2025;179:106450.
+[23]   Dugac G, Altwicker T. Classifying legal interpretations using large language models. Artificial Intelli-
+       gence and Law. 2025:1-19.
+[24]   Dahl M, Magesh V, Suzgun M, Ho DE. Large legal fictions: Profiling legal hallucinations in large
+       language models. Journal of Legal Analysis. 2024;16(1):64-93.
+[25]   Magesh V, Surani F, Dahl M, Suzgun M, Manning CD, Ho DE. Hallucination-Free? Assessing the
+       Reliability of Leading AI Legal Research Tools. Journal of Empirical Legal Studies. 2025;22(2):216-42.
+[26]   Yu F, Quartey L, Schilder F. Exploring the effectiveness of prompt engineering for legal reasoning tasks.
+       In: Findings of the association for computational linguistics: ACL 2023; 2023. p. 13582-96.
+[27]   Zin MM, Satoh K, Borges G. Leveraging LLM for Identification and Extraction of Normative State-
+       ments. In: Legal Knowledge and Information Systems. IOS Press; 2024. p. 215-25.
+[28]   Keisha F, Singh P, Fernandes D, Manivannan A, Wicaksono I, Ahmad F, et al. All for law and law for
+       all: Adaptive RAG Pipeline for Legal Research. arXiv preprint arXiv:250813107. 2025.
+[29]   Drápal J, Westermann H, Savelka J. Using large language models to support thematic analysis in em-
+       pirical legal studies. arXiv preprint arXiv:231018729. 2023.
+[30]   Steenhuis Q, Westermann H. Getting in the door: Streamlining intake in civil legal services with large
+       language models. arXiv preprint arXiv:241003762. 2024.
+[31]   Gogani-Khiabani S, Trivedi A, Chyi S, Tizpaz-Niari S. Performance of LLMs on VITA test: potential
+       for AI-assisted tax returns for low income taxpayers. Artificial Intelligence and Law. 2025:1-22.
+September 2025
+
+
+[32] Guha N, Nyarko J, Ho D, Ré C, Chilton A, Chohlas-Wood A, et al. Legalbench: A collaboratively built
+     benchmark for measuring legal reasoning in large language models. Advances in neural information
+     processing systems. 2023;36:44123-279.
+[33] Guo X, Huang Y, Wei B, Kuang K, Wu Y, Gan L, et al. Specialized or general AI? a comparative
+     evaluation of LLMs’ performance in legal tasks. Artificial Intelligence and Law. 2025:1-37.
+[34] Er MJ, Zhang Y, Wang N, Pratama M. Attention pooling-based convolutional neural network for sen-
+     tence modelling. Information Sciences. 2016;373:388-403.
+

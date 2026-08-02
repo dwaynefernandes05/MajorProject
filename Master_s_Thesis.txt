@@ -1,0 +1,943 @@
+
+Universidad Politécnica de Madrid
+Escuela Técnica Superior de Ingenieros Informáticos
+
+Master in Data Science
+
+
+
+Master Thesis
+
+Semantic Similarity for Public Procurement Tender Drafting
+
+
+
+
+
+
+
+
+
+Author: Pablo Bande Sánchez - Girón
+
+
+
+
+
+
+
+
+
+
+Madrid. July, 2024
+
+This Master Thesis has been deposited in ETSI Informáticos de la Universidad Politécnica de Madrid.
+
+
+
+
+
+
+
+
+
+
+Master Thesis
+Máster en Ciencia de Datos
+
+Title:	Semantic Similarity for Public Procurement Tender Drafting July, 2024
+
+
+Author: Pablo Bande Sánchez Girón
+
+
+Supervisor:	Co-supervisor:
+Óscar Corcho García	María Navas Loro
+
+
+Escuela Técnica Superior de Ingenieros Informáticos Dpto. Inteligencia Artificial
+Universidad Politécnica de Madrid
+
+Escuela Técnica Superior de Ingenieros Informáticos Dpto. Sistemas Informáticos
+Universidad Politécnica de Madrid
+
+Abstract
+When public sector entities need to purchase necessary goods, products, services, or utilities, they publish tenders, and for ethical reasons, this procedure must be open to the public, allowing businesses of all sizes to compete for the contract. Since the money comes from taxes and funds must be as transparent and fair as possible. Public tender refers to the document that contains the offer together with its conditions and details. There are many tenders available because every public institution frequently advertises them for any assistance required coming from a third-party company. A great portion of these tenders are for very similar common procedures and because most of them are prepared from scratch and differ significantly in terms of style, terminology choice, and structure, there is a lot of redundancy which causes the tender drafting process to be very inefficient. To facilitate and speed up the creation of these documents, it would be ideal to be able to retrieve similar tenders given a brief description. To streamline this process, advanced algorithms for semantic textual similarity will be utilized and evaluated. Currently, these documents are tagged with their Common Procurement Vocabulary (CPV), which are categorization codes that set up a classification system for public procurement to standardize how authorities and entities describe the contract goals. This can be used to filter tender databases to retrieve specific services or goods related documents, nevertheless, this process can be improved by applying a semantic similarity layer for more precise search.
+A large amount of public tender data will be collected, and description labels will be extracted from each document. The textual data will be converted into numerical through different embedding methods to be able to process and implement text similarity algorithms. Models will be evaluated and analyzed measuring the effectiveness on generic and specific databases. And adjustments will be made to hyperparameters and metrics to improve performance, ensuring precise and efficient identification of similar tender documents.
+The implementation and adoption of this tool can lead to a more efficient and consistent drafting process that saves time and resources, reducing costs for public entities. Another upside is the standardization of tenders formatting and general structure which would facilitate their comprehension and can be positive as future material for analysis or NLP related tasks.
+
+Contents
+1 Introduction	3
+1.2 Requirements and Specifications	3
+1.3 Objectives	4
+1.5 Structure of the document	4
+2 State of the art	5
+2.1 Text similarity	5
+2.1.1 Lexical similarity	5
+2.1.2 Semantic similarity	5
+2.2 Text Representation	6
+2.3 Sparse embeddings	6
+2.3.1 One-hot encoding	6
+2.3.2 Bag of words	7
+2.3.3 TF-IDF	8
+2.3.4 N-gram	10
+2.4 Dense embeddings	10
+2.4.1 Doc2Vec	11
+2.4.2 Universal Sentence Encoder	19
+2.4.3 BERT	20
+2.4.4 Sentence BERT	21
+2.4.5 RoBERTa	22
+2.5 General comparison	23
+2.6 Metrics and distances	24
+2.6.1 Euclidean distance	24
+2.6.2 Cosine similarity	25
+2.6.3 Conclusion	25
+3 Development	27
+3.1 Definition of the problem and proposed solution	27
+3.2 Data analysis	28
+3.3 Data processing	34
+3.3.1 Data balancing	35
+3.3.2 Text preprocessing	35
+3.4 Building models and fine-tune	36
+3.5 Model evaluation	37
+4 Results	39
+4.1 Spanish Semantic Textual Similarity benchmark	39
+4.2 CPV Group similarity	40
+4.3 Clustering	42
+5 Conclusions and Future Work	46
+6 Bibliography	48
+
+
+1 Introduction
+
+Public procurement procedures are essential for efficiently acquiring the goods, projects, and services needed by government entities and public institutions. However, drafting these procurement documents often encounters inefficiencies because authors use different terms, phrases, structures or format. Big portion of the tenders are designed for common simple tasks targeting the same products or services but these style differences result in repetitive drafting efforts, wasting time and resources. Addressing these inefficiencies would improve the effectiveness and transparency of public procurement procedures. Besides the quality of life and better resource management for public administrations that this system might offer, the standardization of the tenders would be a good step for future analysis or NLP related work.
+The project aims to streamline the tender drafting process allowing the users to retrieve the most similar documents from public sources given a description. For this task, we will discuss different text representation models and the similarity metrics that can be applied to measure the similarity between the documents. For the evaluation of the approaches the CPV, which describes the procedurement contracts through a standardized classification system, will have an important role.
+
+
+1.2 Requirements and Specifications
+
+To improve the tender drafting process, the project will focus on analyzing and evaluating text similarity in tender descriptions. This involves several key steps:
+1. Definition of the problem: We will first study the field we are working on and understand the problem that it is proposed for us to solve, specifying the objectives and methodology to follow in order to achieve the solution.
+2. Data Collection and analysis: Gathering a large dataset of public
+tenders with detailed description texts and CPV and creating a structured database to facilitate the project development. Application of several data visualization techniques to study the distribution and other important aspects of the texts we will work with to do design choices.
+3. Text Processing: Using techniques to preprocess and refine the data
+into a suitable format for analysis and modeling for more accurate and efficient results such as removing unnecessary symbols, stop-words and normalizing the text through lowercasing and lemmatization.
+4. Text Similarity Methods: Understanding and applying several lexical
+and semantic text embedding algorithms on a document scope. Deciding which distance measurement fits this task the most.
+5. Evaluation Criteria: Setting the criteria to determine the effectiveness
+and accuracy of the similarity measures.
+
+6. Results and model optimization: After obtaining the first results from general model configurations, there will be specific hyperparameter modifications in order to boost their performance.
+7. Conclusion: Analyzing the results from each method and identifying
+the most suitable one to achieve our goal and discussing possible future improvements.
+
+
+1.3 Objectives
+
+The main objective of this project is to analyze the different text similarity methods and decide which one fits the most for the goal of retrieving tenders related to a brief description. Specifically, this projects aims to:
+- Reduce the time invested into tender drafting by workers through offering a tool that shows similar tenders related to the matter, thus improving the resource management within public administrations.
+- Attempt to reduce the redundancy in tenders with the same tasks by encouraging uniformity and standardization among different authors and departments.
+- The standardization of tender formats will allow for the data to be more accessible and normalized for future tools that can be implemented as quality of life.
+
+
+1.5 Structure of the document
+
+This document is divided into six main parts. Each of them deals with a specific aspect of the research and development process of this project.
+The introduction section provides an overview of the research topic with the background of the public procurement process and the motivation behind the research. It also contains the requirements and specifications of the project and sets the objectives to reach.
+In the state of the art, we review the existing literature and methods related to text similarity, covering the concepts of lexical and semantic similarity as well as several text representation methods. The embedding techniques such as One-Hot Encoding, Bag of Words, TF-IDF, Doc2Vec, Universal Sentence Encoder, Sentence-BERT and RoBERTa will be deeply analyzed together with the metrics and distances that will be used to measure the text similarity.
+The development chapter starts with the analysis of the collected data, the preprocessing steps performed to prepare it for the modeling phase and the hardware and software used. Finally, the application of the previously mentioned textual similarity algorithms and the evaluation criteria used to assess their performance are described.
+Then, the results of the conducted experiments are presented and discussed in detail, including an analysis and comparison of the performance of the text similarity models in retrieving similar tender documents and clustering.
+Finally, we will summarize the main findings of the study and decide which model performed the best according to the tests driven. We will also highlight the contributions and impacts of the project, including the possible areas for future work to improve the developed system.
+
+2 State of the art
+2.1 Text similarity
+
+Our main goal is to evaluate the level of similarity between the description inserted by the user and each of the descriptions of the documents on the database. This will be done by comparing the texts to find similarities either through a surface level with the lexical approach, or through the context and meaning with the semantic approach.
+
+
+2.1.1 Lexical similarity
+
+This text similarity approach focuses only on the words contained in the text regardless their context and meaning. The score is defined by the closeness of the sets of words between both texts.
+Example:
+"The dog chased the ball."
+"The ball was chased by the dog."
+Here we can observe that both phrases are stating the same action but with a different structure. The set of words from both are quite similar, even the second one containing the first one. This results in a high similarity score, which in this case seems correct. However, as mentioned earlier, this algorithms do not keep track of the context and meaning of the words, leading to clear scoring errors like the following one:
+"The lion chased the deer." "The deer chased the lion."
+The similarity score is maximum, both sets of words from each sentence are exactly the same. Nevertheless, from a semantic point of view, both phrases are clearly different; in one the lion chases the deer, and in the other one is the other way round. Because of this, generally this approach is not as good as the semantical one for most of the use cases, but it still can be used in keyword matching since the meaning is not that relevant. For our case of text similarity, although the context is good when comparing two documents, this is a viable approach as well.
+Lexical textual data similarity can be analyzed by character level and word level. The first one analyzes each individual character of a word, primarily used to find typos and word variations. The second is mainly used for finding texts with similar keywords, which are relevant words that can define the thematic of a text. We will discuss some text representation methods that follow this approach, such as Bag of Words and TF-IDF in the next sections.
+
+
+2.1.2 Semantic similarity
+
+Unlike the lexical approach, here the order of the words and their meaning are considered. This is a more detailed and complex analysis of the data and is
+
+used specially in tasks where the significance of the elements are important, such as synonym detection, redundancy removal or paraphrase detection. The capacities this methodology offers allows it to be used in even more complex usages such as summarization, information retrieval and automatic question retrieval.
+Text similarity can be applied through different ways such as:
+- Knowledge based: also known as the topological method where the corpus is represented in a graph, being each node a word of the vocabulary. The relationships and closeness between concepts are easily appreciated observing the number of nodes between them, the less nodes, the more similarities shared.
+- Statistical based: These techniques involve transforming text into numerical representations known as feature vectors, which are then compared between them to determine how similar the text is.
+If we apply this to the previous example that caused misleading results on the lexical approach, it would result in a low score due to the differing contexts of the sentences.
+In public procurement, knowing the core of a contract is more significant than the precise terms used. Because of this, theoretically semantic similarity, that allows us to find contextual and conceptual similarities between tenders, will have a better performance over the lexical approach. We will try different algorithms such as Doc2Vec [2] , USE [3], Sentence BERT [5] and RoBERTa [6]. At the end of the thesis we will find out if this stands from a practical view as well after all the results and comparison.
+
+
+2.2 Text Representation
+
+In order to work with textual data for the text similarity task, we need to do a conversion from categorical into numerical data. This process is called text embedding, which are the representations of words or phrases as vectors in a continuous vector space. They can be classified into sparse and dense embeddings based on their characteristics and representation. Sparse vectors are mostly filled with zero values, while dense embeddings rarely contain them and because of this, sparse vectors are generally high dimensional compared to the low dimension of dense ones. That difference has a clear impact on the computational performance of the tasks which use them, negatively affecting the sparse approach. The downside of the compactness of the dense vector is that while each dimension is a specified feature on the sparse, generally words, in this one it is not clear, making them less interpretable. We will analyze different text representation processes that follow both approaches and use them for our text similarity task.
+
+
+2.3 Sparse embeddings
+
+2.3.1 One-hot encoding
+
+This is the most trivial technique to convert categorical data into numerical. We have the vocabulary of size v which will also be the size of the vector of
+
+each word in the corpus. In order to show the vocabulary word as vectorized, tokenize the sentence and identify the unique words, then we build a matrix of size v x v filled with zeros. Then for each row down we insert a 1 value and shift to the right the following row. This way, each word of the vocabulary is represented as a one-hot vector that has a 1 at the index corresponding to the word's position in the vocabulary list and 0s in all other positions.
+Example:
+Blue sky, blue ocean = [1,0,0], [0,1,0], [1,0,0], [0,0,1]
+
+blue100sky010ocean001Table 1. One-hot encoding example
+This text representation method is simple and effective for general categorical data. Nevertheless, it has clear limitations due to the high dimensionality and lack of semantic meaning. However, as we will see in some of the algorithms explained later, one-hot encoding is used for initial steps such as neural network input conversion.
+
+
+2.3.2 Bag of words
+
+The Bag of Words (BoW) model is a simple technique for transforming unstructured textual data into a structured numeric format for machine learning algorithms. Each unique word in the text acts as a feature, and the frequency of each word in the text indicates its significance. This focuses only on the occurrence count of each word of the vocabulary and does not take the semantic meaning into account.
+The steps for this method are quite straightforward. First the text is tokenized into words and the vocabulary is created with the distinct words from the entire corpus. This vocabulary vector determines the size of each sentence vector, where each cell represents a unique word and is filled with the frequency of it in each sentence.
+Example :
+1. Blue sky, blue ocean.
+2. The apple is on the grass.
+3. The apple is red.
+Then we create a matrix to represent this, where each row is a sentence and each column is a unique word. The cell values are the word frequencies in the respective sentences.
+
+Sentenceblueskyoceantheappleisongrassred121100000020001111103000111001Table 2. One-hot encoding example
+The Bag of Words (BoW) technique is very compatible with a wide range of algorithms that require numerical input and enables diverse complex applications such as text classification tasks, information retrieval and grouping similar documents based on the word frequency. This capacity is especially useful for effectively organizing large text corpora. The simplicity of the implementation and computational efficiency are the strong points of this algorithm, besides the basic feature extraction that it offers with an easy to understand text representation. However, this simplicity comes with some bad repercussions, such as the loss of meaning of the text since the order and context of the words are not considered and the high dimensionality due to the nature of sparse vectors wasting a big amount of memory. Additionally, BoW assigns equal weights to all words, which ends up giving more importance to stop words and common words than important ones. We could use a stop filter to remove them from the data and avoid this issue, however it still may not adequately emphasize unique terms within a big collection of documents.
+
+
+2.3.3 TF-IDF
+
+This is an improvement over the previous method because it evaluates the importance of words within the documents themselves. This is done through the calculation of two factors, the term frequency (TF) and inverse document frequency (IDF). The term frequency is a value that ranges from 0 to 1 that represents how much a word pops up in a document compared to the rest. On the other hand, inverse document frequency represents the prevalence of the term across all documents. Influenced by the frequency of the term in the document, but also adjusted based on the frequency of the term in the entire corpus ensuring that the importance of terms are correctly evaluated. We will get into process details with an example:
+
+
+The formula for calculating the TF-IDF score of a word in a document is:
+?????????? ???????????? ???? ??????????????????
+???????????? ???? ?????????????????? ???????????????????? ??h?? ????????
+
+
+Example sentences :
+1. Blue sky, blue ocean.
+2. The apple is on the grass.
+3. The apple is red.
+
+1. Calculate Term Frequency (TF)
+The term frequency is the number of times a term appears in a document divided by the total number of terms in that document.
+
+
+Sentenceblueskyoceantheappleisongrassred10.50.250.2500000020000.330.170.170.170.1730000.250.250.25000.25Table 3. Term frequency example
+   2. Calculate Inverse Document Frequency (IDF) The inverse document frequency (IDF) is calculated as:
+	?????????? ???????????? ???? ??????????????????	
+???????????? ???? ?????????????????? ???????????????????? ??h?? ????????
+
+
+blueskyoceantheappleisongrassred1.101.101.101.181.181.181.101.101.10Table 4. Inverse document frequency example
+???? - ?????? = ???? × ??????
+Summary of TF-IDF Scores
+
+Sentenceblueskyoceantheappleisongrassred10.550.2750.27500000020000.05940.03060.03060.1870.187030000.0450.0450.045000.275Table 5. TF-IDF example result
+From such a small corpus, conclusions are not definitive, but we can observe that words unique to a single document such as "blue," "sky," "ocean," "grass," and "red" get higher TF-IDF scores, emphasizing their importance in distinguishing their document from other documents. Common words across documents like "the" and "is" have lower scores due to their higher frequency in multiple documents, making them less useful for representing and distinguishing different documents. A more general example would be in a collection of documents about technology, there will be words like "software" that will be present in most of the texts and with more than one instance. In this context, these terms will not help us to identify and distinguish each document matter. However, words with less frequency in most of the documents, like "health" will be more representative, and says that the article could be about technological advancements in the medical field.
+The drawbacks of this approach are similar to the BoW, where the semantic relationship between words is not detected and the scalability is not optimal since the structure is based on sparse vectors, leading to memory issues and computation inefficiencies. Due to the nature of the process, every time the
+
+corpus receives changes, all values will require recalculation, being computationally expensive for large datasets specially, this forces it to avoid being used in tasks with dynamic corpus.
+
+
+2.3.4 N-gram
+
+In this approach, the text is split into sequences of n tokens which depending on the level applied, can be words or even characters. This kind of structure is able to retain a certain context of the words by grouping them by closeness. This algorithm will be useful when we get into more complex models that involve semantic meaning of the text such as word2vec with the skip-gram approach that uses it to capture context words of the target. As we are still on sparse vector representations, this model will also carry the same issues with scalability and memory management and also due to the repetition of terms in the consecutive sequences. This process is used in a big amount of NLP tasks such as speech recognition, translation, text prediction and named entity recognition.
+Example at word level:
+"The red apple is on the grass"
+- Unigrams: ["the", "red", "apple", "is", "on", "the", "grass"]
+- Bigrams: ["The red", "red apple", "apple is", "is on", "on the", "the grass"]
+
+
+2.4 Dense embeddings
+
+Generally separated into three categories depending on the level of text that is vectorized which can be individual words, sentences or whole documents.
+
+
+World embedding
+Individual words are represented as dense vectors in a predefined vector space and similar or related words are positioned close to each other. The vectors are built by training a neural network on a large text corpus, which involves predicting context words surrounding each target word capturing the semantic meanings of words. This enables models to better understand and process language. Word embeddings are very valuable for tasks such as word analogy and acting as inputs to more complex NLP models, enhancing their ability to process and understand human language effectively.
+
+
+Sentence Embedding
+This approach extends word embedding by representing entire sentences as numerical vectors in a multi-dimensional space capturing the overall meaning, semantic relationships, and context of the words contained. Sentence embeddings can be produced using a variety of methods such as transformer-based models, Sentence-BERT model utilization and word embedding averaging. Sentence similarity and semantic search are two applications where sentence embeddings excel.
+
+Document Embedding
+Each document is represented as a single vector capturing the meanings and contexts of individual sentences, as well as the relationships and coherence between them within the document. These models are generally used for document classification, clustering, summarization and information retrieval. The main goal of this project is to retrieve the most similar tenders to a sample description, document embedding appears to be the most optimal approach and we will focus on these embedding models.
+In order to achieve these embeddings, there are two main approaches, building the model from scratch or using pretrained models and transfer learning. We will implement Doc2Vec for this approach. On the other hand, pretrained models are initially trained on a large and rich dataset. We use these models as a baseline and fine tune to make it more suitable for our data and the task we want it to perform. This process is called transfer learning. This allows us to not need to build our model from scratch and save a big amount of time and resources. Universal Sentence Encoder will be used as default, but Sentence BERT and RoBERTa will be fine-tuned for this specific domain.
+
+
+2.4.1 Doc2Vec
+
+In order to understand this model, we will first analyze Word2Vec [1], which is the original project where this one was derived from.
+
+As we saw, textual data is converted into numerical data through vectorization. This process assigns different weights to each word in the vocabulary creating relationships between them. In order to achieve this, we will train a simple neural network with one hidden layer to perform prediction tasks, but instead of using the neural network output, we focus on the resultant weight matrix of the hidden layer, which acts as a look up table for our embedded words.
+
+
+Architecture: The model is fundamentally a 2 layer neural network trained.
+
+
+                Figure 1. Word2Vec general architecture V: size of the vocabulary of the corpus.
+
+N: number of neurons used in the hidden layer, this defines the number of features of each word thus the embedding dimensionality.
+The input layer is fed with the text with the words tokenized and vectorized through one-hot encoding. The number of neurons is equal to the size of the vocabulary.
+The hidden layer is fully connected neural units equal to the size of the embedding dimension desired, which represent the size of each word vector. N neurons so the hidden layer is composed by a weight matrix (W) with V rows and N columns. W = V x N. After the training process, the text is embedded word by word through the hidden weights defined by the connections between the input layer and hidden. Each word will be represented as a vector with N weights defining each characteristic stored in the weight matrix.
+As we mentioned earlier, the goal of this model is to obtain the weight matrix of the hidden layer once it is trained, this is because as we can observe, the rows represent each word of the vocabulary and each column one of the features. These rows are the embedded word and in order to access it we multiply the one-hot encoded word to the matrix. This way we retrieve the row that represents it since one hot encoded are all zero but one.
+
+
+Figure 2. The hidden layer operates as a lookup table
+The output layer using the Softmax function represents the probability distribution over the vocabulary for predicting the context words given a particular input. It will be a single vector with the size of the vocabulary. The input is encoded as a one-hot vector to represent the input word, while the training output is similarly represented as a one-hot vector for the output word. However, during evaluation of the trained network on an input word, the output vector will be transformed into a probability distribution, consisting of floating-point values rather than a one-hot vector. There are two predictive models that can be used for learning representation of words: Skip-gram and Continuous Bag of Words (CBOW):
+
+
+Skip-gram model:
+The model predicts the words surrounding a target word. Before this there was a bi-gram model which uses the most adjacent word to train the model, but here it can be any context word. This allows using words inside the window skipping the most adjacent word, that is the meaning of skip-gram. The amount of words in the context is defined by a window size which is the number of words considered as context from previous and next to the target
+
+word. Given a specific word of the text as an input, the model will have to look at the words around and choose one. It will then assign the probability of each word of the vocabulary to be the one chosen. The output probabilities will indicate how likely each word of the vocabulary is to be close to the targeted one.
+The neural network will be trained by feeding the skip-grams, which are sets of the target word and one of the context words. It tries to maximize the likelihood of context words around with the use of negative sampling or hierarchical softmax. There will be negative samples of skip-gram pairs with a proportion of (5/20) or (2/5) for small and big datasets respectively. The model knowledge will be defined statistically from the amount of times each pair is received. Words that usually are close in the text will be related somehow, creating some kind of semantic relationship or even identifying synonyms.
+Example of skipgrams.
+
+Window sizeSource textSkip-grams
+
+
+2
+The red apple is on the grassapple, the apple, red apple, is apple, onThe red apple is on the grassgrass, on grass, the
+
+3
+
+The red apple is on the grassapple, the apple, red apple, is apple, on apple, theTable 6. Skip-gram windows size example
+The weight matrix is built as part of the neural network training. For the skip-gram model, it's trained on word pairs, but the word pairs are generated from all of the sentences in your training text.
+This model is considerably slower than CBOW because it predicts numerous context words but more effectively captures word-context relationship and accuracy with infrequent words. It is also more sensitive to hyperparameters such as context windows size and learning rate and requires more computational power and memory.
+
+
+CBOW model:
+Opposed to skip-grams, this model predicts the target word based on surrounding context words, which are a defined number of words before and after the current word specified by the window size like the previous method. The model iterates through all the words of the sentence and for each target word assign a weight considering the surrounding. Since we use multiple words as the input, we need to merge each one-hot encoded into one vector through averaging, resulting in the context vector that is passed through the hidden layer.
+
+In the training phase we generate training pairs for each word in the corpus ([context words], target word) and use negative sampling as well. The context words are the words surrounding the target word within the context window. This process is very similar to the skip-gram but in a different format.
+
+
+Window sizeSource texttraining pairs
+
+2
+The red apple is on the grass
+[the, red, is, on], appleThe red apple is on the grass[on, the], grassTable 7. CBOW training pairs example
+
+
+The model maximizes the probability of the target word given the context. Results in a faster method because of the context vector unification and consumes less computational resources. The downside is the loss of accuracy and effectiveness managing and representing the words.
+A graphical comparison of their simplified architectures where in CBOW we get the target word from context and in skip-gram the opposite:
+
+
+Figure 3. Word2Vec Skip-gram and CBOW models architecture
+
+
+
+After understanding this methodology, we can take a look at Doc2Vec, which is an extension that allows applying this to block of documents.
+Since we want the numeric representation of a document, the easier approach using the previous model is to add one new vector as an input to the neuronal network that represents the document. This vector is initialized with random values, distinct to each document of the corpus and through the training process evolves into the final matrix that constitutes the whole document embedding. Here we also have two main variants which are related to the CBOW and skip-grams which are the following:
+
+PV-DBOW
+This one resembles the skip-gram model but in a more simplistic way. The model takes the document vector as the input and tries to find a word that belongs to it.
+In the training phase the model is fed with the document vectors (only one vector each time) and random sample words and aims to maximize the precision on predicting sample words from the document. These document vectors are initialized randomly but get refined during this process. After this process we can obtain the document matrix by stacking all document vectors, where each row is a different document and columns correspond to one dimension of the vector. The dimension is established manually.
+
+
+Figure 4. PV-DBOW architecture
+
+This model ignores the order of words of the document, making it simpler and faster to train compared to PV-DM. It is generally enough for capturing the overall topic of the document but can lose some details about word order and local context, leading to worse results than the other variant in this matter.
+
+
+PV-DM
+This one is similar to CBOW, where given a set of context words the model tries to predict the target word. However we also modify it adding the document vector to capture the overall meaning of it.
+
+
+Figure 5. PV-DM architecture
+
+Considers word order within the context window, frequently generating improved embeddings for tasks where word order matters, and captures both the local and global semantics of the document.
+
+Initially we will try both approaches and see which one gives better results and decide, though PV-DM seems more suited to the task we seek.
+
+
+Transformer based models
+They are neural networks with the ability to extract the context from the data and keep track of the different relationships. Initially introduced to solve the problem of sequence transduction for natural language processing tasks in Google's 2017 research paper "Attention Is All You Need" [11], but then applied to other areas such as computer vision. These models are generally considered the most powerful to this date and are used in advanced popular tools such as ChatGPT, Github Copilot and Google Translator. Compared to Recurrent Neural Network and Convolutional Neural Network models, Transformers have access to parallel processing improving the hardware consumption and have the capacity to capture long range dependencies. Another important advantage of Transformers is that the training data does not need to be labeled, which saves time and resources, allowing for bigger datasets to be used by mathematically finding patterns between the elements.
+
+
+Attention mechanism
+
+
+The key of these models is the attention mechanism, which was previously introduced in computer vision in 2014 "Neural Machine Translation" by Jointly Learning to Align and Translate [12] paper in order to comprehend Convolutional Neural Network outputs. Long-range dependencies, such as the relationship between the first and last words in a sentence were difficult to capture for traditional models. However, a self-attention mechanism was created to address this struggle by allowing each word to have attention to the rest of the sentence when it is getting embedded.
+For each word, three vectors are created: query, key and value. These vectors are generated by multiplying the initial word embedding with three weight matrices learned during the training process. As we encode a word, the model now computes the scores that indicate how much emphasis to put on other terms of the input text. This is done by taking the dot product of the current word query vector with the key vector of all words in the sentence. All words from the input are assigned a score of attention that the current word processed should have on them, and the higher, the more focus. These scores go through a softmax function for easier interpretation. Each word's final representation is calculated by adding all of the Value vectors together, weighted by the attention scores, which is the combination of all the terms, weighted according to their relevance.
+
+
+Structure
+Transformers are constituted by two main components, the encoder and the decoder and thanks to this they do not rely on recurrence and convolutions in order to generate outputs. The encoder has the job of making embeddings of the input sequences and the decoder receives them together with the decoder output from the previous step and produces a new output.
+
+
+
+Figure 6. Transformer architecture. From "Attention Is All You Need"
+
+1. Encoder
+It is formed by six identical layers, which are also divided into two sublayers with a residual connection around: multi-head attention and feed-forward.
+- Multi-head attention: applies multi-head self-attention, where each head processes a different linearly projected version of the queries, keys, and values in parallel. The outputs of all heads are then combined to form the final result. This makes the encoder bidirectional.
+- Feed-forward network: fully connected FFN of two linear transformations with Rectified Linear Unit activation in between.
+??????(x) = ReLU(W1x + b1) W2 + b2
+
+
+Each of the six layers computes the same linear transformations to all the input terms but varying weights and bias values. Besides, each sublayer is followed by a normalization layer that normalizes the combination of its input and output results.
+
+
+2. Decoder
+It is also formed by six identical layers, divided into three sublayers with a residual connection around and normalization layers.
+
+- Masked multi-head attention: receives the output of the decoder from the previous iteration and augments it with positional information before applying the multi-head attention mechanism. However, while in the encoder the attention was to all the words from the input, here it only applies on the ones that come before the current word in the sequence. This makes the decoder unidirectional.
+- Multi-head attention: gets the keys and values from the encoder and the queries from the previous decoder sublayer and applies multi-head attention.
+- Feed-forward: Same as the encoder one.
+
+
+The process of how a basic Transformer works is:
+- Input layer: First of all, the input text is tokenized and each word is embedded into a vector of size determined by a hyperparameter. Common values can vary from 128 to 1024 depending on the use case and computational resources available. Since Transformers do not inherently understand the order of the words within the sequence, because of this, the embedding vectors will be complemented with positional information. Each word embedding is summed element-wise with a positional encoding vector of the same length.
+- Encoder: The resultant embedding vectors are fed into the encoder
+block and are processed, simultaneously considering the entire sequence, both before and after that word to generate the context.
+- Decoder: This block receives its previous output as the input, which is
+the predicted word from the previous iteration. This vector is also augmented by positional encoding, the same way it was for the encoder input and fed into the three sublayers of the block. The encoder output goes into one of these sublayers to allow the decoder to consider all words in the input sequence.
+- Output layer: The output of the decoder is passed through a fully
+connected layer followed by a softmax layer and predicts the next output.
+
+
+A simple Transformer structure is formed by one encoder followed by a decoder. However, more complex models can be built combining multiple of these elements. Regarding this, there are three types of models depending on what components of the Transformers are used:
+- Encoder only: For tasks where understanding the input is crucial such as text masking, classification, and name entity recognition. Common models such as BERT, USE and RoBERTa.
+- Decoder only: Used for text generation, GPT [7] and Transformers XL
+[8] are representative models from this type.
+- Encoder-decoder: Text generation that requires input, such as translation, summarization or question answering. Common models are BART [9] and T5 [10].
+This project is centered on text representation and similarity analysis so encoder only models are the ones that will be utilized.
+
+Transfer learning
+The way the Transformers models are built facilitate the fine-tuning process as they can be separated into the body and the head. The body contains the encoder and decoder blocks which compute the hidden states, and the head changes according to the function given to the model to achieve. We can use the body of an already pretrained model and with our data and use that as the base to build other specific models. This will be helpful for fine-tuning Sentence BERT and RoBERTa for better performance on the tenders similarity calculation.
+
+Figure 7. Transfer learning graphical representation
+
+
+2.4.2 Universal Sentence Encoder
+
+It is an encoder only model that converts text into high dimensional vectors that can be used for semantic similarity, clustering, text classification and other natural language tasks. It is pre-trained for a wide variety of natural language understanding tasks, which could lead to good but not optimal results on specific objectives such as text semantic similarity, which is the center of this project. This will be demonstrated after evaluating and comparing all models.
+There are two different models with their advantages and disadvantages to implement the universal sentence encoder, one that is based on Transformers and the other one Deep Average Network. The late one is the one that will be used and analyzed. It is based on Deep Unordered Composition Rivals Syntactic Methods for Text Classification [18] where the input is tokenized using the Penn Treebank tokenizer and fed into a four layer feed forward deep neural network to produce an 512 dimensional embedding.
+
+
+
+Figure 8. USE DAN architecture. From Universal Sentence Encoded Explained
+
+
+It is the simple variant with less accuracy than the transformer one but more time efficient. The complexity is O(n), with a linear scaling making it very recommendable for large datasets, where n represents the length of the input sentence.
+
+
+2.4.3 BERT
+
+To understand the BERT [4] variants that will be used, first the base model will be explained. Bidirectional Encoder Representations from Transformers is an encoder only model because it is designed to understand the context and relationships of the input data, rather than generating new text. This model is trained with large amounts of unlabeled data in order to learn contextual embeddings and then fine-tuned for specific NLP tasks. While the model works as it was previously explained in the Transformers section, BERT adds two new innovative training strategies: Masked Language Model (MLM) and Next Sentence Prediction (NSP).
+
+
+Masked Language Model
+In the pre-training process, the input sequences are affected by a masking system that replaces random words with a tag such as [MASK]. The objective is to train the model to generate the words that are missing by analyzing the contextual elements around. To do so, a classification layer is added on top of the output of the encoder which is responsible for computing the probability of the terms to be the masked word. The loss function considers only the masked elements and measures the deviation between the actual word behind the mask and the predicted outputs.
+
+Next Sentence Prediction
+BERT is also trained on the relationships between pairs of sentences and recognizing if the two are sequential in the dataset. To achieve this, pairs of sentences are generated from the training data, while half of them are a sentence and its subsequent, and the other half are randomly chosen from other pairs. To label these tuples so that the model identifies positive and negative pairs, a [CLS] token is added at the start of the first sentence and a [SEP] token at the end of each. For each word, there is the token embedding, segment embedding indicating the sentence type (S0, S1) and a position embedding indicating the position in the sequence.
+
+
+These two training strategies are put together, creating a solid model that tries to minimize both loss functions combined, and is able to understand the context inside the sentences and connection between them to generate rich representative text embeddings. The base model is conformed by 12 encoder layers, which is double the original transformer structure, and the output embeddings are represented as 768-dimensional vectors.
+
+
+Figure 9. BERT embedding process
+
+2.4.4 Sentence BERT
+
+It is an encoder only model based on BERT that was created from the necessity to apply it for sentence representation. Jacob Delvin (co-author of BERT paper) commented1:
+"I'm not sure what these vectors are, since BERT does not generate meaningful sentence vectors. It seems that this is doing average pooling over the word tokens to get a sentence vector, but we never suggested that this will generate meaningful sentence representations. And even if they are decent representations when fed into a DNN trained for a downstream task, it doesn't mean that they will be meaningful in terms of cosine distance. (Since cosine distance is a linear space where all dimensions are weighted equally)."
+
+
+1 https://github.com/google-research/bert/issues/164#issuecomment-441324222
+
+Three new objective functions are implemented in this model to achieve good sentence embedding:
+Classification objective function
+The model aims to classify pairs of sentences (s0, s1) into different categories. To achieve this, after generating each sentence embedding, an additional vector is created from them two as the element-wise absolute difference
+|s0-s1|. These three vectors are concatenated and multiplied by the weight matrix, which then goes through a softmax classifier that outputs the normalized probabilities to each sentence class. The model weights are updated using the cross-entropy loss function.
+
+
+Regression objective function
+Cosine similarity is computed between the embeddings from the pair of sentences, then compared to the true score and the model is updated using the Mean Squared Error loss function. During the inference, besides generating the embeddings, this model is able to output the cosine similarity between a pair of sentences, which is quite useful for the goal of this project.
+
+
+Triplet objective function
+Instead of pairs, here the model uses triplets of sentence names as the anchor, positive and negative. The anchor is assumed to be similar to the positive sentence, while dissimilar to the negative one and this relationship is evaluated through the training process using the following formula:
+??????(||???? - ????|| - ||???? - ????|| + e, 0)
+The variable e is the margin that guarantees that the positive sentence is at least e closer to the anchor than the negative one. By default it is set to 1.
+
+
+2.4.5 RoBERTa
+
+It is another encoder only model based on BERT, with the complete name as Robustly Optimized BERT Approach. This comes from the improvement on the training phase by using larger datasets and more effective procedures. This spanish version in specific was pre-trained with 570GB of clean and deduplicated text, currently it is the largest spanish training corpus. Apart from the training data, the base model suffered some little design changes and training procedures that optimized the algorithm.
+- The size of the batches were increased. This gave a lot of improvements. Larger batches help the model to learn better representations, with more data at once improving the perplexity on the masked language modeling task. Besides the results refinements, the training became more efficient by spreading the computational load across different processors via distributed parallel training.
+- Mask is no longer static. Training data is duplicated 10 times and each duplicate set is masked differently, resulting in 10 different mask
+
+patterns for the same data. Training over 40 epochs leads into mask changing each 4 epochs, which can be comparable to dynamic masking.
+- The Next Sentence Prediction (NSP) training was removed from the model and the results obtained were superior to the originals.
+
+
+This model is designed for masked language modeling. However, through fine-tuning it can be a good choice for other non-generative tasks such as text classification, name entity recognition and semantic textual similarity. In the results section of this document both base and fine-tuned models are analyzed and it is clearly appreciated that out of the box it does not perform well on the semantic textual similarity task.
+
+
+
+2.5 General comparison
+
+
+ModelsBoW, TF-IDFDoc2vec, USE, Sentence Bert, RoBERTaVectorsSparseCompactDimensionalityHigh-dimensional	vectors, same size as the vocabulary.Low dimensional vectors, generally from 50 to 500 dimensions.Contextual RelationshipContextual	relationships between words not captured.Enhance the understanding of semantic meanings and connections among words.InterpretabilityEasy	to	interpret	and understand.Models are dense and complex, harder to understand.Computational complexityFor small vocabularies, the computational cost is lower, but costly for larger ones.Training	is	computationally costly, once trained, it is efficient.Handling synonymsSynonyms	are	treated	as distinct words.Identifies	similarities	among words with the same meaning.Handling unknown wordsIgnore unknown words. Bad performance.Better managing them, specially pretrained models from larger databases.Training	data requirementsApplicable to all datasets without  the  need  for pre-training.Generating effective embeddings necessitates the use of extensive datasets and some pre-training.ScalabilityThe scalability of the system may decrease as the vocabulary expands.The dense representation and lower dimensionality contribute to its increased scalability.Table 8. General embedding models comparison
+
+2.6 Metrics and distances
+
+Once the text is converted into numerical data, we are able to make comparisons between the documents through different methods depending on what part of the difference of the vectors we want to measure. We will analyze both Euclidean distance and Cosine similarity and decide which one will be used.
+
+
+2.6.1 Euclidean distance
+
+This represents the length of a segment that connects two points in the plane that represents two different texts through the shortest path possible calculated using the Pythagorean Theorem. The lower this distance is, the closer both vectors are, hence the more similar the texts are. In Figure 10 we can see three sentences plotted in the bidimensional space and the lines that connect them. If we wanted to see which sentence is more similar to "playing football", we can observe that "playing basketball" is closer than "reading a book", which would mean that the first one is more related than the latter.
+
+Figure 10. Euclidean distance
+
+It can be named as L2-norm or L2-distance, and the formula to calculate is the following:
+
+
+??	(??, ??) = ||?? - ??|| =
+??????????????????
+
+The downside of this method is the high sensitivity to the scale of the data, since the distance is what is measured, so specially in high-dimensional spaces it becomes less meaningful because of the curse of dimensionality. Additionally in some embedding algorithms that are based on term occurrences, the repetition of specific words can impact too much and overshadow other word features.
+
+2.6.2 Cosine similarity
+
+This fixes the main downside of euclidean distance and instead of the distances, the directions, which is the cosine of the angle between two vectors in the space is measured. Taking a look at the Figure 11, "playing football" and "playing basketball" points are relatively close to each other, and their vectors form a smaller angle with each other compared to the angle with the vector of "Going to the beach". Since cosine similarity is higher when the angle between vectors is smaller, we can deduce that "Writing my thesis" and "Finishing my studies" have a high cosine similarity, which means that they are semantically similar.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                       Figure 11. Cosine similarity The formula to calculate is the following:
+
+???????????? ????????????????????(??, ??) = ??????(?) =   ?? · ??  
+It can take values between -1 and 1, negative indicating dissimilarity and positive similarity. between both texts. It is very useful for clustering and classification tasks on documents because compared to the euclidean distance, the scale does not interfere with the results.
+
+
+2.6.3 Conclusion
+
+To compare both approaches, we embedded the following sentences using BERT which is a pretrained model and knows the meaning and context of these words and calculated the cosine similarity and euclidean distance. As the Figure 12 shows, the results are quite similar, and indicates the higher similarity between "playing football" and "playing basketball" than "reading a book", however, cosine might be more consistent because of the scale, and the normalization of the scores between a limited range. Because of this, to
+
+measure the similarity between document embeddings, cosine similarity will be the method that will be used.
+
+
+
+Figure 12. Heatmaps of Euclidean Distance and Cosine Similarity
+
+3 Development
+3.1 Definition of the problem and proposed solution
+
+The effective acquisition of goods, services, and projects by public institutions heavily relies on public procurement procedures. However, there are a lot of inefficiencies in the drafting process of these contracts because of the variations in the structure, format, and terminology used by different authors. The main issue is the absence of an efficient procedure for creating tender documents, resulting in a big loss of time and resources when similar tenders targeting the same goods or services are drafted from scratch which is very common for generic categories. This affects the efficiency and transparency of public procurement procedures in addition to wasting valuable money and resources.
+The project proposes the development of an algorithm that can assist in facilitating the tender writing process by finding and retrieving the most similar existing public tender documents based on a brief description provided by the user. This approach attempts to increase the consistency in contracts, reduce the repetition for generic categories and accelerate the drafting process.
+A large dataset of public tenders, including detailed descriptions and CPV codes, will be gathered. This dataset will be preprocessed to remove noise and unnecessary information, ensuring a clean and structured database for analysis.
+First of all we need to gather a large dataset of public tenders which contains their detailed descriptions and the CPV they were classified with. This data will be processed applying several techniques to remove unnecessary information and noise, besides normalizing the text terms. Once the data is ready to be used, we explore different text embedding techniques that allows us to convert the text into a numerical format which can be used for calculating distances between them and other natural language processing tasks. Each of these embeddings will be vectors of features that define the semantic meaning and contextual relevances of the tender description, and methods such as TF-IDF, Doc2Vec, Universal Sentence Encoder, Sentence Bert and RoBERTa will be studied and used for this conversion. Once all the textual data is represented as numerical data, different metrics can be applied to measure the distances and angles between these vectors, which will indicate the closeness and similarity of these documents. The main metrics for these tasks are cosine similarity and euclidean distance, both will be studied and decide which one fits this similarity task the best. The performance of the embedding conversion methods will be evaluated based on criteria such as accuracy, efficiency, and relevance of the retrieved documents and clustering analysis, hyperparameter tuning and model optimization will be applied to enhance the algorithm's performance.
+Now that we have the text representation approach and way to measure the closeness between different tenders descriptions we can apply this process to our main task, retrieve the most similar tenders according to a given description. For this, an algorithm will be implemented so that given a brief description as an input, several numbers or documents are retrieved, ranked according to the similarity score and filtered by a threshold that can be defined by the user. There will also be a CPV filter so if the user desires to look
+
+for specific codes to filter the tenders it is possible and the retrieved documents will be accessible through URLs provided in the interface.
+
+
+
+
+Figure 13. Flowchart
+
+3.2 Data analysis
+
+The data consists of 61,397 tenders. It is structured in a csv file that contains the file name, description of the object, CPVs and URI to access to the pdf file of each document. This structured database was given by co-supervisor of the project María Navas Loro. The analysis on the data will be done after being preprocessed and removing noise for clearer insights.
+This thesis will revolve around the descriptions of the tenders, thus we will analyze the distribution of their length and discuss how this could affect the performance. As we can observe in Figure 14, the distribution is slightly right-skewed, with the majority of descriptions around 19-27 words in length and has a long tail showing that there are a few very long descriptions. These outliers can be appreciated in the box plot of Figure 15 which are significant on this right side and can cause inconveniences for our embedding models and will be addressed in the data processing section.
+
+
+
+Figure 14. Description length distribution
+
+
+
+
+Figure 15. Description length box plot
+
+Mean Length: 24.96224571233122
+Median Length: 22.0
+Standard Deviation: 10.934817808135628
+Minimum Length: 1	Maximum Length: 175
+25th Percentile: 19.0	50th Percentile: 22.0	75th Percentile: 27.0
+The average length of the processed descriptions is approximately 25 words and the median close to the mean suggests a relatively symmetric distribution around the central value. The description lengths vary by approximately 11 words from the mean length on average with a moderate level of dispersion in the data and not very impactful. The minimum and maximum lengths are definitely outliers and the quartile values indicate that most descriptions are of similar size. Overall, if the outliers are removed the distribution is very balanced and would cause no issue or inefficiency to the embedding process.
+The word cloud provides a visual representation of the most frequent words in the text, which can help to understand the context and main theme of the data. As it shows, the documents are related to assistance, technical procedures, open procedures, contract, supply and services, which makes it very evident that the text comes from tenders descriptions. The abundance of prominent terms related to healthcare and construction represent the main themes of these tenders and the high number of them centered in these fields.
+
+
+
+Figure 16. Descriptions Word Cloud
+
+
+After the simple but necessary analysis of the descriptions of the tenders, we can take a look at the CPV which can offer a lot of useful information. These are classification codes that set up a classification system for public procurement to standardize how contracting authorities and entities describe procurement contracts. Using this as a representation of the descriptions we can analyze how balanced these are to a certain point, because some CPV have a big amount of variants for the same theme, while others are represented by few specific ones.
+The distribution is clearly unbalanced and starts from low frequencies on the left with a lot of codes appearing only in one document and gradually increases, peaking sharply on the right, showing that a few CPV codes are used very frequently, while many others are less common. These might represent the common and general CPV that represents common categories and the very specific ones related to them, something that is very common in these classification code systems. This variation can impact how balanced the overall distribution appears but in reality it does not affect our embedding using the descriptions.
+
+
+Figure 17. CPV distribution
+
+In order to address the questions that can create the previous findings, to know if the categories are balanced and the skewness is due to the specific and generic codes, we will do clustering on them using their code description instead. This cluster representation can be also used to compare the performance of the document embeddings extracting the semantic meaning of the tenders description by comparing both clustering representations created, the CPV description and tender description ones.
+In order to do this, we will create a new column named "CPV description", where we convert the codes into their official description which can be obtained from the European Union2. This text is preprocessed and embedded using a high performance multilingual pretrained model that will also be used through the project,Sentence-BERT (paraphrase-multilingual-MiniLM-L12-v2).
+Using the elbow method the WCSS plot shows a diminishing rate of reduction as the number of clusters increases and there is a clear elbow in the eight number of clusters. Looking at the silhouette scores, the highest value is at 14 and seems to keep increasing, however too many clusters are not very desirable so local maximums will be used. Combining both methods and favoring the elbow one because of the clear dip, eight is chosen as the number of clusters to use for the algorithm. The silhouette score is not very high, which means that the resultant groups will not be very clear.
+
+
+
+Figure 18. Elbow method and Silhouette score representation
+
+
+After clustering, the sizes seem a bit unbalanced which might be because, as it was previously mentioned, some tenders targets are more common than others. This is clearly observable in the cluster 3 having the highest value and the 4, 5 and 6 which might be for more specialized categories.
+
+
+
+
+
+
+
+
+
+
+
+
+
+2 https://ted.europa.eu/es/simap/cpv
+
+
+
+Figure 19. Cluster size distribution
+
+
+Since there are distinct boundaries between Clusters 0, 2, 4, 5, and 6, the themes within these groups are distinct and stand out from the rest. Clusters 1, 3, and 7 are more dispersed and spread throughout the space due to a higher variance within these clusters and have more general characteristics. Besides, the high density of clusters 0, 2, 4, and 5 indicates a significant level of similarity among the descriptions within them. The clusters are generally balanced in size, with no single cluster noticeably larger than the others, indicating a good spread of tender category codes across them. On the other hand, clusters 5 and 6 appear smaller, whereas cluster 3 appears slightly larger, as was noted in an earlier investigation that highlighted the size variations in these clusters in Figure 20. In order to reduce the dimension of the vector to be able to represent the clusters in a bidimensional space, t-SNE was used. The results have to be taken with a grain of salt since this algorithm captures local groups well but the global structure can be distorted.
+
+
+
+Figure 20. Clusters visualization
+
+
+For each group, the most common words were extracted in order to have a deeper understanding on the theme and categories of tenders that forms them and these were the results:
+Cluster 0:
+- Construction-related activities, including building, installation, and engineering work.
+- Keywords: trabajo, construcción, pavimentación, instalación, obra, edificio.
+Cluster 1:
+- Variety of services, with a notable emphasis on insurance, transportation, social services, and maintenance. This is a very generic category, hence the overlapping on other clusters.
+- Keywords: servicio, seguro, transporte, social, limpieza, mantenimiento.
+Cluster 2:
+- IT services and consulting are prominent in this cluster, including software development, consulting, and training services.
+- Keywords: servicio, software, consultor, formación, desarrollo, sistema.
+Cluster 3:
+- Equipment procurement and installation services, highlighting various products and apparatus.
+- Keywords: equipo, instalación, trabajo, producto, aparato, maquinaria.
+
+Cluster 4:
+- Services related to advertising, cultural events, sports, and artistic activities are dominant in this cluster. Compared to the rest of the groups, this is a very specific and distinctive one.
+   - Keywords: servicio, publicidad, deportivo, cultural, artístico Cluster 5:
+- Engineering and architectural services, including project design, planning, and inspection. Close to cluster 0 because both share the architectural and construction theme.
+- Keywords: servicio, ingeniería, arquitectura, construcción, inspección, proyecto.
+Cluster 6:
+- Health and medical services are the primary focus, including various healthcare-related support and security services. This one is also very unique and easy to differentiate from the rest, although graphically it is very spread.
+- Keywords: servicio, salud, medicina, médico, asistencia, seguridad.
+Cluster 7:
+- Repair and maintenance services, particularly for equipment and vehicles. Graphically it is the second most spread and overlaps mainly group 3, this might be because the repair and maintenance are for elements and equipment from that cluster.
+- Keywords: servicio, reparación, mantenimiento, equipo, vehículo, maquinario.
+
+
+At a higher scale, we can see that the clusters 0 and 3 are the only ones that do not contain the word "servicio" in the keywords and are focused on construction and machinery. In the plot both can be seen together on top. The rest of the space represents services. At a lower scale, all groups were analyzed and detected a pattern in their keyword to identify the fields that are represented by the tenders that take part of them. Overall, six main categories can be found in the tenders: healthcare, IT, cultural events, construction projects, maintenance and equipment and goods.
+
+
+3.3 Data processing
+
+Before applying any algorithm or feeding the data to the models for the training phase, there is a process of modification and balance to remove unnecessary information and improve the performance of the methodologies.
+
+3.3.1 Data balancing
+
+Balancing the dataset by trimming or padding descriptions could help improve model performance, but it's also essential to preserve the context and meaning of the tenders. Hence, part of the documents that represent the outlier will be removed to maintain a balanced distribution. For this task, the interquartile range (IQR) will be applied to determine the range of description size that is allowed.
+IQR = Q3 - Q1 = 27 - 19 = 8
+Outlier Threshold = [Q1 - 1.5IQR, Q3 + 1.5IQR] = [7, 39]
+Any document with the description length that is not within this range will be filtered from the data.
+
+
+3.3.2 Text preprocessing
+
+For the retrieval task, we will work with the descriptions of the tenders that have been extracted. We could use the raw data to feed the algorithms and build the embedding models, however, the performance would take a big dip due to the unnecessary data such as punctuation symbols that can be considered as noise, same words considered multiple times because of the uppercase and lowercase letters or suffixes. These are some of the things that need to be addressed before feeding the text to any model and that will explain now.
+Tokenization: In order to make the text processing easier, we split the document's content into vectors of tokens that represent a word each.
+Remove unnecessary information: Our goal is to use text similarity methods for the tenders, which we want the embeddings to represent the service or good that the public organization wants to hire. Because of this, personal information like telephone numbers or email direction are irrelevant and are removed from the document descriptions. Other common terms such as days and months are also not relevant, thus eliminated.
+Remove non-alphabetic character: We could argue that some numerical data might be beneficial to distinguish tenders according to their budget, however, this information is not regularly specified in the description of the tenders and complex to extract from the document, which in this case makes it irrelevant and is removed. Punctuation marks and symbols do not add knowledge to our text representations and are deleted as well.
+Lowercasing: This is an important action because we do not want the models to treat two identical words that are written differently due to the uppercase or lowercase differently.
+Remove stop words: This group of terms are commonly used in the communication regardless of the context and although some of the algorithms that will be used can handle them very well, for a fair comparison and general performance improvement, they are removed. These words are generally determiners (el, la, ese...) , coordinating conjunctions (y, o, mas, pero...) and prepositions (desde, por, para...).
+
+Lemmatization: Words have a large amount of variations and forms that are applied through prefixes and suffixes, however, their actual meaning is in the root. In order to extract this portion of the terms and unify all their forms around the documents, there are two common methods stemming and lemmatization and both have some advantages and drawbacks. On the one hand, stemming is a heuristic rule-based technique and because of this, it can result in under-stemming (estudiar: estudiar) or over-stemming (feliz, felicidad, felices: fel). Struggles specially with irregular verb tenses and prefixes, but it is a fast method. On the other hand, lemmatization does a morphological analysis to reduce words to the base form keeping the semantic integrity. This process is more complex and requires more computation resources which makes it slower than stemming. For this specific project, lemmatization will be utilized because the description texts are brief and do not have such a big impact on the performance.
+Once all these operations are executed, the data will be fed into the algorithms to start with the embedding process. Note that the input description from the user also goes through this same procedure.
+
+
+3.4 Building models and fine-tune
+
+TF-IDF was trained with the whole tender dataset after being balanced and ended with embedding size of 55771, that is the same as the vocabulary.
+The Doc2Vec model was used from the Gensim python library. The size of the embedding vectors was set as 300, which can be high enough to capture enough knowledge from the documents and not be excessively computational heavy. The window size was 5, which, for the low length of the descriptions, works fine to understand the context of each word. The min_count was set to
+1 because although it does not remove noise this way, the unnecessary information is mostly filtered in the preprocessing data phase. Using a higher min_count would lead to information loss, because it would filter important terms that define the topic. Finally, the training algorithm utilized was Distributed Memory Paragraph Vector (PV-DM) for more precise results at the cost of time and resources.
+The version of Sentence BERT that was used in this project is "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2" because it has better support for spanish language than the base model. For RoBERTa, a Spanish version "PlanTL-GOB-ES/roberta-base-bne" was used for the same reason. These models were fine-tuned aiming for a better representation of the procedural documents. From the tender dataset that was used as training data for other algorithms, the descriptions were grouped in pairs of distinct documents according to their CPV. These tuples of sentences following the way these codes are assigned, are taken for granted as similar tender categories and are fed to the models for training as a pair of positive sentences. This way of training is very convenient because it does not need any labels.
+For the loss function, MultipleNegativesRankingLoss3 was used because it is the ideal for improving embedding quality by ensuring that similar descriptions (positive pairs) are close in the embedding space. This function
+
+3
+
+https://sbert.net/docs/package_reference/sentence_transformer/losses.html#multiplenegative srankingloss
+
+automatically creates negative pairs from other batches. This can lead to creating fake negative pairs, since other batches can belong to the same CPV category. Manually creating negative pairs would be ideal but can take a considerable amount of time and could be done as future work.
+
+
+3.5 Model evaluation
+
+There will be three different evaluation phases in order to analyze how well the embeddings from each approach represents the tenders theme and retains their semantic meaning. Models will have two variants, one trained and that operates with preprocessed data and another one with raw lowercase, some models do not benefit from this process and the results will show whether it is a good practice or not.
+First of all, a Spanish version of the Semantic Textual Similarity benchmark [16][17] will be used to see how well the models perform on generic data capturing their knowledge and using the similarity metric to define how close two sentences are. The way each of them handles unknown words will be very important in this test. Furthermore, using textual data from other domains not related to the tenders allows to perceive and ensure that fine-tuned models are not overfitting. This dataset is structured in three columns: sentence1, sentence2 and label, which measures how similar both sentences are. Pearson correlation coefficient between the predicted similarities and the actual labels will define how well our models work.
+Next, after doing a general analysis of the behavior with generic data, a more domain specific study will be executed. The data used for this phase was given by the co-supervisor of the project María Navas Loro and consists of a csv file with 1,505 new tenders and the same structure as the training data. These documents will be grouped by their CPV, with the idea behind that tenders with the same common procurement vocabulary must be semantically similar. The average cosine similarity of the tenders within each group will be computed and averaged through all sets. This will show how well the algorithms capture the similarity between tenders from the same categories. However, to ensure that these results are representative and models do not suffer from overfitting the syntactic patterns, the average cosine similarity of the whole dataset will be calculated. This value should not be too low, because common procedures tend to repeat and the CPV distribution is not very balanced, and not very high at the same time to be able to differ between categories.
+Finally, the models that obtain the best scores on these previous evaluations will be used for clustering the test data and see how well they can identify distinct groups with independent thematic on the tenders. Besides visual analysis, other metrics will be used for more solid proof of their performance such  as  Silhouette Score [13], Davies-Bouldin Index [14] and Calinski-Harabasz Index [15].
+- Silhouette score measures the similarity of elements to their own clusters compared to the rest of the clusters and the higher, the better defined they are.
+- Davies-Bouldin Index represents the average similarity ratio of each cluster with the one that is most similar to it and lower values indicate better clustering.
+
+- Calinski-Harabasz Index computes the ratio of the sum of between-cluster dispersion and of within-cluster dispersion, which higher values are preferable.
+
+4 Results
+
+This section presents and analyzes the outcomes for each evaluation phase that was previously presented.
+
+
+4.1 Spanish Semantic Textual Similarity benchmark
+
+Using the Spanish STS dataset, the correlation between the cosine similarity between each pair of sentences and the score label specified is calculated to see how good these approaches perform on generic data.
+
+
+
+ModelSTS scoreRawPreprocessingTF-IDF0.6180.625Doc2Vec0.4360.508USE0.6770.589Sentence BERT0.7510.664Sentence BERT fine-tuned0.7480.673RoBERTa0.4190.365RoBERTa fine-tuned0.7120.600Table 9. Results from STS benchmark
+
+
+TF-IDF results in both raw and preprocessed data are poor but better than expected. It was built using a limited vocabulary from the tenders available, while the semantic textual similarity dataset contains terms from other fields. Generally TF-IDF does not handle unknown words very well, ignoring them and causing an information loss, nevertheless, despite this and the lack of deep semantic understanding this model extracts, compared to the rest, the score was good. It slightly improves using preprocessed data which might be because of the normalization of the words.
+Doc2Vec had very poor results, especially using raw data. Perhaps going further and refining the data more can get a comparable performance to the rest. Similarly to the previous method, this one does not handle unknown words well, the embeddings are randomly set, affecting negatively and acting as noise.
+The rest of the models are pre-trained with huge datasets, probably having a wider range of knowledge than the benchmark one, being able to deal with a big variety of terms. Applying preprocessing to the text, such as lemmatization or removing non-alphabetic words, might have caused the considerable drop
+
+of performance of these models because these complex algorithms can understand this information and the removal can lead to information loss.
+Sentence BERT approaches have the best scores with an unnoticeable drop on the fine-tuned one. This showcases the strength of transformed-based embeddings capturing semantic similarity between documents, making them a reliable choice for this project.
+Finally, RoBERTa had weird outcomes. The fine-tuning caused a performance improvement of 70% approximately, emphasizing the importance of this process in some of these models. The awful results from this base model on the semantic similarity analysis is expected as it was mentioned in the state of the art.
+From this evaluation, it can be concluded that utilizing preprocessing techniques should be dependent on the complexity of the models, while it favors simple algorithms such as TF-IDF and Doc2Vec, pre-trained transformers ones are negatively affected. Fine-tuning can be a good practice, especially on domain specific tasks, although here using a general benchmark dataset does not highlight this.
+
+
+4.2 CPV Group similarity
+
+After analyzing the results using generic data, this evaluation will be focused on the specific task of this project, tender description similarity. The documents used in this section are obviously different from the ones on the models' training phase, giving a realistic view of the performance on unseen data.
+First, the similarity between the tender descriptions with the same common procurement vocabulary. A high score is positive because this code represents the area that a tender belongs to or specific activities involved, which corresponds to the semantic meaning of the document.
+
+
+
+ModelAverage cosine similarityRawPreprocessingTF-IDF0.2720.240Doc2Vec0.2570.381USE0.6700.581Sentence BERT0.5710.604Sentence BERT fine-tuned0.7230.752RoBERTa0.9680.964RoBERTa fine-tuned0.6850.777Table 10. Average cosine similarity for all documents inside each CPV group
+
+First of all, it is very visible that in this case data preprocessing improved most of the approaches' scores, even the complex ones. This might be because the STS benchmark dataset is refined and does not contain noise unlike the one used for testing here. TF-IDF and Doc2Vec had very poor results, with the lowest average similarities, showing how bad they are at capturing deep semantic similarities. USE and Sentence BERT got significantly higher results but not solid enough for a reliable usage. Similarly to the previous evaluation, RoBERTa had suspicious outcomes with values close to one which seems to be overfitting to syntactic patterns rather than a genuine semantic understanding. Finally, the approaches with the best performance by a large margin are the fine-tuned BERT and RoBERTa, a clear example of how important it is to fine-tune the models with domain specific data in order to achieve more optimal solutions.
+
+
+To have a better understanding of the previous analysis, the average cosine similarity of the whole dataset will be calculated. This score should not be too low because even if the goals of the tenders are different, most of them are common activities and goods, and also not too high and be able to differentiate the different fields and services.
+
+
+
+ModelAverage cosine similarityRawPreprocessingTF-IDF0.0650.015Doc2Vec0.0640.034USE0.5730.460Sentence BERT0.3080.310Sentence BERT fine-tuned0.2690.270RoBERTa0.9650.958RoBERTa fine-tuned0.1460.167Table 11. Average cosine similarity for all documents results
+
+
+The low average pairwise cosine similarity scores of TF-IDF and Doc2Vec are consistent with their limited ability to capture semantic relationships, being the lowest, same as in tenders within the same CPV groups. RoBERTA obtained an extremely high average similarity again, which indicates that it captures a lot of syntactic similarities, leading to high similarity scores even when the actual semantic similarity might not be as high, thus becoming a not a reliable approach. Finally, the rest of the algorithms achieve a reasonable cosine similarity score for the context of this evaluation, which shows that their previous results were valid.
+
+After these two evaluation processes, it can be concluded that the models that fit the goal of this project the most are Sentence BERT and RoBERTa, both fine-tuned and using preprocessed data. In order to decide which will be used, a deeper analysis on clustering will be arranged.
+
+
+4.3 Clustering
+
+Models will be analyzed on how well the embeddings group semantically similar documents using KMeans as the clustering algorithm. To find the most optimal number of clusters the Elbow Method and Silhouette score were calculated and visually represented. Three and seven clusters for Sentence BERT, four and eight for RoBERTa.
+
+
+
+
+
+
+
+
+
+
+
+
+      Figure 21. Elbow and Silhouette scores for sBERT and RoBERTa The results from the clustering are the following:
+
+
+Figure 22. sBERT and RoBERTa clusterings
+
+On Sentence BERT clustering with three clusters, Figure 22 shows that they are well defined, with clear distinctions between each group and uniformly distributed without any significant overlapping. Contrary to it, on the seven cluster grouping, although it shows more granularity, there is more overlapping and separation between clusters less clear. With the RoBERTa model the same can be noticed, the one with four clusters shows clearer separation and distinction, while the one with eight suffers from overlapping. Visually speaking, both models seem to perform very well at identifying thematic and grouping the tenders by them. In order to decide which does this job the best and for a more precise analysis several metrics will be calculated such as Silhouette Score, Davies-Bouldin Index and Calinski-Harabasz Index.
+
+
+ModelSentence BERT fine-tunedRoBERTa fine-tunedclusters3748Silhouette Score0.0920.0870.09430.102Davies-Bouldin Index2.8232.6312.6282.642Calinski-Harabasz Index126.64485.350109.33480.606Table 12. Clusters evaluation
+
+
+The RoBERTa model obtained the highest Silhouette scores, specially the one with eight clusters. This represents how similar are the descriptions to the rest of their own group and the higher, the more well defined clusters. The Davies-Bouldin Index the average of the maximum ratio of the within-cluster distance and the between-cluster distance for each cluster and the lower, the better. In this case the RoBERTa model also got the best results, specifically the four clusters one. Finally, Calinski-Harabasz Index where the higher this value is, the better defined clusters are, Sentence BERT three clusters is the winner, with RoBERTa four clusters behind.
+After this analysis, RoBERTa fine-tuned with four clusters seems to be the best overall model and in order to have a better understanding of the themes and topics represented by each cluster, the most significant terms will be extracted using TF-IDF.
+
+
+Cluster 0:
+This cluster is mainly centered on terms associated with services, projects and works. Tenders are likely to be focused on project management and execution, with a heavy emphasis on safety and technical aspects.
+
+
+
+Figure 23. Cluster 0 top words
+
+
+Cluster 1:
+Emphasizes on services on municipal and government including words such as "ayuntamiento", "municipal" and "sevillar", which is a local programming group of Sevilla.
+
+
+Figure 24. Cluster 1 top words
+
+
+Cluster 2:
+This cluster is focused on construction, maintenance, and installation projects of public works and infrastructure (obra, calle, edificio), with an emphasis on maintenance and repair.
+
+
+Figure 25. Cluster 2 top words
+
+Cluster 3:
+The most common term is supply (suministro), suggesting that this cluster is focused on the procurement of goods and equipment in contrast to the rest of groups which are centered on services and works. Tenders seem to revolve around the supply chain, procurement, and installation of equipment and supplies, mainly for public or municipal projects.
+
+
+Figure 26. Cluster 3 top words
+
+
+This clustering of the embeddings created by the RoBERTa model has organized the tender descriptions into meaningful categories with each cluster highlighting a distinctive theme.
+After all the different evaluations made, it can be concluded that the model that produces embeddings capturing their semantic meanings and is able to consistently retrieve the most similar tenders to a description given is RoBERTa. This model must be fine-tuned and the data must go through several preprocessing techniques to obtain solid results. Another good alternative is Sentence BERT, which also got similar results.
+
+5 Conclusions and Future Work
+
+In this work we demonstrated that natural language algorithms, particularly the sophisticated transformer-based models such Sentence BERT and RoBERTA, can be used to consistently find tenders that match a given description. Additionally, other approaches such as TF-IDF, Doc2Vec and USE were very underwhelming and this highlights the significant advancement the transformers have made in the field of artificial intelligence.
+Other observations suggest that fine-tuning is a highly recommended strategy to push the model towards more precision in specific domains, and as it was seen, the results improved after applying this technique to the models. The preprocessing stage of the data is also crucial for ensuring high-quality text representations, as the results are significantly impacted by the removal of extraneous data and noise.
+
+
+To improve the performance of the tool that was developed in this project, the following steps are recommended for future work:
+Enhance text preprocessing: As it has been observed in the results, data processing plays a crucial role in removing noise and improving models precision, even in the more complex ones. However, in some cases this process could cause the opposite effect because of the loss of important information as it was seen in the STS evaluation. This process must be polished, optimizing the noise detection and removing just the necessary data.
+Refine fine-tuning process: The current method of assigning negative pairs relies on the MultipleNegativesRankingLoss function choosing random sentences which might not be the most effective approach. Thus, developing a more precise method for assigning these pairs during the fine-tuning process could enhance the ability of the model to differentiate between similar and dissimilar descriptions, eventually improving its performance.
+Explore alternative models: Experimenting with other state-of-the-art models and architectures that might offer more precise results for the specific task of tender semantic similarity.
+Utilize Additional Tender Information: Rather than solely relying on the object of the tender, incorporating other parts of the documents could provide richer information. This can include details such as the requirements and budget, which could contribute to a deeper understanding and better similarity assessment.
+Automate Data Collection: Implementing a system to automate the data collection will ensure to constantly update the tender database with the new entries.
+To assist the tender drafting and reduce the time and resources invested in the process, these new features would be a big help:
+Create a friendly user interface: This project was focused on the theoretical aspect and the next step involves developing a user-friendly interface. Currently, the tool operates via Jupyter notebooks and Python scripts, but for practical and widespread use, these algorithms should be incorporated into a dedicated platform with an intuitive and accessible interface to all users without needing technical expertise.
+
+Incorporate text generation mechanism: Introducing this feature specialized on the tenders domain would assist the writer suggesting relevant text while writing the tenders and speed up the drafting process.
+Automatic document sketching: Being able to generate the template for a specific tender that the user is interested in would accelerate the drafting process and ensure consistency. Instead of starting from scratch, users would begin with an already structured document template.
+
+
+The code4 developed and used for this project has been uploaded to GitHub and is available for public access.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+4 https://github.com/pbande/Semantic-Similarity-for-Public-Procurement-Tender-Drafting.git
+
+6 Bibliography
+
+[1] T. Mikolov, K. Chen, G. Corrado, and J. Dean, "Efficient Estimation of Word Representations in Vector Space," arXiv preprint arXiv:1301.3781, 2013. Available: https://arxiv.org/abs/1301.3781.
+[2] Q. V. Le and T. Mikolov, "Distributed Representations of Sentences and Documents," arXiv preprint arXiv:1405.4053, 2014. Available: https://arxiv.org/abs/1405.4053.
+
+[3] D. Cer et al., "Universal Sentence Encoder," arXiv preprint arXiv:1803.11175, 2018. Available: https://arxiv.org/abs/1803.11175.
+[4] J. Devlin, M.-W. Chang, K. Lee, and K. Toutanova, "BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding," arXiv preprint	arXiv:1810.04805,	2018.	Available: https://arxiv.org/abs/1810.04805.
+
+[5] N. Reimers and I. Gurevych, "Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks," in Proc. 2019 Conf. Empirical Methods in Natural Language Processing, Nov. 2019. Available: http://arxiv.org/abs/1908.10084.
+
+[6] A. Gutiérrez Fandiño et al., "MarIA: Spanish Language Models," Procesamiento del Lenguaje Natural, vol. 68, 2022. doi: 10.26342/2022-68-3. Available:
+https://upcommons.upc.edu/handle/2117/367156#.YyMTB4X9A-0.mendele y.
+
+[7] A. Radford, K. Narasimhan, T. Salimans, and I. Sutskever, "Improving Language Understanding by Generative Pre-Training," Preprint, 2018. Available:
+https://cdn.openai.com/research-covers/language-unsupervised/language_u nderstanding_paper.pdf.
+
+[8] Z. Dai et al., "Transformer-XL: Attentive Language Models Beyond a Fixed-Length Context," arXiv preprint arXiv:1901.02860, 2019. Available: https://arxiv.org/abs/1901.02860.
+
+[9] M. Lewis et al., "BART: Denoising Sequence-to-Sequence Pre-training for Natural Language Generation, Translation, and Comprehension," arXiv preprint	arXiv:1910.13461,	2019.	Available: https://arxiv.org/abs/1910.13461.
+
+[10] C. Raffel et al., "Exploring the Limits of Transfer Learning with a Unified Text-to-Text Transformer," arXiv preprint arXiv:1910.10683, 2019. Available: https://arxiv.org/abs/1910.10683.
+
+[11] A. Vaswani et al., "Attention Is All You Need," arXiv preprint arXiv:1706.03762, 2017. Available: https://arxiv.org/abs/1706.03762.
+
+[12] D. Bahdanau, K. Cho, and Y. Bengio, "Neural Machine Translation by Jointly Learning to Align and Translate," CoRR, vol. abs/1409.0473, 2014. Available: https://api.semanticscholar.org/CorpusID:11212020.
+
+[13] P. J. Rousseeuw, "Silhouettes: A graphical aid to the interpretation and validation of cluster analysis," Journal of Computational and Applied Mathematics, vol. 20, pp. 53-65, 1987. doi: 10.1016/0377-0427(87)90125-7.
+Available: https://www.sciencedirect.com/science/article/pii/0377042787901257.
+
+[14] T. Calinski and J. Harabasz, "A dendrite method for cluster analysis," Communications in Statistics, vol. 3, no. 1, pp. 1-27, 1974. doi: 10.1080/03610927408827101.
+
+[15] D. L. Davies and D. W. Bouldin, "A Cluster Separation Measure," IEEE Transactions on Pattern Analysis and Machine Intelligence, vol. PAMI-1, no. 2,
+pp. 224-227, Apr. 1979. doi: 10.1109/TPAMI.1979.4766909.
+
+[16] E. Agirre et al., "Semeval-2015 task 2: Semantic textual similarity, English, Spanish and pilot on interpretability," in Proc. 9th Int. Workshop Semantic Evaluation (SemEval 2015), 2015, pp. 252-263.
+
+[17] E. Agirre et al., "SemEval-2014 Task 10: Multilingual Semantic Textual Similarity," in SemEval@ COLING, 2014, pp. 81-91.
+
+[18] M. Iyyer, V. Manjunatha, J. Boyd-Graber, and H. Daumé III, "Deep Unordered Composition Rivals Syntactic Methods for Text Classification," in Proc. 53rd Annu. Meeting Assoc. Comput. Linguistics and 7th Int. Joint Conf. Natural Language Processing (Volume 1: Long Papers), Beijing, China, Jul. 2015, pp. 1681-1691. doi: 10.3115/v1/P15-1162. Available: https://aclanthology.org/P15-1162.
+
+[19] "Hugging Face," Available: https://huggingface.co/.
+[20] "Machine Learning Mastery,"
+Available: https://machinelearningmastery.com/.
+[21] "TensorFlow," Available: https://www.tensorflow.org/.
+[22] "Gensim," Available: https://radimrehurek.com/gensim/.
+
+

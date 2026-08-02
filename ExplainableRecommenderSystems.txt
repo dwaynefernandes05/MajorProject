@@ -1,0 +1,822 @@
+Full Paper Track                                                                                                CIKM '20, October 19–23, 2020, Virtual Event, Ireland
+
+
+
+
+                      Explainable Recommender Systems via Resolving
+                                 Learning Representations
+                      Ninghao Liu                                                      Yong Ge                                               Li Li
+        Texas A&M University, TX, USA                                  University of Arizona, AZ, USA                     Samsung Research America, CA, USA
+              nhliu43@tamu.edu                                          yongge@email.arizona.edu                                 li.li1@samsung.com
+
+                          Xia Hu                                                      Rui Chen                                       Soo-Hyun Choi
+        Texas A&M University, TX, USA                             Samsung Research America, CA, USA                        Samsung Electronics, South Korea
+               hu@cse.tamu.edu                                         rui.chen1@samsung.com                                   sh9.choi@samsung.com
+
+ABSTRACT                                                                                            1   INTRODUCTION
+Recommender systems play a fundamental role in web applications                                     Recommender systems play a pivotal role in a wide range of web
+in filtering massive information and matching user interests. While                                 applications and services, in terms of distributing online content
+many efforts have been devoted to developing more effective mod-                                    to targets who are likely to be interested in it. The majority of the
+els in various scenarios, the exploration on the explainability of                                  efforts in the domain have been put into developing more effective
+recommender systems is running behind. Explanations could help                                      models to achieve better performance. In contrast, the progress
+improve user experience and discover system defects. In this paper,                                 of analyzing the explainability aspect of recommender systems
+after formally introducing the elements that are related to model ex-                               is running behind. Explainable recommender systems address the
+plainability, we propose a novel explainable recommendation model                                   problem of why – besides providing recommendation results, they
+through improving the transparency of the representation learning                                   also give reasons to clarify why such results are derived [11, 31, 47,
+process. Specifically, to overcome the representation entangling                                    55]. Explainability may benefit a recommender system in several
+problem in traditional models, we revise traditional graph convolu-                                 aspects. First, explanations help system maintainers to diagnose
+tion to discriminate information from different layers. Also, each                                  and refine the recommendation pipeline (system-oriented). Second,
+representation vector is factorized into several segments, where                                    by increasing transparency, explanations promote persuasiveness
+each segment relates to one semantic aspect in data. Different from                                 and customer satisfaction of recommender systems (user-oriented).
+previous work, in our model, factor discovery and representation                                        Recently, Explainable AI (XAI), or interpretable machine learn-
+learning are simultaneously conducted, and we are able to han-                                      ing, is receiving increasing attention [5, 11, 28] (we use "expla-
+dle extra attribute information and knowledge. In this way, the                                     nation" and "interpretation" interchangeably in this paper). One
+proposed model can learn interpretable and meaningful represen-                                     popular direction is post-hoc methods [5, 31], where some exam-
+tations for users and items. Unlike traditional methods that need                                   ples include understanding the meaning of latent factors [10, 29] or
+to make a trade-off between explainability and effectiveness, the                                   reconstructing the rationale behind each prediction [47]. However,
+performance of our proposed explainable model is not negatively                                     post-hoc interpretation suffers from the issue of explanation accu-
+affected after considering explainability. Finally, comprehensive ex-                               racy [11, 32]. Another direction is to build explainable models or
+periments are conducted to validate the performance of our model                                    add explainable components, where attention mechanism is com-
+as well as explanation faithfulness.                                                                monly applied to highlight important features for prediction [8, 34].
+                                                                                                    Nevertheless, explanation schemes such as heatmaps in images or
+KEYWORDS                                                                                            texts are not structured and still require subjective comprehension
+Explainable Artificial Intelligence; Recommender Systems                                            of users. Since effective models can learn informative latent rep-
+                                                                                                    resentations from data [2, 17, 33], one of the important building
+ACM Reference Format:                                                                               blocks of model explainability is the transparency of representa-
+Ninghao Liu, Yong Ge, Li Li, Xia Hu, Rui Chen, and Soo-Hyun Choi. 2020.
+                                                                                                    tion learning. In traditional factorization models, input features can
+Explainable Recommender Systems via Resolving Learning Representations.
+In Proceedings of the 29th ACM International Conference on Information
+                                                                                                    be directly associated with latent factors to elucidate their mean-
+and Knowledge Management (CIKM ’20), October 19–23, 2020, Virtual Event,                            ings [56], but this explanation scheme is not directly applicable to
+Ireland. ACM, New York, NY, USA, 10 pages. https://doi.org/10.1145/3340531.                         recent embedding learning frameworks.
+3411919                                                                                                 In this work, we propose an explainable recommendation model
+                                                                                                    through promoting the transparency of latent representations. To
+Permission to make digital or hard copies of all or part of this work for personal or
+classroom use is granted without fee provided that copies are not made or distributed
+                                                                                                    begin with, we summarize three elements that help make a model
+for profit or commercial advantage and that copies bear this notice and the full citation           more interpretable. We name them as IOM elements since they
+on the first page. Copyrights for components of this work owned by others than ACM                  involve certain requirements on the Input data format, Output
+must be honored. Abstracting with credit is permitted. To copy otherwise, or republish,
+to post on servers or to redistribute to lists, requires prior specific permission and/or a         attribution, and Middle-level representations. The proposed ex-
+fee. Request permissions from permissions@acm.org.                                                  plainable model is designed based on the IOM elements. Users,
+CIKM ’20, October 19–23, 2020, Virtual Event, Ireland                                               items and attribute entities are processed as nodes in a graph. Fur-
+© 2020 Association for Computing Machinery.
+ACM ISBN 978-1-4503-6859-9/20/10. . . $15.00
+                                                                                                    thermore, the efforts on interpretable recommendation are split
+https://doi.org/10.1145/3340531.3411919                                                             into three parts: (1) we disentangle the interactions between latent
+
+
+
+
+                                                                                              895
+Full Paper Track                                                                                CIKM '20, October 19–23, 2020, Virtual Event, Ireland
+
+
+
+                                                                                         Output                    Output                   Output
+representations in different layers; (2) multiple semantic factors
+are identified automatically from data; (3) latent dimensions are di-                                                       attribution
+
+vided into segments according to their information source (i.e., node
+types) and affiliated factors. The first part is achieved via graph
+convolutional networks (GCNs). However, different from previous
+work [13, 42, 44], we propose to understand GCNs from another
+perspective by comparing its working mechanism with those of                                        Model
+fully-connected networks [3] and capsule networks [33]. The sec-                                                                concepts
+ond and third aspects are achieved through a novel architecture                          Input
+design, where different dimensions of latent representations focus                                                 Input                     Input
+                                                                                          (a)                       (b)                        (c)
+on different aspects of data. Different from previous work [6, 26, 39],
+factor discovery and representation learning are jointly conducted.             Figure 1: Models with different degrees of transparency. (a):
+In this way, we are able to depict how information flows from input             A black-box model. (b): A model with conceptualized input
+features through these latent states to prediction results. Differ-             and attributable output. (c): A model that extends (b) with
+ent from some existing work that sacrifices effectiveness for inter-            transparent representation learning.
+pretability, the proposed model still achieves good performance in
+the experimental evaluation. Finally, besides visualizing explana-
+                                                                                   In this paper, we also work on discretized input data. In rec-
+tions, we also quantitatively measure explanation accuracy.
+                                                                                ommender systems, users and items can naturally be regarded as
+   Our contributions in this work are summarized as follows:
+                                                                                discrete concepts. For side content information, we make use of
+• We propose an explainable recommendation model that improves                  knowledge graphs (KGs) where each entity in a KG can be regarded
+  transparency of latent representations. Specifically, we propose              as a concept. Developing new techniques to extract concepts from
+  to unravel the interactions between representations, and segment              raw input, or building more informative graphs, is not a main con-
+  the latent dimensions into different factors. The consideration of            tribution of this paper. Finally, we connect users and items with
+  interpretability does not negatively influence model effectiveness.           observed interactions, items and entities if they are related, entities
+• We summarize and refine the elements that improve the inter-                  and entities if they are already connected in a KG. We ignore the
+  pretability of recommendation. These elements involve certain                 link types in a KG. Therefore, users, items and KG entities are built
+  requirements on the input data format, output attribution, and                into a graph used as input into recommender systems.
+  middle-level representations, and are thus named as IOM ele-
+  ments. The proposed model is designed based on IOM elements.                  2.2    Attributable Output
+• We conduct comprehensive experiments to evaluate the proposed                 A basic requirement of model interpretability is the ability to obtain
+  model in two aspects, effectiveness and interpretability. We show             the attribution of features to a prediction output (i.e., output is attrib-
+  that the effectiveness of the model will not be hindered by in-               utable to certain features). Depending on whether the attribution
+  terpretability. Also, we quantitatively measure the accuracy of               is obtained after or along with the prediction, interpretation tech-
+  interpretation through adversarial attack.                                    niques can be categorized into post-hoc methods [31, 35, 36, 47] and
+                                                                                building intrinsically explainable models [38]. Post-hoc methods
+2     PRELIMINARIES: ELEMENTS OF                                                usually approximate the original model with simpler but explain-
+      EXPLAINABLE RECOMMENDATION                                                able ones, or resort to backpropagation to estimate the model’s
+                                                                                sensitivity to different features. Post-hoc methods have the advan-
+In this section, we discuss the important elements in a recommen-               tage of being model-agnostic [31], but they have also been criticised
+dation pipeline that could promote human understanding. The                     as not being faithful enough in reproducing the working mecha-
+proposed model, which is to be formally introduced in the next                  nism of the original model [32]. In this work, our goal is to design
+section, considers all of these three elements. It is worth noting              an explainable model, instead of developing new post-hoc methods,
+that some directions of XAI may not focus on these elements, and                to provide human comprehensible rationales for recommendation.
+they are beyond the discussion of this paper.
+                                                                                2.3    Resolved Middle-Level Representations
+2.1    Conceptualization of Input                                               The resultant model, after considering the two elements above,
+Besides complexity and parameter sizes, deep models are com-                    can be roughly depicted in Figure 1(b). It is better than the fully
+monly regarded as black-boxes because they operate on low-level                 black-box model in Figure 1(a), but still does not shed light on the
+features, rather than high-level, discrete, human-comprehensible                model’s internal mechanism.
+concepts. For examples, computer vision models operate on pix-                     The main difficulty for better interpreting complex models lies
+els, and natural language models take word vectors as input. The                in disentangling and understanding the interactions between latent
+direct consequence is that there is a lack of concrete carriers to con-         representations. An example is shown in Figure 2 where we build a
+cisely depict information flows from input to output. Some recent               recommendation model based on a Multi-Layer Perceptron (MLP)
+research starts to explore how to conceptualize data into discrete              with three hidden layers with 𝐿1 regularization on the LastFM
+interpretation basis, and derive explanations or explainable models             dataset [42]. The feature importance explanation of each prediction
+upon it [19, 49, 52, 57].                                                       is computed using the denoised gradient-based method [36]. We
+
+
+
+
+                                                                          896
+Full Paper Track                                                                                                  CIKM '20, October 19–23, 2020, Virtual Event, Ireland
+
+
+
+
+   Output                                                                                            apply the weighted vector sum to propagate information. In this
+                       ...                                                                           sense, GCN may be seen as a special case of CapsNet, where iterative
+                                                                                                     routing is omitted and bilinear mapping reduces to a single matrix
+
+
+
+
+                                              Importance s core
+Representation       ......                                                                          W that reduces the number of parameters. Moreover, GCN can
+Entanglement
+                                                                                                     naturally handle relational data and human knowledge organized
+                       ...                                                                           in the form of graphs. In this paper, we use graph convolution as
+                                                                                                     the basic operation to build explainable recommender systems.
+
+    Input
+                                                                          Feature rank
+                                                                                                     2.3.2 Segmentation of Latent Dimensions. Another aspect of repre-
+                                                                                                     sentation learning transparency is to explicitly separate the infor-
+        Figure 2: Feature interaction entangling in MLP.                                             mation captured by different dimensions of representations. There
+                                                                                                     are two advantages for latent dimension separation. First, each set
+then normalize the importance scores to the unit sum, and sort the                                   of dimensions corresponds to one semantic aspect, so we are able
+features according to their scores. We randomly select 500 samples                                   to learn meaningful representations. Second, disentanglement of
+from test data and compute the average of the sorted scores, as                                      latent dimensions may improve model effectiveness via encoding
+shown in the right part of Figure 2. It is observed that, although a                                 more nuanced relations in data [6]. For example, if we use an em-
+small number of features are important for each prediction, the ef-                                  bedding to depict the interest of a user, then ideally we would want
+fect (area under the curve) of the long tail of less important features                              different dimensions to separately capture user interests in different
+together is still significant. The reason for this phenomenon is that a                              item genres, such as clothes, electronics, and daily necessities.
+fully-connected network tends to entangle features without explic-                                      Disentangling latent dimensions is a nontrivial task despite some
+itly separating the interactions of latent dimensions [37]. Without                                  preliminary work proposed recently. [6, 26] extend network em-
+tackling this challenge, the efforts of conceptualizing input and                                    bedding by learning several vectors for each node. Wang et al. [39]
+attributing output would be largely thwarted, since contributions                                    utilize item categories as part of the supervised information to asso-
+of different features will be indistinguishable.                                                     ciate latent dimensions with different aspects. However, how to deal
+                                                                                                     with extra knowledge or automatically discover factors without
+2.3.1 Disentanglement of Representation Interactions. From the
+                                                                                                     category information are beyond their discussion.
+analysis above, we are facing the dilemma where we hope to both:
+(1) explore flexible feature interactions, and (2) constrain feature
+interactions to be concise to trace. These requirements remind us                                    3    PROBLEM FORMULATION
+of the recent Capsule Network (CapsNet) [33]. Each "capsule" rep-                                    Notations. In this paper, column vectors are represented by bold-
+resents a certain concept, and a dynamic routing process is run to                                   face lowercase letters, such as a and b; matrices are represented by
+decide the contribution between capsules of adjacent layers. Let z 𝑗                                 boldface capital letters, such as W and Y; sets are represented by
+and z𝑖 denote the embeddings of a higher-level capsule 𝑣 𝑗 and a                                     calligraphic capital letters, such as U and N . The 𝑖-th entry of a
+lower-layer capsule 𝑣𝑖 . The capsules interact in a way that                                         vector b is denoted by 𝑏𝑖 , and entry (𝑖, 𝑗) of a matrix W is denoted
+                                 𝐼
+                                 Õ                                                                   by 𝑊𝑖,𝑗 . As discussed above, the input into recommender systems
+                 z 𝑗 = squash(         𝑎𝑖,𝑗 z 𝑗 |𝑖 ),             z 𝑗 |𝑖 = W𝑖,𝑗 z𝑖 ,     (1)         is constructed as a graph G with nodes denoted by V. We include
+                                 𝑖=1                                                                 three types of nodes in the graph, i.e., users, items and knowledge
+where W𝑖,𝑗 is the bilinear mapping matrix, "squash" is a non-linear                                  entities, where U, T and E denote the user set, item set and en-
+function, and 𝑎𝑖,𝑗 ≥ 0 is the contribution score tracking the rela-                                  tity set, respectively. Here note that 𝑣 ∈ V = U ∪ T ∪ E can be
+tion between capsules. Some recent work [24, 33, 48, 53] claims                                      used to denote any type of nodes when the node type is not speci-
+to use CapsNet to improve model interpretability. Nevertheless,                                      fied. In this paper, we consider three types of links in our scenario,
+several challenges impede us from directly applying CapsNet to                                       user-item links {(𝑢, 𝑡)}, item-entity links {(𝑡, 𝑒)} and entity-entity
+certain recommendation scenarios. First, if we treat users or items                                  links {(𝑒, 𝑒 ′ )}, where 𝑢 ∈ U, 𝑡 ∈ T and 𝑒, 𝑒 ′ ∈ E. A user-item link
+as capsules, then the number of parameters {W𝑖,𝑗 } would be too                                      (𝑢, 𝑡) indicates an observed interaction (e.g., purchase, impression)
+large. Second, dynamic routing significantly increases time com-                                     between user 𝑢 and item 𝑡. An item-entity link (𝑡, 𝑒) unveils the
+plexity and memory. Third, how to instill structured knowledge                                       item’s quality or attribute described by entity 𝑒. An entity-entity
+from human experts into the model remains unsolved.                                                  link (𝑒, 𝑒 ′ ) simply stores the relation between the two entities. With-
+   Next we will show that graph convolution processes information                                    out loss of generality, it is also possible to add user-entity links
+in a similar manner to CapsNet, and the challenges faced by CapsNet                                  {(𝑢, 𝑒)} to reflect a user’s attention or attitude towards an entity,
+can be easily tackled by GCN. Let z 𝑗 be the embedding of node 𝑣 𝑗 .                                 but such information is not directly available in our experimental
+Through graph convolution, its embedding is updated as:                                              data. There is also a ground-truth interaction matrix Y ∈ R | U |× | T | ,
+                                Õ                                                                    where 𝑌𝑢,𝑡 = 1 means that there is an observed interaction between
+                   z𝑗 ← 𝜎 (            𝑎𝑖,𝑗 Wz𝑖 ),               (2)
+                                                                                                     user 𝑢 and item 𝑡, and 𝑌𝑢,𝑡 = 0 otherwise.
+                                  𝑣𝑖 ∈N𝑗 ∪{𝑣 𝑗 }
+                                                                                                     Problem Definition. Given the input graph G, our goal is to pre-
+where N𝑗 denotes the neighbors of 𝑣 𝑗 , 𝜎 (·) is the activation function,                            dict whether user 𝑢 is interested in an item 𝑡. That is, we aim to
+𝑎𝑖,𝑗 is the attention score. By comparing Eq(1) and Eq(2), it can be                                 learn a prediction function 𝑌ˆ𝑢,𝑡 = 𝑓 (𝑢, 𝑡 |G, Θ), where 𝑌ˆ𝑢,𝑡 is the es-
+observed that both models use vectors to represent objects, and                                      timated probability that user 𝑢 is interested in item 𝑡, and Θ denotes
+
+
+
+
+                                                                                               897
+Full Paper Track                                                                                        CIKM '20, October 19–23, 2020, Virtual Event, Ireland
+
+
+
+
+                                        1.	  I tem-­‐based	  I nterpretation:           z𝑣 = [z1𝑣 ; z2𝑣 ; ...; z𝐶𝑣 ] ∈ R𝐶×𝐷 . For each observed user-item pair, it
+                                                                                          is expected that only a part of the factors will be activated in pre-
+      Recommendation                                                                      serving similarity. If factor 𝑐 is the potential cause of making user 𝑢
+                                                                                          interact with item 𝑡, in order for ⟨z𝑢𝑐 , z𝑐𝑡 ⟩ to have a large score, not
+                                                                                          only should the angle be small between z𝑢𝑐 and z𝑐𝑡 , we also expect
+                                                                                          them to have large lengths.
+                                       2.	  Attribute-­‐based	  Interpretation:            In certain models, more flexible interactions between factorized
+                                      Schwarzenegger, Sci-Fi, AI/Robotics
+                                                                                          representations are designed. For example, in Factorization Ma-
+                                                                                          chines [30], cross-factor interactions are allowed (i.e., ⟨z𝑢𝑐 1 , z𝑐𝑡 2 ⟩ also
+                                                                                          contributes to 𝑌𝑢,𝑡 and 𝑐 1 ≠ 𝑐 2 ). In addition, if we assume that users
+Figure 3: Interpretation schema. A user’s interest is ex-                                 have multiple interests but items are constrained with a single
+plained through the historical items he has interacted with,                              property, then 𝑌𝑢,𝑡 ≈ 𝐶
+                                                                                                                        Í       𝑐
+                                                                                                                          𝑐=1 ⟨z𝑢 , z𝑡 ⟩.
+as well as knowledge entities.
+                                                                                          4.2     Interpretation Hierarchy
+the parameters to learn. More importantly, additional constraints                         In this work, we treat user nodes, item nodes and entity nodes
+for explainability are added to the architecture of 𝑓 .                                   as concepts. Different concepts are assigned to different levels. A
+                                                                                          concept on level ℓ is represented by concepts on level ℓ ′ where ℓ ′ <
+4     INTERPRETABLE RECOMMENDATION                                                        ℓ. Specifically, let 𝑣 and 𝑣 ′ denote concepts on level ℓ and ℓ ′ , then
+      WITH GRAPH DATA                                                                                                                         Í
+                                                                                          we could interpret the embedding of 𝑣 as z𝑣 ≈ 𝑣′ 𝑝 𝑣,𝑣′ z𝑣′ , where
+In this section, we introduce the proposed explainable recommender                        𝑝 𝑣,𝑣′ denotes the contribution from 𝑣 ′ to 𝑣. Low-level concepts tend
+system, which is based on the IOM elements introduced in previous                         to be simple, while high-level concepts are complex and composite.
+sections. First, we extend the traditional explainable factor decom-                      Lower-level concepts can be regarded as the basis to represent
+position model into a more general representation learning frame-                         higher-level ones. Note that besides ℓ ′ = ℓ − 1, any ℓ ′ < ℓ can be
+work. Second, we introduce the recommendation interpretation                              chosen as the basis level to represent concepts on level ℓ.
+schema. Third, we introduce a novel graph convolution architecture                            The levels of concepts are defined in an iterative manner. The
+to resolve latent dimensions, as well as the variational autoencoder                      user nodes are on the top level ℓ𝑚𝑎𝑥 . The item nodes are on level
+based learning framework.                                                                 ℓ𝑚𝑎𝑥 − 1 as they connect to users. The entities which connect to
+                                                                                          items are on level ℓ𝑚𝑎𝑥 − 2. In general, if a node 𝑣 connects to
+4.1     Node-Factor Factorization                                                         another node on level ℓ and 𝑣 does not belong to a level higher than
+In each recommendation application, we assume that there exist a                          ℓ, then it belongs to level ℓ − 1. In the end, the bottom entity nodes
+number of latent factors which compactly describe different aspects                       are on level 0. In this work, to simplify illustration, we assume that
+of the nodes in the graph. Suppose there are 𝐶 factors. In traditional                    there is only one level of entity nodes, so that ℓ𝑚𝑎𝑥 = 2 for user
+factorization models [23], we consider the parameterization where                         nodes. An example of recommendation explanation for a user is
+a nonnegative score 𝐹 𝑣,𝑐 is assigned for each pair of node 𝑣 ∈                           given in Figure 3. The proposed model can be easily extended to
+V and factor 𝑐 ∈ {1, ..., 𝐶} to measure their affiliation strength.                       deal with multi-level knowledge entities.
+More specifically, for a user node 𝑢 ∈ U, 𝐹𝑢,𝑐 represents the user’s
+attention or interest on factor 𝑐. For an item node 𝑡 ∈ T , 𝐹𝑡,𝑐                          4.3     Resolving Information Flow
+quantifies the degree that factor 𝑐 can be used to describe item 𝑡.                       We now introduce how to segment z𝑣 to different factors. Under
+Therefore, the tendency that factor 𝑐 independently triggers the                          traditional GCNs shown in Figure 4(a) and Eq(2), the embeddings
+interaction between 𝑢 and 𝑡 could be computed as 𝐹𝑢,𝑐 · 𝐹𝑡,𝑐 . Then,                      of user 𝑢 and item 𝑡 on the final GCN layer are computed as:
+                                                         Í
+an observed link 𝑌𝑢,𝑡 can be decomposed as 𝑌𝑢,𝑡 ≈ 𝐶        𝑐=1 𝐹𝑢,𝑐 · 𝐹𝑡,𝑐 .
+The explanation behind is that user 𝑢 is more likely to interact with                             z𝑢 ← COMBINE(z𝑢 , AGGREGATE({z𝑡 : 𝑡 ∈ N𝑢 ⊆ T })),
+item 𝑡 if the item has high quality or reputation on more factors                                                                                                    (3)
+                                                                                                  z𝑡 ← COMBINE(z𝑡 , AGGREGATE({z𝑒 : 𝑒 ∈ N𝑡 ⊆ E})).
+which are also highly valued by the user.
+   Traditionally, 𝐹𝑢,𝑐 and 𝐹𝑡,𝑐 are directly solved as nonnegative                        It is worth noting that we restrict the information flow direction. An
+parameters optimized through matrix factorization [22, 23, 56].                           item embedding z𝑡 receives information from knowledge entities,
+However, the design of explicit factors is not fully compatible with                      as well as its own embedding on the lower GCN layer. Similarly, a
+recent representation learning frameworks. To combine the explain-                        user embedding z𝑢 receives information from itself on the lower
+ability of explicit factorization and the flexibility of recent learning                  layer, the items that have been interacted, and knowledge entities
+frameworks, we embed different factors within nodes separately                            as second order connections. Finally, top-layer z𝑢 and z𝑡 engage in
+into the latent space. That is, we use a vector z𝑐𝑣 ∈ R𝐷 to represent                     computing recommendation prediction 𝑌ˆ𝑢,𝑡 . Common COMBINE()
+node 𝑣 described by factor 𝑐, where 𝐷 is the embedding dimension                          operations include summation or concatenation followed by trans-
+of a single factor. The score between user 𝑢 and item 𝑡 under factor                      formation, while common AGGREGATE() includes summation and
+𝑐 is thus computed as ⟨z𝑢𝑐 , z𝑐𝑡 ⟩, where ⟨· , ·⟩ denotes inner product.                  mean operations [12, 44, 50]. In the proposed model, we modify
+                                                            Í
+And the link factorization is thus formulated as 𝑌𝑢,𝑡 ≈ 𝐶          𝑐 𝑐
+                                                             𝑐=1 ⟨z𝑢 , z𝑡 ⟩.              traditional COMBINE() and AGGREGATE() operations to resolve infor-
+The link prediction can also be written as 𝑌𝑢,𝑡 ≈ ⟨z𝑢 , z𝑡 ⟩, where                       mation propagation between representations.
+
+
+
+
+                                                                                    898
+Full Paper Track                                                                                                                            CIKM '20, October 19–23, 2020, Virtual Event, Ireland
+
+
+
+
+    e1                                                                                                                                                            Factor	  
+                          t1                          Entity	                                     :	  	  	   𝐳#$%&                                          Assignment
+                                                                                                                                                                                             Multiple	  
+                                                    Embedding                                                                                                                  1             Factors
+                                                                                                   :	  	  	   𝐳'(#
+                                                                                                                  #
+    e2                                                                                                                                                                         2
+                                                                                                                                                                                        1
+                          t2        u1
+    e3                                                                                                                                                                         1        2
+                                                                                                                                                                               2        1              1
+                                                                                                                                                                                        2              2
+                         t3      User	  
+    e4                         Embedding
+                                                                                                                                                                               1
+                                                                                            :	  	   	   𝐳)$%&                                                               2
+    e5             Item	                                                                   :	  	  	   𝐳*#+
+                                                                                                           )                      :	  	   	  𝐳#$%&                                  Multiple	  
+                 Embedding
+                                                                                            :	  	  	   𝐳'(#
+                                                                                                           )                      :	  	   	  𝐳'(#
+                                                                                                                                                 #
+                                                                                                                                                                                       Factors
+
+                                  (a)                                                                              (b)                                                                 (c)
+
+Figure 4: Overview of the proposed model design procedure, best viewed with color. (a): Traditional GCN information propa-
+gation. (b): GCN after discriminating information sources. (c): GCN after resolving information sources and factors.
+
+                                                                                                                                                                               𝑠𝑙 𝑓
+4.3.1 Modification to COMBINE(). Instead of merging information                                                          is based on the principle that: (1) z𝑣 will first be assigned to
+from lower-level representations, we keep z𝑣 and AGGREGATE({z𝑣′ :                                                        some factors 𝑐 according to 𝑝 (𝑣, 𝑐) scores, and then contribute to
+𝑣 ′ ∈ N𝑣 }) separate if 𝑣 and 𝑣 ′ are different types of nodes. Specifi-                                                 the corresponding higher-level embeddings after the nonlinear
+cally, as shown in Figure 4(b), we define item embedding as:                                                             mapping; (2) For those embeddings that are already factorized (i.e.,
+                                        𝑠𝑙 𝑓                                                                             z𝑒𝑛𝑡,𝑐  ), they will directly contribute to higher-level counterparts
+                               z𝑡 = z𝑡         ∥ z𝑒𝑛𝑡
+                                                  𝑡 ,
+                                                                                                                           𝑡
+                                                                                              (4)                        (i.e., z𝑢𝑒𝑛𝑡,𝑐 ) within the same factor 𝑐. It is worth noting that we
+                                                               𝑠𝑙 𝑓
+           where          z𝑒𝑛𝑡
+                           𝑡   = AGGREGATE({z𝑒                        : 𝑒 ∈ N𝑡 ⊆ E}).                                    include two index sets {𝑐 |1 ≤ 𝑐 ≤ 𝐶 1 } and {𝑐 |1 ≤ 𝑐 ≤ 𝐶 2 } because
+         𝑠𝑙 𝑓
+                                                                                                                         they index different factors. Also, if we have more layers of entity
+Here z𝑡 denotes the item itself’s bottom-level embedding, and                                                            nodes, their embeddings could be learned just via normal GCNs
+∥ means concatenation. Similarly, for each user embedding z𝑢 , it                                                        without applying our method, because entity nodes in different
+receives information from both items and knowledge entities that                                                         layers are still of the same type.
+describe those items, so we define it as:                                                                                     Till now, the learnable parameters Θ in our model include: z𝑒 ,
+                                                                                                                                                                                             𝑠𝑙 𝑓
+
+                                                                                                                         z𝑡 , z𝑢 , 𝑝 (𝑒, 𝑐) and 𝑝 (𝑡, 𝑐 ′ ) for 𝑒 ∈ E, 𝑡 ∈ T , 𝑢 ∈ U, 1 ≤ 𝑐 ≤ 𝐶 1
+                                        𝑠𝑙 𝑓                                                                               𝑠𝑙 𝑓 𝑠𝑙 𝑓
+                               z𝑢 = z𝑢         ∥ z𝑢𝑖𝑡𝑚 ∥ z𝑢𝑒𝑛𝑡 ,
+                                                               𝑠𝑙 𝑓                           (5)                        and 1 ≤ 𝑐 ′ ≤ 𝐶 2 .
+           where         z𝑢𝑖𝑡𝑚 = AGGREGATE({z𝑡                        : 𝑡 ∈ N𝑢 ⊆ T }),
+                          z𝑢𝑒𝑛𝑡 = AGGREGATE({z𝑒𝑛𝑡
+                                              𝑡   : 𝑡 ∈ N𝑢 ⊆ T }).                                                       4.4    The Proposed Model Architecture
+Here  z𝑢𝑖𝑡𝑚describes the user through the historical items he has                                                        We now introduce the model details for learning node embeddings,
+interacted with. z𝑢𝑒𝑛𝑡 describes the user with knowledge entities.                                                       estimating factor affiliation scores, and making predictions. In gen-
+                                                                                                                         eral, the recommendation model is based on a variational autoen-
+4.3.2 Modification to AGGREGATE(). Furthermore, instead of di-                                                           coder (using other encoder-decoder schemes may also work, but is
+rectly aggregating information from items or entities without dis-                                                       beyond our discussion). The model details are as below.
+tinguishing their natures or semantics, we first assign low-level
+embeddings into different factors, and then send information ac-                                                         4.4.1 Encoder. The encoder returns a user embedding z𝑢 and an
+cordingly. Specifically, as shown in Figure 4(c), we define item-side                                                    item embedding z𝑡 for each interaction. Encoder modules are based
+aggregation as:                                                                                                          on graph convolution designed in the above subsection, with the
+                𝐶n1                                                                                                      new COMBINE() and AGGREGATE() operations. To estimate factor
+                                                                      Õ 𝑝 (𝑒, 𝑐) 𝑠𝑙 𝑓 
+   z𝑒𝑛𝑡 =             z𝑒𝑛𝑡,𝑐 ,     where z𝑒𝑛𝑡,𝑐 =𝑔                              z       .     (6)                        affiliation degrees 𝑝 (𝑒, 𝑐) and 𝑝 (𝑡, 𝑐), we maintain two sets of em-
+    𝑡                  𝑡                  𝑡                              |N𝑡 | 𝑒                                         beddings {z𝑐𝑒𝑛𝑡 |1 ≤ 𝑐 ≤ 𝐶 1 } and {z𝑐𝑖𝑡𝑚 |1 ≤ 𝑐 ≤ 𝐶 2 } as learnable
+                𝑐=1                                                   𝑒 ∈N𝑡
+                                                                                                                         parameters for each factor 𝑐. Then we define
+Here 𝑝 (𝑒, 𝑐) ∈ [0, 1] denotes the affiliation degree between entity 𝑒
+and factor 𝑐. Also, we define user-side aggregation as:                                                                                                                         𝑠𝑙 𝑓
+                                                                                                                                                  𝑝 (𝑒, 𝑐) = 𝑠𝑜 𝑓 𝑡𝑚𝑎𝑥 (cos(z𝑒 , z𝑐𝑒𝑛𝑡 )/𝛾),                 (9)
+                𝐶n2                                  Õ 𝑝 (𝑡, 𝑐) 𝑠𝑙 𝑓                                                                                                          𝑠𝑙 𝑓
+   z𝑢𝑖𝑡𝑚 =            z𝑢𝑖𝑡𝑚,𝑐 ,    where z𝑢𝑖𝑡𝑚,𝑐 = 𝑔           z       ,                      (7)                                                 𝑝 (𝑡, 𝑐)   = 𝑠𝑜 𝑓 𝑡𝑚𝑎𝑥 (cos(z𝑡 , z𝑐𝑖𝑡𝑚 )/𝛾),              (10)
+                                                        |N𝑢 | 𝑡
+                𝑐=1                                                   𝑡 ∈N𝑢
+                                                                                                                         where 𝑠𝑜 𝑓 𝑡𝑚𝑎𝑥 () normalizes over different factors, 𝛾 is a hyper-
+                𝐶n1                                                                                                      parameter to skew distributions as a form of self-training [27, 46].
+                                                                 Õ         1 𝑒𝑛𝑡,𝑐
+   z𝑢𝑒𝑛𝑡   =          z𝑢𝑒𝑛𝑡,𝑐 ,    where         z𝑢𝑒𝑛𝑡,𝑐   =                  z    .          (8)                        For example, making 𝛾 < 1 amplifies the gap between strong and
+                                                                         |N𝑢 | 𝑡
+                𝑐=1                                             𝑡 ∈N𝑢                                                    weak assignments. Through explicitly parameterizing factor em-
+Here 𝑝 (𝑡, 𝑐) ∈ [0, 1] denotes the affiliation degree between item 𝑡                                                     beddings, we reduce the number of parameters than treating 𝑝 (𝑒, 𝑐)
+and factor 𝑐. 𝑔 is a nonlinear mapping module. The design above                                                          or 𝑝 (𝑡, 𝑐) as independent coefficients over different argument pairs.
+
+
+
+
+                                                                                                             899
+Full Paper Track                                                                                                     CIKM '20, October 19–23, 2020, Virtual Event, Ireland
+
+
+
+
+   During the training process, we adopt the variational autoen-                                                  Dataset          MovieLens          LastFM        Yelp
+coder paradigm [20]. The generation of z𝑢 and z𝑡 are not determin-                                                  #users          138,159             1,872     45,919
+istic, but are under certain probabilistic distribution. Also, we let                                               #items           16,954             3,846     45,538
+different segments be mutually independent, so distributions are                                                  #entities          85,615             5,520      1,341
+defined as below:                                                                                                   #edges         13,501,622          42,346    1,185,068
+                                   𝐶1
+                                   Ö                                                                                   𝐷                30                16         25
+                     𝑠𝑙 𝑓                                                                                                               4                 4           6
+    𝑞(z𝑡 |G) = 𝑞(z𝑡 |G) ·                𝑞(z𝑒𝑛𝑡,𝑐
+                                            𝑡     |G),                                   (11)                          𝐶
+                                   𝑐=1                                                                                 𝛾               0.1               0.1         0.1
+                                   𝐶2
+                                   Ö                       𝐶1
+                                                           Ö                                                           𝑙𝑟           4 × 10−4          2 × 10−4   2 × 10−4
+                     𝑠𝑙 𝑓
+    𝑞(z𝑢 |G) = 𝑞(z𝑢 |G) ·                𝑞(z𝑢𝑖𝑡𝑚,𝑐 |G) ·         𝑞(z𝑢𝑒𝑛𝑡,𝑐 |G).          (12)                    𝑙 2 weight           10−8              10−8     5 × 10−9
+                                   𝑐=1                     𝑐=1                                                   batch_size            512               128        256
+The probability of each segment follows a multivariate normal distri-                                               epoch               10               100         15
+bution. According to the designed information flow, 𝑞(z𝑒𝑛𝑡,𝑐 𝑡     |G) =                                                 Table 1: Statistics of the datasets.
+𝑁 (𝝁𝑡𝑒𝑛𝑡,𝑐 , diag((𝝈𝑡𝑒𝑛𝑡,𝑐 ) 2 )), where by following Eq(6), we define
+                       𝑝 (𝑒,𝑐) 𝑠𝑙 𝑓                          𝑝 (𝑒,𝑐) 𝑠𝑙 𝑓
+𝝁𝑡𝑒𝑛𝑡,𝑐 = 𝑔 𝜇 ( 𝑒 ∈N𝑡 | N | z𝑒 ), and 𝝈𝑡𝑒𝑛𝑡,𝑐 = 𝑔𝜎 ( 𝑒 ∈N𝑡 | N | z𝑒 ).
+               Í                                     Í
+                            𝑡                                    𝑡
+The generation of other segments are similar, so we skip them here.                                   5.1     Datasets and Metrics
+                                                                                                      • MovieLens1 : A benchmark dataset from movie recommenda-
+4.4.2 Decoder. The decoder computes the similarity between z𝑢
+                                                                                                        tion. Original ratings are converted into binary scores, indicating
+and z𝑡 jointly over various factors, as illustrated in Figure 4(c):
+                                                                                                        whether a user has interacted with a movie [15].
+                                                𝐶1
+                                                Õ                                                     • LastFM2 : A dataset obtained from the Last.fm online music web-
+                                𝑠𝑙 𝑓   𝑠𝑙 𝑓                                       𝑠𝑙 𝑓
+ 𝑝 (𝑌𝑢,𝑡 |z𝑢 , z𝑡 ) ∝ exp(⟨z𝑢 , z𝑡 ⟩) +               𝑝 (𝑡, 𝑐) exp(⟨z𝑢𝑖𝑡𝑚,𝑐 , z𝑡 ⟩)                     site. Only interactions between users and music artists are used.
+                                                𝑐=1                                                     The social network information is not included.
+                     𝐶2
+                     Õ                                                                                • Yelp3 : A dataset adopted from Yelp challenge. Restaurants and
+                 +          exp(⟨z𝑢𝑒𝑛𝑡,𝑐 , z𝑒𝑛𝑡,𝑐
+                                            𝑡     ⟩),                                                   bars are used as items. Attributes in the dataset are used as knowl-
+                     𝑐=1                                                                                edge entities. Each user and item have at least 10 interactions.
+                                                                                         (13)
+                                                                                                      Each dataset is associated with a knowledge graph as side infor-
+where ⟨· , ·⟩ denotes inner product. The first term can be seen as the                                mation released in [41, 44]. The datasets’ statistics are available
+traditional collaborative filtering component. The second term con-                                   in Table 1. For each dataset, we randomly hold out 200 users for
+tributes to prediction based on user historical interactions, where                                   validation and 200 users for testing. For both groups of users, 80% of
+the embedding space contains 𝐶 1 factors. The third term contributes                                  interactions are randomly sampled and put into training data, while
+to prediction based on knowledge entities, where the embedding                                        the remaining are put into validation and testing data. The model
+space contains 𝐶 2 factors. In this work, however, we discard the                                     to be tested has the best performance on the validation dataset.
+first term because it hurts the interpretability of the model. Also, it                                   The hyperparameter settings of the proposed model on each
+is worth noting that 𝑝 (𝑡, 𝑐) in the second term is necessary, since it                               dataset are listed in Table 1. Specifically, 𝐷 denotes the dimension
+         𝑠𝑙 𝑓
+scales z𝑡 corresponding to different factors.                                                         of each factor’s embedding. 𝐶 denotes the total number of factors,
+                                                                                                      so that the total embedding dimension is 2𝐶 × 𝐷 for each user node,
+4.4.3 Learning. The overall likelihood is decomposed into the sum                                     (𝐶 + 1) × 𝐷 for each item node, and 𝐷 for each entity node. 𝑙𝑟 is
+                                                        Í
+of likelihoods of individual interactions as log 𝑝 (Y) = 𝑢,𝑡 𝑝 (𝑌𝑢,𝑡 ).                               the learning rate. 𝑙 2 weight is the regularization weight for model
+In practice, we optimize its variational lower bound 𝐿ELBO [20]:                                      parameters. Batch size corresponds to the number of users put into
+            𝐿ELBO (𝑌𝑢,𝑡 ) = E𝑞 (z𝑢 ,z𝑡 | G) log 𝑝 (𝑌𝑢,𝑡 |z𝑢 , z𝑡 )                                    models for training, so that the number of batches in each epoch is
+                                                                                         (14)         #users/batch_size. For the decoder part in Eq(13), instead of using
+                                   − KL[𝑞(z𝑢 , z𝑡 |G)||𝑝 (z𝑢 , z𝑡 )],                                  𝑠𝑙 𝑓
+                                                                                                      z𝑡 and z𝑒𝑛𝑡,𝑐
+                                                                                                                  𝑡     from GCN, a more effective solution is to maintain
+where KL[·||·] is the Kullback-Leibler divergence. The definition of                                  another embedding dictionary as learnable parameters to replace
+𝑝 (𝑌𝑢,𝑡 |z𝑢 , z𝑡 ) could be found in Eq(13) with normalization over all                               them [27]. Such a replacement is beneficial for model performance.
+item candidates. We also assume that z𝑢 and z𝑡 are generated inde-                                    The interpretation for user interest is not affected. The reported
+pendently, so 𝑝 (z𝑢 , z𝑡 ) = 𝑝 (z𝑢 ) · 𝑝 (z𝑡 ) and 𝑞(z𝑢 , z𝑡 |G) = 𝑞(z𝑢 |G) ·                         experimental results are based on this practical modification. The
+𝑞(z𝑡 |G). We further take Gaussian prior, where 𝑝 (z𝑢 ) = 𝑁 (z𝑢 |0, I)                                effectiveness of models is evaluated under two metrics, 𝑅𝑒𝑐𝑎𝑙𝑙@𝑘
+and 𝑝 (z𝑡 ) = 𝑁 (z𝑡 |0, I). 𝑞(z𝑢 |G) and 𝑞(z𝑡 |G) are generated by en-                                (𝑘 = 2, 10, 50, 100) and 𝑁 𝐷𝐶𝐺@100.
+coders as introduced before.
+                                                                                                      5.2     Baseline Methods
+5    EXPERIMENT                                                                                       We compare the proposed model with the most representative state-
+In this section, we evaluate the proposed model on several real-                                      of-the-art methods described below.
+world datasets. First, we evaluate the effectiveness of the proposed                                  1 https://grouplens.org/datasets/movielens/
+model. Second, we quantitatively measure the accuracy of interpre-                                    2 https://grouplens.org/datasets/hetrec-2011/
+
+tation, and analyze the insight from interpretation.                                                  3 https://www.yelp.com/dataset/challenge/
+
+
+
+
+                                                                                                900
+Full Paper Track                                                                           CIKM '20, October 19–23, 2020, Virtual Event, Ireland
+
+
+
+
+                                  MovieLens                               LastFM                                     Yelp
+                        R@2 R@10 R@50 R@100 R@2 R@10 R@50 R@100 R@2 R@10 R@50 R@100
+            NMF         0.064    0.219    0.435    0.556    0.118      0.247      0.428     0.520    0.021   0.051     0.113     0.152
+             FM         0.074    0.224    0.432    0.551    0.120      0.250      0.436     0.532    0.022   0.053     0.169     0.228
+             CKE        0.070    0.221    0.445    0.571    0.121      0.243      0.443     0.548    0.020   0.060     0.177     0.260
+          RippleNet     0.185    0.242    0.479    0.599    0.080      0.248      0.458     0.569    0.033   0.064     0.195     0.275
+           KGCN         0.190    0.248    0.470    0.603    0.110      0.242      0.462     0.588    0.032   0.071     0.192     0.271
+            VGAE        0.190    0.252    0.478    0.597    0.112      0.262      0.473     0.585    0.033   0.081     0.202     0.280
+           Splitter     0.185    0.242    0.472    0.589    0.093      0.238      0.462     0.550    0.033   0.061     0.189     0.271
+          Proposed      0.210    0.248    0.500    0.620    0.128      0.281      0.514     0.615    0.050   0.089     0.200     0.275
+
+                                  Table 2: Recommendation performance comparison in 𝑅𝑒𝑐𝑎𝑙𝑙@𝑘.
+
+
+• NMF [23] is a benchmark collaborative filtering model for rec-                                      MovieLens        LastFM      Yelp
+  ommendation, based on non-negative matrix factorization. The
+                                                                                         NMF             0.2920         0.1983     0.0681
+  number of factors is chosen as 16, 16, 12 for MovieLens, LastFM
+                                                                                          FM             0.3020         0.2383     0.0820
+  and Yelp. 𝐿1 and 𝐿2 regularizations are weighted equally, with
+                                                                                          CKE            0.3064         0.2392     0.0959
+  regularization coefficient of 0.005.
+                                                                                       RippleNet         0.3153         0.2321     0.1078
+• FM [30] is a benchmark factorization model which combines
+                                                                                        KGCN             0.3230         0.2493     0.1168
+  second-order feature interactions with linear modeling. We in-
+                                                                                         VGAE            0.3234         0.2535     0.1180
+  clude user IDs, item IDs and items’ associated knowledge entities
+                                                                                        Splitter         0.3242         0.2331     0.1039
+  as input. The total dimension of embedding is the same as the
+                                                                                       Proposed          0.3427         0.2656     0.1202
+  proposed model.
+• CKE [51] extends collaborative filtering with side knowledge                    Table 3: Recommendation evaluation in 𝑁 𝐷𝐶𝐺@100.
+  information as regularization for recommendations. We use both
+  user-item interactions and knowledge entities as input. The
+  weight for knowledge entity part is set as 0.2 for all datasets.
+• RippleNet [40] is a memory-network-like approach which prop-                 5.3    Recommendation Performance Evaluation
+  agates from items to other entities in the knowledge graph. We               We first compare the performance of the proposed method with
+  set 𝑑𝑖𝑚 = 16, 𝐻 = 2, 𝜆1 = 10−6 , 𝜆2 = 0.01, 𝜂 = 0.01 for Movie-              the baseline methods. The performances are presented in Table 2
+  Lens; 𝑑𝑖𝑚 = 16, 𝐻 = 3, 𝜆1 = 10−5 , 𝜆2 = 0.02, 𝜂 = 0.005 for                  and Table 3. Some observations are drawn below:
+  LastFM; 𝑑𝑖𝑚 = 16, 𝐻 = 2, 𝜆1 = 10−7 , 𝜆2 = 0.02, 𝜂 = 0.01 for Yelp.           • The proposed model is at least comparable to the best perfor-
+• KGCN [42] is a GCN-based model that captures inter-item re-                    mance in most cases. VGAE can be seen as the variant of the
+  lations by mining their attributes on a knowledge graph (KG).                  proposed model without resolving representation learning. It
+  We set 𝑑𝑖𝑚 = 120, 𝐻 = 2, 𝜆 = 10−7 , 𝜂 = 2 × 10−2 for MovieLens;                thus shows that considering interpretability will not negatively
+  𝑑𝑖𝑚 = 64, 𝐻 = 1, 𝜆 = 2 × 10−5 , 𝜂 = 2 × 10−4 for LastFM; 𝑑𝑖𝑚 = 64,             affect recommendation performances.
+  𝐻 = 2, 𝜆 = 5 × 10−7 , 𝜂 = 5 × 10−4 for Yelp.                                 • Although also emphasizing the idea of disentangled representa-
+• VGAE [21] is built upon a graph variational autoencoder. It                    tion learning, the proposed model achieves better performance
+  can be regarded as the fundamental version of the proposed                     than Splitter. It demonstrates the advantage of simultaneously
+  model where the latent dimensions are not disentangled. The                    learning embedding and identifying factors over treating them
+  hyperparameter setting is similar to the proposed method, except               as independent steps. The embedding learning in Splitter could
+  𝑑𝑖𝑚 = 120 for MovieLens, 𝑑𝑖𝑚 = 64 for LastFM, and 𝑑𝑖𝑚 = 64                     be negatively affected by the gap of factor activation between
+  for Yelp. The learning rate is 5 × 10−4 for MovieLens, 2 × 10−4                training and inference.
+  for LastFM, and 3 × 10−4 for Yelp.                                           • VGAE achieves slightly better performance than KGCN. As we
+• Splitter [6] learns multiple embedding vectors for each node. A                ignore link types in graphs, which is not our focus in this work,
+  clustering step is performed independently as factor identifica-               the improvement could be from the variational autoencoder.
+  tion before embedding learning. Another similar work is [26]. We             • NMF does not utilize attribute entities, which has a negative
+  use overlapping community detection for user-item subgraph and                 impact on its performance, but it serves as the baseline to reflect
+  item-entity subgraph. The community detection results are used                 the degree that attribute information helps in recommendation.
+  for factor assignment. Then, we apply 𝐶 GCN models to learn
+  several embeddings for each node. The community assignments
+                                                                               5.3.1 Hyperparameter Sensitivity Analysis. The most important
+  remain fixed. The resultant embeddings are then concatenated
+                                                                               hyperparameter in this work is the number of factors 𝐶 1 and 𝐶 2 .
+  for joint prediction. The embedding dimensions and the number
+                                                                               Therefore, we further analyze model performances by changing
+  of communities are set the same as the proposed model.
+                                                                               factor numbers. Here we let 𝐶 1 = 𝐶 2 = 𝐶. Results are reported in
+                                                                               Table 4. For each pair of values, the left value means that we fix
+
+
+
+
+                                                                       901
+Full Paper Track                                                                                                                 CIKM '20, October 19–23, 2020, Virtual Event, Ireland
+
+
+
+
+                                                                                   Random        SEP          Proposed
+
+                0.6
+                                                                         0.8                                                                                      0.8
+                0.4                                                      0.6                                                                                      0.6
+      𝑠ℎ𝑖 𝑓 𝑡
+
+
+
+
+                                                               𝑠ℎ𝑖 𝑓 𝑡
+
+
+
+
+                                                                                                                                                      𝑠ℎ𝑖 𝑓 𝑡
+                                                                         0.4                                                                                      0.4
+                0.2
+                                                                         0.2                                                                                      0.2
+                 0                                                        0                                                                                          0
+                      2      4          6       8      10                      2        4          6       8              10                                             2                 4          6       8                             10
+                                 #nodes removed                                             #nodes removed                                                                                     #nodes removed
+
+            Figure 5: Quantitative evaluation of explanation faithfulness on MovieLens (left), LastFM (middle) and Yelp (right).
+
+                                                                                                                                                                             t835                   t1179
+                𝐶         MovieLens                 LastFM               Yelp                                                                                   Four	  Peaks	  Brewing       Kyoto	  Scottsdale
+                                                                                                                                                                                                                     t1717
+                                                                                                                                                 t4124                                                                        Thai	  Cottage
+                                                                                                                               Rosita's	  Place
+      𝑐0 − 2              0.3398/0.3437       0.2541/0.2722   0.1170/0.1267                                                                                                                                          t14176
+                                                                                                                                                   t1140                                                                      Bahama	  Buck's               factor	  3
+      𝑐0 − 1              0.3422/0.3439       0.2613/0.2754   0.1195/0.1234                             factor	  3         Pizzeria	  Bianco
+                                                                                                                                                                                                                     t1499
+                                                                                                                                                 t1497                       u755                u1523
+        𝑐0                0.3427/0.3427       0.2656/0.2656   0.1202/0.1202                                 ≠               Pizzeria	  Bianco’
+                                                                                                                                                                                                                              Street	  Boba	  Café
+                                                                                                                                                                                                                                                              ≠
+      𝑐0 + 1              0.3429/0.3308       0.2721/0.2547   0.1204/0.1098                                                                   e45587                                                                 e45587
+                                                                                                                                                                                                                                    state::AZ          factor	  3
+                                                                                                          factor	  3      state::AZ
+                                                                                                                                          e45648                                                                     e45545
+Table 4: Performance of the proposed model in 𝑁 𝐷𝐶𝐺@100                                                                                                                                                                       attributes::BusinessAcc
+                                                                                                          factor	  1 attributes::GoodFor                                                                                      eptsCreditCards::True
+                                                                                                                                                                                                                                                      factor	  1
+                                                                                                                        Meal::{‘dinner’}
+by varying the number of factors 𝐶, where 𝑐 0 = 4, 4, 6 for
+MovieLens, LastFM and Yelp, respectively.
+                                                                                                                          Figure 6: Visualization of the explanations.
+
+                                                                                                        denote the 𝑅𝑒𝑐𝑎𝑙𝑙@10 performance before and after the pertur-
+the dimension 𝐷 of each embedding segment, while the right value                                                                                                 ′
+means that we fix the total embedding dimension 𝐶 × 𝐷.                                                  bation, respectively. We define 𝑠ℎ𝑖 𝑓 𝑡 = 𝑟𝑒𝑐𝑎𝑙𝑙−𝑟𝑒𝑐𝑎𝑙𝑙
+                                                                                                                                                        𝑟𝑒𝑐𝑎𝑙𝑙     to measure
+    We could observe that, by increasing 𝐶, model performance in                                        the explanation accuracy. A higher value indicates more accurate
+general increases if we fix 𝐷, since more factors are considered and                                    explanation.
+the parameter size also increases. The time complexity and memory                                           We also introduce two baseline methods to compare with the pro-
+cost will also increase in this case. However, the model performance                                    posed interpretation scheme. Popular methods such as LIME [31]
+decreases if we set 𝐶 too large while keeping 𝐶 × 𝐷 fixed, since the                                    is not included since there is no explicit concept of classes in rec-
+dimension for each factor decreases and is not adequate to contain                                      ommendation settings.
+all the information needed.                                                                             • Random: We randomly remove the same number of historical
+                                                                                                           items as the proposed method.
+5.4             Evaluation of Explanation Accuracy                                                      • SEP [47]: A post-hoc path-based interpretation method for rec-
+                                                                                                           ommender systems. Items in the resultant explanation paths are
+In this part, we will first evaluate the faithfulness of interpretation
+                                                                                                           retrieved as interpretation.
+obtained from our model. Then, we qualitatively analyze the in-
+sights from interpretation. Explanation information comes from                                              The experimental results are shown in Figure 5. We make 5
+two parts: (1) affiliation scores tracing the information flows; (2)                                    runs for each case and take the average. We vary the number of
+factors extracted on different embedding segments.                                                      items to remove in 𝑥-axis, and the 𝑠ℎ𝑖 𝑓 𝑡 is 𝑦-axis. Observations are
+                                                                                                        summarized as follows:
+5.4.1 Quantitative Evaluation of Explanation. Evaluating the cor-                                       • The interpretation obtained directly from model inference is
+rectness of model explanation quantitatively is a challenging task,                                        more accurate than using post-hoc explanations. It thus validates
+because usually there is no ground-truth explanation to compare                                            the benefit of designing explainable models over using external
+with. To tackle this, we utilize the duality between interpretation                                        explanation methods.
+and adversarial perturbation [7]. The high-level intuition is that,                                     • The amount of information removed is small compared with the
+after removing the features that are important to the current pre-                                         overall input. Also, the 𝑠ℎ𝑖 𝑓 𝑡 value increases as the amount of
+diction, the model prediction should dramatically change.                                                  removed information increases. It thus further demonstrates the
+     Specifically, we use the 200 users in testing data for evaluation.                                    faithfulness of the obtained explanations.
+After performing recommendation, interpretation is obtained as the
+historical items or important attribute entities. For each user-item                                    5.4.2 Case Studies. After the quantitative evaluation, we provide
+pair (𝑢, 𝑡), we compute the importance score of an item/entity 𝑗 as                                     some visualization of explanation results in Figure 6. We can see
+𝑠 ( 𝑗; 𝑢, 𝑡). The exact definition of 𝑠 ( 𝑗; 𝑢, 𝑡) is introduced in Appendix.                           that restaurant 𝑡 835 is recommended to user 𝑢 755 because the user
+In brief, 𝑠 ( 𝑗; 𝑢, 𝑡) is computed based on the affiliation scores 𝑝 (𝑒, 𝑐)                             has visited similar restaurants (near Phoenix) and his activities are
+and 𝑝 (𝑡, 𝑐) as they trace contribution from entities to items and                                      mainly in Arizona emphasized by attribute information. Similarly,
+from items to users. Then, the items/entities with large importance                                     restaurant 𝑡 1179 is recommended to user 𝑢 1523 because he has visited
+scores are removed from the original input. Finally, we perform                                         many Asian restaurants. The factor that each node is affiliated with
+recommendations again with the new input. Let 𝑟𝑒𝑐𝑎𝑙𝑙 and 𝑟𝑒𝑐𝑎𝑙𝑙 ′                                       is also shown.
+
+
+
+
+                                                                                                  902
+Full Paper Track                                                                             CIKM '20, October 19–23, 2020, Virtual Event, Ireland
+
+
+
+
+                                                                                explains individual predictions [31, 35]. There are gradient-based
+                                                                                methods that measure feature contributions on output or interme-
+                                                                                diate neurons through backpropagation [35], perturbation-based
+                                                                                methods [7], approximation-based methods [31], and entropy-based
+                                                                                methods [10]. Intrinsically interpretability focuses on developing
+                                                                                transparent model components. A typical strategy is to pose regular-
+                                                                                ization on parameters to conform with certain prior [17]. [43] pro-
+                                                                                poses to incorporate expert knowledge to penalize model weights.
+    Figure 7: Visualization of embeddings for Yelp dataset.                     [37] develops disentangled MLPs to explicitly regulate feature in-
+                                                                                teractions between layers.
+   We also observe an interesting phenomenon in the second rec-                 Explainable Recommender Systems. The explainability of rec-
+ommendation. The recommendation is partially explained by the                   ommender systems recently starts to be seen as an important
+attribute 𝑒 45545 , which indicates that the restaurant accepts credit          topic [55]. Before the popularity of deep models, explicit factor
+cards for payment. However, intuitively it may not be a good reason             models have been proposed to relate explicitly constructed fea-
+shown to users to explain recommendation results in practice. The               tures with latent factors as explanations for the factors [56]. To
+reason that this attribute is selected could be that many restaurants           balance effectiveness and explainability, a common strategy is to
+accept credit cards, but the strong correlation is not suitable as              feed interpretable models with engineered features [16] or con-
+the reason to persuade users. This could be a limitation for graph              struct domain-specific knowledge graphs [8]. Graphs can be used
+convolution models. It also reminds us that interpretability is not             as the basis to pass information for embedding learning [40, 44, 45].
+equal to credibility, and we leave it for future exploration.                   [18] proposes an attention based model, but it only works on text
+                                                                                data. [27] proposes a new recommendation model to learn disen-
+5.4.3 Visualization of Latent Dimensions. In this part, we visualize            tangled representations, but how to apply it into general scenarios
+the item embeddings in Yelp dataset in Figure 7. The left plot follows          containing extra attribute information and knowledge is beyond
+the previous settings where 𝐶 1 = 6, while the right plot is drawn              the discussion. To discriminate different semantics in embedding,
+as we let 𝐶 1 = 4. The color of each point indicates its closest                [6, 26] extend random-walk-based models and use multiple embed-
+affiliated factor. Some colors are mixed since an embedding could               dings to represent each node, but embedding learning and factor
+be assigned to multiple factors, but only one factor could be shown             extraction are done separately.
+for each embedding. The clustering phenomenon is consistent with
+factor affiliations. It demonstrates that our model is able to discover
+different factors from data and assign embeddings accordingly.                  7   CONCLUSION AND FUTURE WORK
+                                                                                In this work, we tackle the explainability problem in recommender
+6    RELATED WORK                                                               systems. Specifically, we first analyze the IOM elements that benefit
+Machine Learning for Recommender Systems. In addition to                        model interpretability, and then propose a novel model with a more
+traditional content-based and neighborhood-based methods [9, 25],               transparent representation learning module. The IOM elements
+advanced machine learning methods have been developed for rec-                  include reshaping input into discrete concepts, making output at-
+ommendation, which could be categorized into two groups: linear                 tributable, and disentangling the middle-level representations. The
+and nonlinear. Examples of linear methods include matrix factor-                proposed model considers all the three elements above. The data is
+ization (MF) and factorization machines (FMs). Specifically, MF [1]             formatted as a graph. The model resolves information passing in
+represents an individual user or item by a single latent vector and             graph convolution according to different source types and factors.
+models the interaction of a user-item pair by the inner product                 Different from previous work, in our model, the representation
+of latent vectors. FMs [30] embed features into a latent space and              learning process and factor identification are achieved simultane-
+model user-item interactions by summing up the inner products                   ously. Experiments on real-world datasets validate the effectiveness
+of embedding vectors between all pairs of features. To this end, a              and interpretation accuracy of our model.
+lot of recent efforts have been put on modeling user-item inter-                   The future work includes: (1) developing more effective graph
+actions in a nonlinear way such as using DNNs. Example studies                  construction methods for automatic input conceptualization; (2)
+include the Wide & Deep model for app recommendation in Google                  designing human-computer interaction interfaces to better render
+Play [3], the non-linear extensions of MF and FM [14, 15], the rec-             interpretation results to users; (3) extending the proposed model to
+ommender modeled by recurrent neural networks (RNNs) [4], etc.                  handle a larger number of facets.
+It has been demonstrated that these nonlinear models usually yield
+better effectiveness, where a comprehensive review is available                 REFERENCES
+in [54].                                                                        [1] Linas Baltrunas, Bernd Ludwig, and Francesco Ricci. 2011. Matrix factorization
+Interpretable Machine Learning. Model interpretability receives                     techniques for context aware recommendation. In RecSys.
+                                                                                [2] Yoshua Bengio, Aaron Courville, and Pascal Vincent. 2013. Representation
+increasing attention recently [5, 28]. The efforts can be divided into              learning: a review and new perspectives. IEEE TPAMI (2013).
+two categories, post-hoc interpretation methods and intrinsically               [3] Heng-Tze Cheng, Levent Koc, Jeremiah Harmsen, Tal Shaked, Tushar Chandra,
+interpretable models. Specifically, post-hoc methods can be further                 Hrishi Aradhye, Glen Anderson, Greg Corrado, Wei Chai, Mustafa Ispir, et al.
+                                                                                    2016. Wide & deep learning for recommender systems. In DLRS.
+divided into global and local methods, where the former transforms              [4] Tim Donkers, Benedikt Loepp, and Jürgen Ziegler. 2017. Sequential user-based
+black-box models into understandable structures [52], and the latter                recurrent neural network recommendations. In RecSys.
+
+
+
+
+                                                                          903
+Full Paper Track                                                                                                  CIKM '20, October 19–23, 2020, Virtual Event, Ireland
+
+
+
+
+ [5] Mengnan Du, Ninghao Liu, and Xia Hu. 2018. Techniques for interpretable                       [38] Petar Veličković, Guillem Cucurull, Arantxa Casanova, Adriana Romero, Pietro
+     machine learning. arXiv preprint arXiv:1808.00033 (2018).                                          Lio, and Yoshua Bengio. 2017. Graph attention networks. arXiv preprint
+ [6] Alessandro Epasto and Bryan Perozzi. 2019. Is a single embedding enough?                           arXiv:1710.10903 (2017).
+     Learning node representations that capture multiple social contexts. In WWW.                  [39] Hao Wang, Tong Xu, Qi Liu, Defu Lian, Enhong Chen, Dongfang Du, Han Wu,
+ [7] Ruth C Fong and Andrea Vedaldi. 2017. Interpretable explanations of black boxes                    and Wen Su. 2019. MCNE: An end-to-end framework for learning multiple
+     by meaningful perturbation. In ICCV.                                                               conditional network representations of social network. In KDD.
+ [8] Jingyue Gao, Xiting Wang, Yasha Wang, and Xing Xie. 2019. Explainable recom-                  [40] Hongwei Wang, Fuzheng Zhang, Jialin Wang, Miao Zhao, Wenjie Li, Xing Xie,
+     mendation through attentive multi-view learning. In AAAI.                                          and Minyi Guo. 2018. Ripplenet: propagating user preferences on the knowledge
+ [9] Yong Ge, Hui Xiong, Alexander Tuzhilin, and Qi Liu. 2014. Cost-aware collabora-                    graph for recommender systems. In CIKM.
+     tive filtering for travel tour recommendations. ACM TOIS (2014).                              [41] Hongwei Wang, Fuzheng Zhang, Mengdi Zhang, Jure Leskovec, Miao Zhao,
+[10] Chaoyu Guan, Xiting Wang, Quanshi Zhang, Runjin Chen, Di He, and Xing Xie.                         Wenjie Li, and Zhongyuan Wang. 2019. Knowledge-aware graph neural networks
+     2019. Towards a deep and unified understanding of deep neural models in NLP.                       with label smoothness regularization for recommender systems. In KDD.
+     In ICML.                                                                                      [42] Hongwei Wang, Miao Zhao, Xing Xie, Wenjie Li, and Minyi Guo. 2019. Knowledge
+[11] David Gunning and David W Aha. 2019. DARPA’s explainable artificial intelli-                       graph convolutional networks for recommender systems. In WWW.
+     gence program. AI Mag. (2019).                                                                [43] Jiaxuan Wang, Jeeheh Oh, Haozhu Wang, and Jenna Wiens. 2018. Learning
+[12] Will Hamilton, Zhitao Ying, and Jure Leskovec. 2017. Inductive representation                      credible models. In KDD.
+     learning on large graphs. In NIPS.                                                            [44] Xiang Wang, Xiangnan He, Yixin Cao, Meng Liu, and Tat-Seng Chua. 2019. KGAT:
+[13] William L Hamilton, Rex Ying, and Jure Leskovec. 2017. Representation learning                     knowledge graph attention network for recommendation. In KDD.
+     on graphs: methods and applications. arXiv preprint arXiv:1709.05584 (2017).                  [45] Xiang Wang, Dingxian Wang, Canran Xu, Xiangnan He, Yixin Cao, and Tat-Seng
+[14] Xiangnan He and Tat-Seng Chua. 2017. Neural factorization machines for sparse                      Chua. 2019. Explainable reasoning over knowledge graphs for recommendation.
+     predictive analytics. In SIGIR.                                                                    In AAAI.
+[15] Xiangnan He, Lizi Liao, Hanwang Zhang, Liqiang Nie, Xia Hu, and Tat-Seng                      [46] Junyuan Xie, Ross Girshick, and Ali Farhadi. 2016. Unsupervised deep embedding
+     Chua. 2017. Neural collaborative filtering. In WWW.                                                for clustering analysis. In ICML.
+[16] Xinran He, Junfeng Pan, Ou Jin, Tianbing Xu, Bo Liu, Tao Xu, Yanxin Shi, Antoine              [47] Fan Yang, Ninghao Liu, Suhang Wang, and Xia Hu. 2018. Towards interpretation
+     Atallah, Ralf Herbrich, Stuart Bowers, et al. 2014. Practical lessons from predicting              of recommender systems with sorted explanation paths. In ICDM.
+     clicks on ads at facebook. In KDADD.                                                          [48] Min Yang, Wei Zhao, Jianbo Ye, Zeyang Lei, Zhou Zhao, and Soufei Zhang. 2018.
+[17] Irina Higgins, Loic Matthey, Arka Pal, Christopher Burgess, Xavier Glorot,                         Investigating capsule networks with dynamic routing for text classification. In
+     Matthew Botvinick, Shakir Mohamed, and Alexander Lerchner. 2017. beta-VAE:                         EMNLP.
+     learning basic visual concepts with a constrained variational framework. In ICLR.             [49] Ting Yao, Yingwei Pan, Yehao Li, and Tao Mei. 2018. Exploring visual relationship
+[18] Liang Hu, Songlei Jian, Longbing Cao, and Qingkui Chen. 2018. Interpretable                        for image captioning. In ECCV.
+     Recommendation via Attraction Modeling: Learning Multilevel Attractiveness                    [50] Rex Ying, Ruining He, Kaifeng Chen, Pong Eksombatchai, William L Hamilton,
+     over Multimodal Movie Contents.. In IJCAI.                                                         and Jure Leskovec. 2018. Graph convolutional neural networks for web-scale
+[19] Been Kim, Martin Wattenberg, Justin Gilmer, Carrie Cai, James Wexler, Fer-                         recommender systems. In KDD.
+     nanda Viegas, and Rory Sayres. 2018. Interpretability beyond feature attribution:             [51] Fuzheng Zhang, Nicholas Jing Yuan, Defu Lian, Xing Xie, and Wei-Ying Ma. 2016.
+     quantitative testing with concept activation vectors (TCAV). In ICML.                              Collaborative knowledge base embedding for recommender systems. In KDD.
+[20] Diederik P Kingma and Max Welling. 2013. Auto-encoding variational bayes.                     [52] Quanshi Zhang, Ruiming Cao, Feng Shi, Ying Nian Wu, and Song-Chun Zhu.
+     arXiv preprint arXiv:1312.6114 (2013).                                                             2018. Interpreting CNN knowledge via an explanatory graph. In AAAI.
+[21] Thomas N Kipf and Max Welling. 2016. Variational graph auto-encoders. arXiv                   [53] Quanshi Zhang and Song-Chun Zhu. 2018. Visual interpretability for deep
+     preprint arXiv:1611.07308 (2016).                                                                  learning: a survey. FITEE (2018).
+[22] Deguang Kong, Chris Ding, and Heng Huang. 2011. Robust nonnegative matrix                     [54] Shuai Zhang, Lina Yao, Aixin Sun, and Yi Tay. 2019. Deep learning based recom-
+     factorization using l21-norm. In CIKM.                                                             mender system: A survey and new perspectives. CSUR (2019).
+[23] Yehuda Koren, Robert Bell, and Chris Volinsky. 2009. Matrix factorization tech-               [55] Yongfeng Zhang and Xu Chen. 2018. Explainable recommendation: a survey and
+     niques for recommender systems. IEEE Comput. (2009).                                               new perspectives. arXiv preprint arXiv:1804.11192 (2018).
+[24] Chenliang Li, Cong Quan, Li Peng, Yunwei Qi, Yuming Deng, and Libing Wu.                      [56] Yongfeng Zhang, Guokun Lai, Min Zhang, Yi Zhang, Yiqun Liu, and Shaoping
+     2019. A capsule network for recommendation and explaining what you like and                        Ma. 2014. Explicit factor models for explainable recommendation based on
+     dislike. In SIGIR.                                                                                 phrase-level sentiment analysis. In SIGIR.
+[25] Huayu Li, Richang Hong, Defu Lian, Zhiang Wu, Meng Wang, and Yong Ge. 2016.                   [57] Bolei Zhou, Yiyou Sun, David Bau, and Antonio Torralba. 2018. Interpretable
+     A relaxed ranking-based factor model for recommender system from implicit                          basis decomposition for visual explanation. In ECCV.
+     feedback. In IJCAI.
+[26] Ninghao Liu, Qiaoyu Tan, Yuening Li, Hongxia Yang, Jingren Zhou, and Xia
+     Hu. 2019. Is a single vector enough? Exploring node polysemy for network                      A APPENDIX
+     embedding. In KDD.
+[27] Jianxin Ma, Chang Zhou, Peng Cui, Hongxia Yang, and Wenwu Zhu. 2019. Learn-                   A.1 Node Importance Estimation
+     ing disentangled representations for recommendation. In NeurIPS.
+[28] Grégoire Montavon, Wojciech Samek, and Klaus-Robert Müller. 2018. Methods
+                                                                                                   This part is to briefly introduce the computation of 𝑠 ( 𝑗; 𝑢, 𝑡) in
+     for interpreting and understanding deep neural networks. DSP (2018).                          Section 5.4. The importance computation closely follows the infor-
+[29] Georgina Peake and Jun Wang. 2018. Explanation mining: post hoc interpretabil-                mation propagation path in graph convolution. Specifically, if 𝑗 is
+     ity of latent factor models for recommendation systems. In KDD.
+[30] Steffen Rendle. 2010. Factorization machines. In ICDM.                                        an item node, then its importance within factor 𝑐 is:
+[31] Marco Tulio Ribeiro, Sameer Singh, and Carlos Guestrin. 2016. “Why should I                                                                                         𝑝 ( 𝑗, 𝑐)
+                                                                                                               𝑠 ( 𝑗, 𝑐; 𝑢, 𝑡) = 𝑝 (𝑡, 𝑐) exp(⟨z𝑢𝑖𝑡𝑚,𝑐 , z𝑡 ⟩) · 1 (𝑢,𝑗)
+                                                                                                                                                          𝑠𝑙 𝑓
+     trust you?" Explaining the predictions of any classifier. In KDD.                                                                                                             ,
+[32] Cynthia Rudin. 2019. Stop explaining black box machine learning models for                                                                                           |N𝑢 |
+     high stakes decisions and use interpretable models instead. NMI (2019).
+[33] Sara Sabour, Nicholas Frosst, and Geoffrey E Hinton. 2017. Dynamic routing
+                                                                                                   where the first part is from the decoder, and the second half is
+     between capsules. In NIPS.                                                                    factor affiliation degree. 1 (𝑚,𝑗) = 1 if 𝑗 connects to 𝑢. Here we let
+[34] Sungyong Seo, Jing Huang, Hao Yang, and Yan Liu. 2017. Interpretable convo-
+                                                                                                                      Í
+                                                                                                   𝑠 ( 𝑗; 𝑢, 𝑡) = 𝑐 𝑠 ( 𝑗, 𝑐; 𝑢, 𝑡).
+     lutional neural networks with dual local and global attention for review rating
+     prediction. In RecSys.                                                                             If 𝑗 is an entity node, then its importance within factor 𝑐 is:
+[35] Karen Simonyan, Andrea Vedaldi, and Andrew Zisserman. 2013. Deep inside                                                                             Õ       1 (𝑚,𝑗) 𝑝 ( 𝑗, 𝑐)
+     convolutional networks: Visualising image classification models and saliency                       𝑠 ( 𝑗, 𝑐; 𝑢, 𝑡) = exp(⟨z𝑢𝑒𝑛𝑡,𝑐 , z𝑒𝑛𝑡,𝑐
+                                                                                                                                            𝑡     ⟩) ·                1               ,
+     maps. arXiv preprint arXiv:1312.6034 (2013).                                                                                                              |N𝑢 |            |N𝑚 |
+                                                                                                                                                  𝑚 ∈ | N𝑢 |
+[36] Daniel Smilkov, Nikhil Thorat, Been Kim, Fernanda Viégas, and Martin Wat-
+     tenberg. 2017. Smoothgrad: removing noise by adding noise. arXiv preprint                     where the first part is from the decoder, and the second part is
+     arXiv:1706.03825 (2017).
+[37] Michael Tsang, Hanpeng Liu, Sanjay Purushotham, Pavankumar Murali, and
+                                                                                                   traced from information propagation path in GCN. Similarly, we
+                                                                                                                     Í
+     Yan Liu. 2018. Neural interaction transparency (NIT): disentangling learned                   let 𝑠 ( 𝑗; 𝑢, 𝑡) = 𝑐 𝑠 ( 𝑗, 𝑐; 𝑢, 𝑡).
+     interactions for improved interpretability. In NIPS.
+
+
+
+
+                                                                                             904
+
