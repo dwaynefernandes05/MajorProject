@@ -168,7 +168,7 @@ and document d, functions hq and hd extract term
 
 information and a term scoring function st com- bines them. A popular example is BM25, which computes,
 
-where W nt×nlm is a matrix that maps the LM's nlm dimension output into a vector of lower di- mension nt. We down project the vectors as we
+where W ntÃ—nlm is a matrix that maps the LM's nlm dimension output into a vector of lower di- mension nt. We down project the vectors as we
 
 s	= L
 
@@ -218,7 +218,7 @@ tems lies in efficiency. With summation over exact matches, scoring of each quer
   While recent neural IR research mainly focuses on breaking the exact match bottleneck with soft matching of text, we hypothesize that exact match itself can be improved by replacing semantic in- dependent frequency-based scoring with semantic rich scoring. In the rest of this section, we show how to modify the exact lexical match framework with contextualized term representations to build effective and efficient retrieval systems.
 
 Note that, importantly, the summation goes through only overlapping terms, qi ? q n d. For each query token qi, we finds all same tokens dj in the docu- ment, computes their similarity with qi using the contextualized token vectors. The maximum sim- ilarities are picked for query token qi. Max op- erator is adopted to capture the most important signal (Kim, 2014). This fits in the general lexical match formulation, with hq giving representation for qi, ht giving representations for all dj = qi, and st compute dot similarities between query vector with document vectors and max pool the scores.
-  As with classic lexical systems, stok defined in Equation 5 does not take into account similarities between lexical-different terms, thus faces vocabu- lary mismatch. Many popular LMs (Devlin et al., 2019; Yang et al., 2019; Liu et al., 2019) use a special CLS token to aggregate sequence represen- tation. We project the CLS vectos with W nc×nlm
+  As with classic lexical systems, stok defined in Equation 5 does not take into account similarities between lexical-different terms, thus faces vocabu- lary mismatch. Many popular LMs (Devlin et al., 2019; Yang et al., 2019; Liu et al., 2019) use a special CLS token to aggregate sequence represen- tation. We project the CLS vectos with W ncÃ—nlm
 
 3.2 Contextualized Exact Lexical Match
 
@@ -282,7 +282,7 @@ qi?[cls;q;exp]
 dj ?[cls;d]	i	j
 
 I = {It | t ? V }. For COIL-full, we also build an index for the CLS token Icls = {vd | d ? C} .
-  As shown in Figure 3, in this work we im- plement COIL's by stacking vectors in each in- verted list It into a matrix Mnt×|Ik |, so that sim-
+  As shown in Figure 3, in this work we im- plement COIL's by stacking vectors in each in- verted list It into a matrix MntÃ—|Ik |, so that sim-
 ilarity computation that traverses an inverted list and computes vector dot product can be done ef- ficiently as one matrix-vector product with opti- mized BLAS (Blackford et al., 2002) routines on CPU or GPU. All vd vectors can also be organized in a similar fashion into matrix Mcls and queried with matrix product. The matrix implementation here is an exhaustive approach that involves all vec- tors in an inverted list. As a collection of dense vectors, it is also possible to organize each inverted list as an approximate search index (Johnson et al., 2017; Guo et al., 2019) to further speed up search.
   When a query q comes in, we encode every of its token into vectors vq. The vectors are sent to the subset of COIL inverted lists that corresponds query tokens J = {It | t ? q}. where the matrix product described above is carried out. This is efficient as |J| << |I|, having only a small subset of all inverted lists to be involved in search. For COIL-full, we also use encoded CLS vectors vq
 to query the CLS index to get the CLS matching scores. The scoring over different inverted lists can
@@ -314,18 +314,183 @@ Table 1 reports various systems' performance on the MARCO passage collection. CO
 
 Table 1: MSMARCO passage collection results. Results not applicable are denoted '-' and no available 'n.a.'.
 
-MS MARCO Passage RankingModelDev Rerank
-MRR@10Dev Retrieval
-MRR@10	Recall@1KDL2019
-NDCG@10Retrieval
-MRR@1KLexical Retriever-0.1840.8530.5060.825BM25DeepCT-0.2430.9090.5720.883DocT5Query-0.2780.9450.6420.888BM25+BERT reranker0.347----Dense Retrievern.a.0.2990.9280.600	n.a.Dense (BM25 neg)Dense (rand + BM25 neg)n.a.0.3110.9520.576	n.a.Dense (our train)0.3120.3040.9320.635	0.898ColBERT0.3490.3600.968n.a.	n.a.COIL-tok0.3360.3410.9490.6600.915COIL-full0.3480.3550.9630.7040.924
+
+MS MARCO Passage Ranking
+Model
+Dev Rerank
+MRR@10
+Dev Retrieval
+MRR@10	Recall@1K
+DL2019
+NDCG@10
+Retrieval
+MRR@1K
+Lexical Retriever
+
+
+
+
+
+
+-
+0.184
+0.853
+0.506
+0.825
+BM25
+
+
+
+
+
+DeepCT
+-
+0.243
+0.909
+0.572
+0.883
+DocT5Query
+-
+0.278
+0.945
+0.642
+0.888
+BM25+BERT reranker
+0.347
+-
+-
+-
+-
+Dense Retriever
+
+
+
+
+
+n.a.
+0.299
+0.928
+0.600	n.a.
+Dense (BM25 neg)
+
+
+
+
+Dense (rand + BM25 neg)
+n.a.
+0.311
+0.952
+0.576	n.a.
+Dense (our train)
+0.312
+0.304
+0.932
+0.635	0.898
+ColBERT
+0.349
+0.360
+0.968
+n.a.	n.a.
+COIL-tok
+0.336
+0.341
+0.949
+0.660
+0.915
+COIL-full
+0.348
+0.355
+0.963
+0.704
+0.924
+
 Table 2: MSMARCO document collection results. Results not applicable are denoted '-' and no available 'n.a.'.
 
-MS MARCO Document RankingModelDev Rerank
-MRR@10Dev Retrieval
-MRR@10	Recall@1KDL2019
-NDCG@10Retrieval
-MRR@1KLexical Retriever-0.2300.8860.5190.805BM25DeepCT-0.3200.9420.5440.891DocT5Query-0.2880.9260.5970.837BM25+BERT reranker0.383----Dense Retrievern.a.0.2990.9280.600	n.a.Dense (BM25 neg)Dense (rand + BM25 neg)n.a.0.3110.9520.576	n.a.Dense (our train)0.3580.3400.8830.546	0.785COIL-tok0.3810.3850.9520.6260.921COIL-full0.3880.3970.9620.6360.913
+
+MS MARCO Document Ranking
+Model
+Dev Rerank
+MRR@10
+Dev Retrieval
+MRR@10	Recall@1K
+DL2019
+NDCG@10
+Retrieval
+MRR@1K
+Lexical Retriever
+
+
+
+
+
+
+-
+0.230
+0.886
+0.519
+0.805
+BM25
+
+
+
+
+
+DeepCT
+-
+0.320
+0.942
+0.544
+0.891
+DocT5Query
+-
+0.288
+0.926
+0.597
+0.837
+BM25+BERT reranker
+0.383
+-
+-
+-
+-
+Dense Retriever
+
+
+
+
+
+n.a.
+0.299
+0.928
+0.600	n.a.
+Dense (BM25 neg)
+
+
+
+
+Dense (rand + BM25 neg)
+n.a.
+0.311
+0.952
+0.576	n.a.
+Dense (our train)
+0.358
+0.340
+0.883
+0.546	0.785
+COIL-tok
+0.381
+0.385
+0.952
+0.626
+0.921
+COIL-full
+0.388
+0.397
+0.962
+0.636
+0.913
+
 
 expensive, requiring over 2700 ms for reranking compared to around 10ms in the case of COIL.
   Table 2 reports the results on MSMARCO docu- ment collection. In general, we observe a similar pattern as with the passage case. COIL systems significantly outperform both lexical and dense sys- tems in MRR and NDCG and retain a small advan- tage measured in recall. The results suggest that COIL can be applicable to longer documents with a consistent advantage in effectiveness.
@@ -339,22 +504,129 @@ The second experiment tests how varying COIL's token dimension nt and CLS dimens
 Table 3: Performance and latency of COIL systems with different representation dimensions. Results not applica- ble are denoted '-' and no available 'n.a.'. Here nc denotes COIL CLS dimension and nt token vector dimension.
 *: ColBERT use approximate search and quantization. We exclude I/O time from measurements.
 
-ModelDev Retrieval
-MRR@10	Recall@1KDL2019 Retrieval
-NDCG@10	MRRLatency/ms
-CPU	GPUBM250.1840.8530.506	0.82536n.a.Dense0.3040.9320.635	0.89829332ColBERT0.3600.968n.a.	n.a.458*-COILncnt0.9630.7040.92438041768320.355128320.3500.9530.6920.9561252312880.3470.9560.6940.977113210320.3410.9490.6600.9156718080.3360.9400.6780.9535516
+Model
+Dev Retrieval
+MRR@10	Recall@1K
+DL2019 Retrieval
+NDCG@10	MRR
+Latency/ms
+CPU	GPU
+BM25
+0.184
+0.853
+0.506	0.825
+36
+n.a.
+Dense
+0.304
+0.932
+0.635	0.898
+293
+32
+ColBERT
+0.360
+0.968
+n.a.	n.a.
+458*
+-
+COIL
+
+
+
+
+
+
+
+nc
+nt
+
+
+
+
+
+
+
+
+
+0.963
+0.704
+0.924
+380
+41
+768
+32
+0.355
+
+
+
+
+
+128
+32
+0.350
+0.953
+0.692
+0.956
+125
+23
+128
+8
+0.347
+0.956
+0.694
+0.977
+113
+21
+0
+32
+0.341
+0.949
+0.660
+0.915
+67
+18
+0
+8
+0.336
+0.940
+0.678
+0.953
+55
+16
+
 Table 4: Sample query document pairs with similarity scores produced by COIL. Tokens in examination are colored blue. Numbers in brackets are query-document vector similarities computed with vectors generated by COIL.
 
-Query TokenCOIL Contextualized Exact Match ScoreRelevance
-what is a cabinet in govtCabinet [16.28]  (government) A cabinet [16.75] is a body of high-
-ranking state officials, typically consisting of the top leaders of the ....+Cabinet [7.23] is 20x60 and top is 28x72.	I had a 2cm granite counter-
-top installed with a 10 inch overhang on one side and a 14 inch....-
-what is priority passPriority Pass [11.61] is an independent airport lounge access program. A
-membership provides you with access to their network of over 700 ....+Snoqualmie Pass [7.98] is a mountain pass [6.83] that carries Interstate
-90 through the Cascade Range in the U.S. State of Washington....-
-what is njstartNJSTART is [1.25] a self-service online platform that allows vendors to
-manage forms, certifications, submit proposals, access training ....+Contract awardees will receive their Blanket P.O. once it is [-0.10] con-
-verted, and details regarding that process will also be sent...-
+Query Token
+COIL Contextualized Exact Match Score
+Relevance
+
+what is a cabinet in govt
+Cabinet [16.28]  (government) A cabinet [16.75] is a body of high-
+ranking state officials, typically consisting of the top leaders of the ....
++
+
+Cabinet [7.23] is 20x60 and top is 28x72.	I had a 2cm granite counter-
+top installed with a 10 inch overhang on one side and a 14 inch....
+-
+
+what is priority pass
+Priority Pass [11.61] is an independent airport lounge access program. A
+membership provides you with access to their network of over 700 ....
++
+
+Snoqualmie Pass [7.98] is a mountain pass [6.83] that carries Interstate
+90 through the Cascade Range in the U.S. State of Washington....
+-
+
+what is njstart
+NJSTART is [1.25] a self-service online platform that allows vendors to
+manage forms, certifications, submit proposals, access training ....
++
+
+Contract awardees will receive their Blanket P.O. once it is [-0.10] con-
+verted, and details regarding that process will also be sent...
+-
+
 
 test queries were labeled differently from the MS- MARCO train/dev queries (Craswell et al., 2020).
 
@@ -376,7 +648,7 @@ Exact lexical match systems have been widely used for decades in classical IR sy
 With our COIL systems showing viable search latency, we believe this paper makes a solid step towards building next-generation index that stores semantics. At the intersection of lexical and neural systems, efficient algorithms proposed for both can push COIL towards real-world systems.
 
 References
-S. Blackford, J. Demmel, J. Dongarra, I. Duff, S. Ham- marling, Greg Henry, M. Héroux, L. Kaufman, An- drew Lumsdaine, A. Petitet, R. Pozo, K. Remington, and C. Whaley. 2002. An updated set of basic linear algebra subprograms (blas). ACM Transactions on Mathematical Software, 28.
+S. Blackford, J. Demmel, J. Dongarra, I. Duff, S. Ham- marling, Greg Henry, M. HÃ©roux, L. Kaufman, An- drew Lumsdaine, A. Petitet, R. Pozo, K. Remington, and C. Whaley. 2002. An updated set of basic linear algebra subprograms (blas). ACM Transactions on Mathematical Software, 28.
 Nick Craswell, Bhaskar Mitra, Emine Yilmaz, Daniel Campos, and Ellen M Voorhees. 2020. Overview of the trec 2019 deep learning track. arXiv preprint arXiv:2003.07820.
 Zhuyun Dai and J. Callan. 2019a. Context-aware sen- tence/passage term importance estimation for first stage retrieval. ArXiv, abs/1910.10687.
 Zhuyun Dai and J. Callan. 2020. Context-aware docu- ment term weighting for ad-hoc search. Proceedings of The Web Conference 2020.
@@ -394,13 +666,13 @@ J. Guo, Y. Fan, Qingyao Ai, and W. Croft. 2016. A deep relevance matching model 
 
 R. Guo, Philip Y. Sun, E. Lindgren, Quan Geng, David Simcha, Felix Chern, and S. Kumar. 2019. Accel- erating large-scale inference with anisotropic vector quantization. arXiv: Learning.
 
-Charles R. Harris, K. Jarrod Millman, Stéfan J van der Walt, Ralf Gommers, Pauli Virtanen, David Cournapeau, Eric Wieser, Julian Taylor, Sebas- tian Berg, Nathaniel J. Smith, Robert Kern, Matti Picus, Stephan Hoyer, Marten H. van Kerkwijk, Matthew Brett, Allan Haldane, Jaime Fernández del Río, Mark Wiebe, Pearu Peterson, Pierre Gérard- Marchant, Kevin Sheppard, Tyler Reddy, Warren Weckesser, Hameer Abbasi, Christoph Gohlke, and Travis E. Oliphant. 2020. Array programming with NumPy. Nature.
+Charles R. Harris, K. Jarrod Millman, StÃ©fan J van der Walt, Ralf Gommers, Pauli Virtanen, David Cournapeau, Eric Wieser, Julian Taylor, Sebas- tian Berg, Nathaniel J. Smith, Robert Kern, Matti Picus, Stephan Hoyer, Marten H. van Kerkwijk, Matthew Brett, Allan Haldane, Jaime FernÃ¡ndez del RÃ­o, Mark Wiebe, Pearu Peterson, Pierre GÃ©rard- Marchant, Kevin Sheppard, Tyler Reddy, Warren Weckesser, Hameer Abbasi, Christoph Gohlke, and Travis E. Oliphant. 2020. Array programming with NumPy. Nature.
 
 Po-Sen Huang, Xiaodong He, Jianfeng Gao, Li Deng, Alex Acero, and Larry Heck. 2013. Learning deep structured semantic models for web search using clickthrough data. In Proceedings of the 22nd ACM international conference on Information & Knowl- edge Management.
 
 Samuel Humeau, Kurt Shuster, Marie-Anne Lachaux, and J. Weston. 2020. Poly-encoders: Architec- tures and pre-training strategies for fast and accurate multi-sentence scoring. In ICLR.
 
-J. Johnson, M. Douze, and H. Jégou. 2017. Billion- scale similarity search with gpus.	ArXiv, abs/1702.08734.
+J. Johnson, M. Douze, and H. JÃ©gou. 2017. Billion- scale similarity search with gpus.	ArXiv, abs/1702.08734.
 
 V. Karpukhin, Barlas Og?uz, Sewon Min, Patrick Lewis, Ledell Yu Wu, Sergey Edunov, Danqi Chen, and W. Yih. 2020. Dense passage re- trieval for open-domain question answering. ArXiv, abs/2004.04906.
 
@@ -426,7 +698,7 @@ Rodrigo Nogueira and Kyunghyun Cho. 2019. Passage re-ranking with bert. ArXiv, a
 Rodrigo Nogueira and Jimmy Lin. 2019. From doc2query to doctttttquery.
 
 Adam Paszke, Sam Gross, Francisco Massa, Adam Lerer, James Bradbury, Gregory Chanan, Trevor Killeen, Zeming Lin, Natalia Gimelshein, Luca Antiga, Alban Desmaison, Andreas Kopf, Edward Yang, Zachary DeVito, Martin Raison, Alykhan Te- jani, Sasank Chilamkurthy, Benoit Steiner, Lu Fang, Junjie Bai, and Soumith Chintala. 2019. Py- torch: An imperative style, high-performance deep learning library.  In H. Wallach, H. Larochelle,
-A. Beygelzimer, F. d'Alché-Buc, E. Fox, and R. Gar- nett, editors, Advances in Neural Information Pro- cessing Systems 32. Curran Associates, Inc.
+A. Beygelzimer, F. d'AlchÃ©-Buc, E. Fox, and R. Gar- nett, editors, Advances in Neural Information Pro- cessing Systems 32. Curran Associates, Inc.
 
 Jeffrey Pennington, R. Socher, and Christopher D. Manning. 2014. Glove: Global vectors for word rep- resentation. In EMNLP.
 
@@ -436,7 +708,7 @@ Stephen E Robertson and Steve Walker. 1994. Some simple effective approximations
 
 model for probabilistic weighted retrieval. In Pro- ceedings of the 17th Annual International ACM- SIGIR Conference on Research and Development in Information Retrieval.
 Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N. Gomez, L. Kaiser, and Illia Polosukhin. 2017. Attention is all you need. In NIPS.
-Thomas Wolf, Lysandre Debut, Victor Sanh, Julien Chaumond, Clement Delangue, Anthony Moi, Pier- ric Cistac, Tim Rault, Rémi Louf, Morgan Funtow- icz, Joe Davison, Sam Shleifer, Patrick von Platen, Clara Ma, Yacine Jernite, Julien Plu, Canwen Xu, Teven Le Scao, Sylvain Gugger, Mariama Drame, Quentin Lhoest, and Alexander M. Rush. 2019. Huggingface's transformers: State-of-the-art natural language processing. ArXiv, abs/1910.03771.
+Thomas Wolf, Lysandre Debut, Victor Sanh, Julien Chaumond, Clement Delangue, Anthony Moi, Pier- ric Cistac, Tim Rault, RÃ©mi Louf, Morgan Funtow- icz, Joe Davison, Sam Shleifer, Patrick von Platen, Clara Ma, Yacine Jernite, Julien Plu, Canwen Xu, Teven Le Scao, Sylvain Gugger, Mariama Drame, Quentin Lhoest, and Alexander M. Rush. 2019. Huggingface's transformers: State-of-the-art natural language processing. ArXiv, abs/1910.03771.
 Chenyan Xiong, Zhuyun Dai, J. Callan, Zhiyuan Liu, and R. Power. 2017. End-to-end neural ad-hoc rank- ing with kernel pooling. Proceedings of the 40th International ACM SIGIR Conference on Research and Development in Information Retrieval.
 Lee Xiong, Chenyan Xiong, Ye Li, Kwok-Fung Tang,
 J. Liu, P. Bennett, Junaid Ahmed, and Arnold Over- wijk. 2020. Approximate nearest neighbor negative contrastive learning for dense text retrieval. ArXiv, abs/2007.00808.
@@ -482,7 +754,10 @@ Indexjuice
 
 
 
-
+
+
+
+
 
 
 
